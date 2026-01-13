@@ -1,66 +1,70 @@
-Nöbet Planı - Otomatik Nöbet Listesi Hazırlama Aracı
- 
-Nöbet Planı, profesyoneller için hızlı, adil ve hatasız nöbet listeleri oluşturmayı sağlayan kullanıcı dostu bir web uygulamasıdır. Sağlık çalışanları, askerler, öğretmenler ve diğer vardiyalı çalışanlar için tasarlanmıştır. Kısıt programlama tabanlı optimizasyon teknikleriyle nöbetleri dengeli bir şekilde dağıtır ve özelleştirilebilir özellikleriyle her türlü ihtiyaca uyum sağlar.
+Nöbet Planı - Akıllı ve Bulut Tabanlı Nöbet Listesi Hazırlama Aracı
+Nöbet Planı, profesyoneller için hızlı, adil ve hatasız nöbet listeleri oluşturmayı sağlayan kullanıcı dostu bir web uygulamasıdır. Sağlık çalışanları, askerler, öğretmenler ve diğer vardiyalı çalışanlar için tasarlanmıştır.
+
+Kısıt programlama tabanlı optimizasyon teknikleriyle nöbetleri dengeli dağıtırken, Google entegrasyonu sayesinde verilerinizi bulutta saklar ve her yerden erişilebilir kılar.
 
 🚀 Özellikler
+🔐 Google ile Giriş ve Bulut Yedekleme (YENİ): Google hesabınızla güvenli giriş yaparak oluşturduğunuz personel listelerini ve nöbet çizelgelerini otomatik olarak buluta yedekleyin. Veri kaybı yaşamadan farklı cihazlardan listenize erişin.
 
-Otomatik Nöbet Dağıtımı: Tarih aralığı ve nöbetçi sayısı girilerek adil nöbet listeleri oluşturulur.
-Hafta İçi ve Hafta Sonu Dengesi: Nöbetler, hafta içi ve hafta sonu için ayrı ayrı dengelenir. Perşembe günleri için özel dengeleme seçeneği.
-Gruplama Desteği: Birlikte nöbet tutması gereken personeller aynı gruba atanabilir.
-Kişiye Özel Boşluk Ayarları: Her personel için nöbetler arası minimum boşluk süresi belirlenebilir.
-Resmi Tatil Entegrasyonu: Resmi tatiller takvimde gri renkte gösterilir ve hafta sonu gibi işlenir.
-Önceden Planlama: Kullanıcılar, belirli personel için istenen/istenmeyen günleri önceden belirtebilir.
-İzin ve İstirahat Desteği: Personelin izin veya istirahat günleri dikkate alınır.
-Çıktı: Nöbet listeleri Excel formatında indirilebilir.
-Kullanıcı Dostu Arayüz: Basit ve sezgisel tasarım, kolay kullanım sağlar.
+📂 Gelişmiş Geçmiş ve İstatistikler (YENİ): Onayladığınız tüm nöbet listeleri "Geçmiş" sekmesinde arşivlenir. Geçmişe dönük listeleri inceleyebilir, Excel olarak indirebilir ve personellerin yıllık kümülatif nöbet istatistiklerini (toplam hafta içi, hafta sonu, resmi tatil sayıları) tek tıkla görebilirsiniz.
 
+⚖️ Otomatik Nöbet Dağıtımı: Tarih aralığı ve nöbetçi sayısı girilerek adil nöbet listeleri saniyeler içinde oluşturulur.
+
+📅 Hafta İçi ve Hafta Sonu Dengesi: Nöbetler, hafta içi ve hafta sonu için ayrı ayrı dengelenir. Perşembe ve Cuma günleri için özel dengeleme seçenekleri mevcuttur.
+
+👥 Gruplama Desteği: Birlikte nöbet tutması gereken (veya tutmaması gereken) personeller gruplandırılarak algoritma yönlendirilebilir.
+
+gap Kişiye Özel Boşluk Ayarları: Her personel için nöbetler arası minimum boşluk süresi (nöbet ertesi izin) ayrı ayrı belirlenebilir.
+
+holiday Resmi Tatil Entegrasyonu: Resmi tatiller takvimde otomatik tanınır, gri renkte gösterilir ve hafta sonu katsayısı ile işlenir.
+
+✨ Önceden Planlama (İstek/Mazeret): Kullanıcılar, takvim üzerinde personellerin "İstenen Gün" (Nöbetçi olmak istediği) veya "İstenmeyen Gün" (İzinli olduğu) tarihlerini önceden işaretleyebilir.
+
+📥 Excel Çıktısı: Hazırlanan nöbet listeleri, formatı bozulmadan Excel (.xlsx) formatında indirilebilir.
 
 📖 Kullanım Kılavuzu
+1. Başlangıç ve Giriş: Sisteme Google hesabınızla giriş yapmanız önerilir. Bu sayede personel listeniz kaybolmaz ve otomatik olarak hesabınıza tanımlanır. Tarih aralığını ve günlük nöbetçi sayısını seçerek başlayın.
 
-Tarih aralığını, varsa Resmi Tatil günlerini ve bir nöbette bulunacak olan personel sayısını belirleyerek süreci başlatın.
+2. Personel Ekleme:
 
-Personel Ekleme:
 Ana ekranda + simgesine tıklayarak personel listenizi oluşturun.
-Her personel için hafta içi/hafta sonu nöbet sayıları ve boşluk sürelerini belirleyin.
-Nöbetçileri ekledikten sonra CSV dosyası olarak indirerek sonraki liste hazırlamalarında yükleyerek süreci hızlandırabilirsiniz.
 
+Eğer daha önce giriş yaptıysanız listeniz otomatik gelecektir.
 
-Gruplama Mantığı:
-Bir nöbette 1'den daha fazla kişi nöbette bulunuyorsa ve birlikte nöbet tutmak isteyen/tutması zorunlu olan kişileri aynı gruba ekleyebilirsiniz.
-Aynı mantıkla birlikte nöbet tutmaması gereken kişiler varsa farklı gruplara ekleyerek birlikte nöbet tutmamalarını sağlayabilirsiniz. 
-Gruplama mantığı algoritma için katı bir kısıt olmayıp, öncelik olarak alınır.
+Yeni başlayanlar için CSV ile toplu yükleme seçeneği de mevcuttur.
 
-Nöbet Sayılarını Dağıtma:
-"Nöbet Sayılarını Dağıt" butonuna tıklayın.
-Sistem, doğrusal optimizasyon kullanarak, kişi başına düşen hafta içi/sonu nöbet sayılarında adil bir dağıtım yapar.
+3. Kısıtlamalar ve Gruplama:
 
-Takvimde İşaretlemeler:
-İstenen gün / İstenmeyen Gün switch butonunu kullanarak kişilerin isteklerini takvimde işaretleyin.
-Personelin tutmak istediği/tutması zorunlu olduğu günü işaretlemek için "İstenen Gün" modundayken işaretleyin.
-Personelin tutmak istemediği/tutmaması zorunlu olduğu günü işaretlemek için "İstenmeyen Gün" modundayken işaretleyin.
+Her personelin hafta içi/hafta sonu tutacağı maksimum nöbet sayısını belirleyin.
 
-Perşembe/Cuma Dengeleme:
-Bu kısıtlamaları seçerek algoritmanın bu günleri personel arasında eşit dağıtmasını sağlayabilirsiniz.
-Unutmayın bu seçenekler katı kısıtlamalar olup isteğiniz gerçekleşmeyebilir. Bu durumda bu işaretlemeleri kaldırarak tekrar deneyebilirsiniz.
+Birlikte nöbet tutması gereken kıdemli/asistan eşleşmeleri için gruplama özelliğini kullanın.
 
-Otomatik Atama:
-İşaretlemeler bittiğinde "Otomatik Ata" tuşuna basarak algoritmanın nöbetleri atamasını sağlayabilirsiniz.
-İleri/Geri Al tuşu takvimde son yapılan değişiklikleri hatırlar.
+4. Takvim İşaretlemeleri (İstekler):
 
-Sonuçları İnceleme ve İndirme:
-Oluşan takvimi kontrol edin.
-Excel formatında indirmek için ilgili butonu kullanın.
+"Nöbet Sayılarını Dağıt" dedikten sonra takvim oluşur.
+
+Sol alttaki switch butonunu kullanarak "İstenen Gün" (Yeşil Tik) veya "İstenmeyen Gün" (Kırmızı Çarpı) moduna geçin ve hücrelere tıklayarak personelin mazeretlerini veya isteklerini belirtin.
+
+5. Otomatik Atama ve Kaydetme:
+
+Tüm ayarlar bittiğinde "Otomatik Ata" butonuna basın. Yapay zeka destekli algoritma en uygun dağılımı yapacaktır.
+
+Sonucu beğendiğinizde "Kaydet" butonuna basarak listeyi hesabınıza kalıcı olarak işleyin.
+
+Listeyi Excel olarak indirip çalışma arkadaşlarınızla paylaşın.
 
 ⚙️ Teknik Detaylar
+Frontend: HTML5, CSS3 (Materialize CSS), JavaScript (Vanilla)
 
-Frontend: HTML, JavaScript
-Backend: Python(Google Cloud)
-Optimizasyon: OR-Tools CP-SAT solver 
+Backend & API: Python (Google Cloud Functions)
 
+Veritabanı & Auth: Firebase Firestore & Firebase Authentication
 
-🤝 Geri Bildirimde Bulunma
-Katkıda bulunmak isterseniz, nobetplani@gmail.com adresine eposta ve instagram adresimizden mesaj atabilir veya footer'da bulunan geri bildirim butonunun kullanabilirsiniz.
+Optimizasyon Motoru: Google OR-Tools CP-SAT Solver
 
+🤝 İletişim ve Geri Bildirim
+Görüşleriniz bizim için değerli! Hata bildirimi veya özellik önerileriniz için uygulamanın alt kısmındaki "Geri Bildirim" butonunu kullanabilir veya bize ulaşabilirsiniz.
 
 E-posta: nobetplani@gmail.com
 
+Web: nobetplani.com
