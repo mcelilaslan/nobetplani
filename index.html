@@ -1867,30 +1867,30 @@
         
         function downloadSchedule() {
 
-           
-                const startInput = document.getElementById('startDate').value;
-                const endInput = document.getElementById('endDate').value;
-                const dutyPerDay = parseInt(document.getElementById('dutyPerDay').value) || 1;
-                const [startDay, startMonth, startYear] = startInput.split('-').map(Number);
-                const [endDay, endMonth, endYear] = endInput.split('-').map(Number);
-                const start = new Date(startYear, startMonth - 1, startDay);
-                const end = new Date(endYear, endMonth - 1, endDay);
-                const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-            
-                let allDaysFilled = true;
-                for (let d = 0; d < days; d++) {
-                    const assigned = document.querySelectorAll(`td[data-dindex="${d}"].selected`).length;
-                    if (assigned < dutyPerDay) {
-                        allDaysFilled = false;
-                        break;
-                    }
+            const startInput = document.getElementById('startDate').value;
+            const endInput = document.getElementById('endDate').value;
+            const dutyPerDay = parseInt(document.getElementById('dutyPerDay').value) || 1;
+            const [startDay, startMonth, startYear] = startInput.split('-').map(Number);
+            const [endDay, endMonth, endYear] = endInput.split('-').map(Number);
+            const start = new Date(startYear, startMonth - 1, startDay);
+            const end = new Date(endYear, endMonth - 1, endDay);
+            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+            let allDaysFilled = true;
+            for (let d = 0; d < days; d++) {
+                const assigned = document.querySelectorAll(`td[data-dindex="${d}"].selected`).length;
+                if (assigned < dutyPerDay) {
+                    allDaysFilled = false;
+                    break;
                 }
-                if (!allDaysFilled) {
-                    M.toast({ html: 'Tüm günlere yeteri kadar nöbetçi atanmadı, takvimi doldurun!' });
-                    return;
-                }
-            
+            }
+            if (!allDaysFilled) {
+                M.toast({ html: 'Tüm günlere yeteri kadar nöbetçi atanmadı, takvimi doldurun!' });
+                return;
+            }
+
             performExport(function(blob, fileName) {
+                // 1. İndirme İşlemi
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -1899,10 +1899,14 @@
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                showToast('Dosya cihazınıza indi! 📂 Listenizi kaybetmemek için çıkmadan önce "Kaydet" butonuyla hesabınıza yedeklemeyi UNUTMAYIN.', 8000);
+                
+                // Kullanıcıya bilgi ver
+                showToast('Dosya cihazınıza indi! 📂 Buluta kayıt işlemi başlatılıyor...', 4000);
+
+                // 2. Otomatik Kaydetme İşlemi (Mevcut kaydet fonksiyonunu tetikler)
+                saveScheduleToHistory();
             });
         }
-
         function autoAssignDuties() {
             validationErrors = [];
             if (!document.getElementById('calendarTable').innerHTML) {
