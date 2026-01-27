@@ -2129,6 +2129,7 @@
             })
             .then(({ status, data }) => {
                 document.getElementById('loadingOverlay').style.display = 'none';
+                
                 if (status === 200 && Array.isArray(data.assignments)) {
                     data.assignments.forEach(a => {
                         const cellKey = `${a.pIndex}-${a.dayIndex}`;
@@ -2140,18 +2141,26 @@
                     showToast('Tüm nöbetler başarıyla atandı! 💾 Çıkmadan önce listenizi "Kaydet" butonuyla hesabınıza saklamayı UNUTMAYIN.', 8000);
                 } else {
                     let errorMessage = data.error || 'Bilinmeyen bir hata oluştu';
-                    if (status === 400 && errorMessage.includes('Nöbet atamaları yapılamadı')) {
-                        errorMessage = 'Hata: Nöbet ertesi boşluk sayısını azaltmayı deneyin!';
-                    } else if (status === 400 && errorMessage.includes('Cuma veya Perşembe dengeleme başarısız')) {
-                        errorMessage = 'Hata: Cuma veya Perşembe dengeleme başarısız, bu seçenekleri kapatın veya nöbet ertesi boşlukları azaltıp tekrar deneyin!';
-                    }
+                    
+                    // --- DÜZELTME BURADA ---
+                    // Eğer mesaj "⚠️" İÇERMİYORSA standart çevirileri yap.
+                    // İçeriyorsa (AI mesajıysa) dokunma, olduğu gibi kalsın.
+                    if (!errorMessage.includes('⚠️')) {
+                        if (status === 400 && errorMessage.includes('Nöbet atamaları yapılamadı')) {
+                            errorMessage = 'Hata: Nöbet ertesi boşluk sayısını azaltmayı deneyin!';
+                        } else if (status === 400 && errorMessage.includes('Cuma veya Perşembe dengeleme başarısız')) {
+                            errorMessage = 'Hata: Cuma veya Perşembe dengeleme başarısız, bu seçenekleri kapatın veya nöbet ertesi boşlukları azaltıp tekrar deneyin!';
+                        }
+                    } 
+                    
+                    // DİKKAT: showToast bu if bloğunun DIŞINDA olmalı ki her iki durumda da çalışsın.
                     showToast(errorMessage, 10000); // Hata mesajı, 10 saniye
                 }
             })
             .catch(error => {
                 document.getElementById('loadingOverlay').style.display = 'none';
                 showToast('Sunucuyla bağlantı kurulamadı: ' + error.message, 10000); // Hata mesajı, 10 saniye
-            });
+            });        
         }
 
         function updateCalendar() {
