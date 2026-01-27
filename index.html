@@ -368,6 +368,28 @@
             </div>
         </div>
 
+        <div id="aiModal" class="modal" style="border-radius: 12px; border: 2px solid #d32f2f;">
+            <div class="modal-content">
+                <h4 style="color: #d32f2f; display: flex; align-items: center;">
+                    <i class="material-icons" style="margin-right: 10px; font-size: 36px;">report_problem</i>
+                    Çözüm Bulunamadı
+                </h4>
+                <div class="divider"></div>
+                <div style="background-color: #fff3e0; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                    <span style="font-weight: bold; color: #e65100;">Yapay Zeka (AI) Analiz Raporu:</span>
+                    <p id="aiReportContent" style="font-size: 1.1rem; line-height: 1.6; color: #374151; margin-top: 10px;">
+                        </p>
+                </div>
+                <p class="grey-text" style="margin-top: 15px; font-size: 0.9rem;">
+                    <i class="material-icons tiny">info</i> Yukarıdaki önerileri dikkate alarak ayarları değiştirmeyi deneyiniz.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <a href="#!" class="modal-close waves-effect waves-red btn-flat" style="font-weight: bold;">ANLAŞILDI, KAPAT</a>
+            </div>
+        </div>
+
+        
         <!-- Geri Bildirim Modalı -->
         <div id="feedbackModal" class="modal">
             <div class="modal-content">
@@ -2131,6 +2153,7 @@
                 document.getElementById('loadingOverlay').style.display = 'none';
                 
                 if (status === 200 && Array.isArray(data.assignments)) {
+                    // BAŞARILI DURUM
                     data.assignments.forEach(a => {
                         const cellKey = `${a.pIndex}-${a.dayIndex}`;
                         selectedCells[cellKey] = true;
@@ -2140,27 +2163,49 @@
                     saveToHistory();
                     showToast('Tüm nöbetler başarıyla atandı! 💾 Çıkmadan önce listenizi "Kaydet" butonuyla hesabınıza saklamayı UNUTMAYIN.', 8000);
                 } else {
+                    // HATA DURUMU
                     let errorMessage = data.error || 'Bilinmeyen bir hata oluştu';
                     
-                    // --- DÜZELTME BURADA ---
-                    // Eğer mesaj "⚠️" İÇERMİYORSA standart çevirileri yap.
-                    // İçeriyorsa (AI mesajıysa) dokunma, olduğu gibi kalsın.
-                    if (!errorMessage.includes('⚠️')) {
+                    // --- AI MESAJI KONTROLÜ ---
+                    if (errorMessage.includes('⚠️')) {
+                        // 1. "⚠️ ÇÖZÜLEMEDİ:" kısmını temizle ve metni al
+                        const rawMessage = errorMessage.replace('⚠️ ÇÖZÜLEMEDİ:', '').trim();
+                        
+                        // 2. Metni HTML formatına çevir (Yeni satırları <br> yap, maddeleri belirginleştir)
+                        // Backend'den gelen madde işaretlerini ( - veya *) HTML listesine çevirebiliriz veya basitçe <br> ekleriz.
+                        const formattedMessage = rawMessage.replace(/\n/g, '<br>').replace(/\*/g, '•');
+
+                        // 3. Modal içine yaz
+                        document.getElementById('aiReportContent').innerHTML = formattedMessage;
+
+                        // 4. Modalı aç (Kullanıcı tıklayana kadar kapanmaz)
+                        const modalElem = document.getElementById('aiModal');
+                        const instance = M.Modal.getInstance(modalElem); // Materialize instance'ı al
+                        
+                        // Eğer instance yoksa (sayfa yeni yüklendiyse) init et
+                        if (!instance) {
+                            M.Modal.init(modalElem).open();
+                        } else {
+                            instance.open();
+                        }
+
+                    } else {
+                        // --- STANDART HATA ---
+                        // AI değilse, klasik toast mesajlarını göster
                         if (status === 400 && errorMessage.includes('Nöbet atamaları yapılamadı')) {
                             errorMessage = 'Hata: Nöbet ertesi boşluk sayısını azaltmayı deneyin!';
                         } else if (status === 400 && errorMessage.includes('Cuma veya Perşembe dengeleme başarısız')) {
                             errorMessage = 'Hata: Cuma veya Perşembe dengeleme başarısız, bu seçenekleri kapatın veya nöbet ertesi boşlukları azaltıp tekrar deneyin!';
                         }
-                    } 
-                    
-                    // DİKKAT: showToast bu if bloğunun DIŞINDA olmalı ki her iki durumda da çalışsın.
-                    showToast(errorMessage, 20000); // Hata mesajı, 10 saniye
+                        
+                        showToast(errorMessage, 10000); // Standart toast
+                    }
                 }
             })
             .catch(error => {
                 document.getElementById('loadingOverlay').style.display = 'none';
-                showToast('Sunucuyla bağlantı kurulamadı: ' + error.message, 10000); // Hata mesajı, 10 saniye
-            });        
+                showToast('Sunucuyla bağlantı kurulamadı: ' + error.message, 10000);
+            });
         }
 
         function updateCalendar() {
