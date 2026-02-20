@@ -2331,6 +2331,136 @@
             M.toast({ html: 'Takvimdeki tüm işaretlemeler temizlendi!' });
         }
 
+        // GEÇMİŞİ DÜZENLEME MODUNA ALMA FONKSİYONU
+        function loadHistoryForEditing() {
+            const data = window.currentViewingHistory;
+            if(!data) return;
+
+            // 1. Modalı kapat
+            const modalElem = document.getElementById('historyModal');
+            const instance = M.Modal.getInstance(modalElem);
+            if(instance) instance.close();
+
+            // 2. Tarih ve Tatil Inputlarını doldur
+            document.getElementById('startDate').value = data.startDate;
+            document.getElementById('endDate').value = data.endDate;
+            document.getElementById('holidays').value = data.holidays || '';
+            M.updateTextFields();
+
+            // 3. Personel ve Hücre verilerini geri yükle
+            persons = JSON.parse(data.personnelSnapshot || '[]');
+            selectedCells = JSON.parse(data.assignments || '{}');
+            unavailableCells = JSON.parse(data.unavailable || '{}');
+            
+            // 4. Günlük Nöbetçi Sayısını (dutyPerDay) Tahmin Et (O gün maksimum kaç kişi nöbetçiyse)
+            let maxDuty = 1;
+            const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
+            const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
+            const start = new Date(startYear, startMonth - 1, startDay);
+            const end = new Date(endYear, endMonth - 1, endDay);
+            const daysCount = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+            
+            for (let d = 0; d < daysCount; d++) {
+                let count = 0;
+                for(let p = 0; p < persons.length; p++){
+                     if(selectedCells[`${p}-${d}`]) count++;
+                }
+                if(count > maxDuty) maxDuty = count;
+            }
+            document.getElementById('dutyPerDay').value = maxDuty;
+
+            // 5. Arayüzü güncelle ve takvimi çiz
+            renderTable();
+            rebuildCalendarForEdit(data.startDate, data.endDate, data.holidays, daysCount, start);
+
+            // 6. Takvime kaydır ve kullanıcıya bilgi ver
+            setTimeout(() => {
+                document.getElementById('calendarContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 300);
+            M.toast({html: 'Liste düzenleme modunda açıldı! Değişiklikleri yapıp Kaydet butonuna basarak üzerine yazabilirsiniz.', classes: 'orange darken-3 rounded', displayLength: 6000});
+        }
+
+        // GEÇMİŞ VERİSİ İLE TAKVİMİ SIFIRLAMADAN YENİDEN OLUŞTURMA FONKSİYONU
+        function rebuildCalendarForEdit(startInput, endInput, holidayInput, days, start) {
+            const holidays = holidayInput ? holidayInput.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d)) : [];
+
+            const dates = [];
+            for (let i = 0; i < days; i++) {
+                const date = new Date(start);
+                date.setDate(date.getDate() + i);
+                const isWeekend = date.getDay() === 0 || date.getDay() === 6 || holidays.includes(date.getDate());
+                dates.push({ date: date.toISOString(), isWeekend });
+            }
+
+            let html = '<tr><th class="name-column">İsim</th>';
+            for (let i = 0; i < days; i++) {
+                const date = new Date(start);
+                date.setDate(date.getDate() + i);
+                html += `<th>${date.getDate()}</th>`;
+            }
+            html += '</tr>';
+
+            persons.forEach((person, pIndex) => {
+                html += `<tr><td class="name-column">${truncateName(person.name)}</td>`;
+                dates.forEach((dateObj, dIndex) => {
+                    const isWeekend = dateObj.isWeekend;
+                    const cellKey = `${pIndex}-${dIndex}`;
+                    const isUnavailable = unavailableCells[cellKey];
+                    const isSelected = selectedCells[cellKey];
+
+                    html += `
+                        <td class="calendar-cell 
+                            ${isWeekend ? 'holiday' : ''} 
+                            ${isUnavailable ? 'unavailable' : ''} 
+                            ${isSelected ? 'selected' : ''}"
+                            data-pindex="${pIndex}" 
+                            data-dindex="${dIndex}">
+                        </td>`;
+                });
+                html += '</tr>';
+            });
+
+            document.getElementById('calendarTable').innerHTML = html;
+
+            // Event listener'ları tekrar bağla (Tıklama ve sürükleme çalışsın diye)
+            const cells = document.querySelectorAll('.calendar-cell');
+            const isMobile = isMobileDevice();
+        
+            cells.forEach(cell => {
+                if (!isMobile) {
+                    cell.addEventListener('mousedown', startDragging);
+                    cell.addEventListener('mousemove', dragOver);
+                    cell.addEventListener('mouseup', stopDragging);
+                    cell.addEventListener('touchstart', startDragging, { passive: false });
+                    cell.addEventListener('touchmove', dragOver, { passive: false });
+                    cell.addEventListener('touchend', stopDragging);
+                }
+                
+                cell.addEventListener('click', () => {
+                    const pIndex = parseInt(cell.dataset.pindex);
+                    const dIndex = parseInt(cell.dataset.dindex);
+                    handleCellClick(pIndex, dIndex);
+                });
+                
+                if (isMobile) {
+                    cell.addEventListener('touchend', (event) => {
+                        event.preventDefault();
+                        const pIndex = parseInt(cell.dataset.pindex);
+                        const dIndex = parseInt(cell.dataset.dindex);
+                        handleCellClick(pIndex, dIndex);
+                    }, { passive: false });
+                }
+            });
+
+            // Sekmeleri aç ve geçmişi sıfırla (Geri al/İleri al için başlangıç noktası)
+            if (collapsiblePersonel) collapsiblePersonel.open(0);
+            if (collapsibleCalendar) collapsibleCalendar.open(0);
+            updateStatistics();
+            history = [];
+            historyIndex = -1;
+            saveToHistory(); 
+        }
+
         // Geri Bildirim Gönderme Fonksiyonu
         function sendFeedback() {
              const nameInput = document.getElementById('feedbackName');
@@ -2864,9 +2994,10 @@
                         const monthName = getMonthName(parseInt(m));
                         
                         const li = document.createElement('a');
-                        li.className = 'collection-item waves-effect';
-                        li.style.paddingLeft = '45px'; // Hiyerarşi için girinti
-                        li.style.borderLeft = '4px solid transparent'; // Sol çizgi efekti için hazırlık
+                        li.className = 'collection-item waves-effect black-text'; // EKLENDİ
+                        li.style.paddingLeft = '45px'; 
+                        li.style.borderLeft = '4px solid transparent'; 
+                        li.style.color = '#374151'; // EKLENDİ (Varsayılan koyu renk)
                         li.innerHTML = `
                             <span class="title" style="font-weight: 500; font-size: 1rem;">${monthName}</span>
                             <br><span class="grey-text" style="font-size: 0.75rem;">
@@ -2902,6 +3033,8 @@
     function showHistoryDetail(data) {
         highlightActiveItem(event.currentTarget);
         
+        window.currentViewingHistory = data; // EKLENDİ: Düzenleme için veriyi hafızaya al
+
         // Görünüm Ayarları
         document.getElementById('historyPlaceholder').style.display = 'none';
         document.getElementById('historyDetail').style.display = 'block';
@@ -2911,7 +3044,12 @@
         const title = `${getMonthName(parseInt(month))} ${year}`;
         
         document.getElementById('historyDetailTitle').innerText = title;
+        
+        // GÜNCELLENDİ: Düzenle butonu eklendi
         document.getElementById('historyActions').innerHTML = `
+            <button class="btn waves-effect waves-light orange darken-3" onclick="loadHistoryForEditing()" style="margin-right: 10px;">
+                <i class="material-icons left">edit</i>Düzenle
+            </button>
             <button class="btn waves-effect waves-light teal" onclick="downloadHistoryTable('${data.id}')">
                 <i class="material-icons left">file_download</i>İndir
             </button>
@@ -3173,6 +3311,10 @@
             if(i !== elem && i.innerText.includes('Kümülatif')) {
                 i.style.backgroundColor = '#fff3e0'; 
                 i.style.color = '#d32f2f';
+            } else if (i !== elem) {
+                // Diğer ayların seçimi kalktığında arka planı ve yazıyı koyu renge döndür
+                i.style.backgroundColor = '';
+                i.style.color = '#374151'; 
             }
         });
         elem.classList.add('active', 'teal');
