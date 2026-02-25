@@ -779,21 +779,21 @@
             setTimeout(() => {
     const guideBody = document.querySelector('#guideCollapsible .collapsible-body');
     if (guideBody) {
-        // Materialize'ın display:none'ını animasyon için geçici olarak aşalım
+       
         guideBody.style.display = 'block';
         guideBody.style.maxHeight = '0px';
         guideBody.style.overflow = 'hidden';
-        guideBody.style.transition = 'max-height 1.2s ease-in-out';
+        guideBody.style.transition = 'max-height 0.8s ease-in-out';
         
-        // %50 civarı bir açılış (içeriğe göre 180px idealdir)
+        
         setTimeout(() => {
-            guideBody.style.maxHeight = '180px'; 
+            guideBody.style.maxHeight = '150px'; 
         }, 100);
 
-        // 2.5 saniye sonra otomatik kapansın
+        
         setTimeout(() => {
             guideBody.style.maxHeight = '0px';
-            // Animasyon bitince elementin stillerini temizleyelim ki manuel tıklama bozulmasın
+            
             setTimeout(() => {
                 guideBody.style.display = 'none';
                 guideBody.style.maxHeight = ''; 
@@ -801,9 +801,9 @@
             }, 1200);
         }, 2500);
     }
-}, 1000); // Sayfa açıldıktan 1 saniye sonra başlar
+}, 1000); 
         
-            // Takvim collapsible'ı için açma/kapama ayarları
+           
             collapsibleCalendar.options.onOpenStart = function() {
                 document.getElementById('calendarContainer').classList.add('expanded');
             };
@@ -811,7 +811,7 @@
                 document.getElementById('calendarContainer').classList.remove('expanded');
             };
         
-            // Mobil cihazlar için buton boyutlarını ayarlama
+            
             if (isMobileDevice()) {
                 document.querySelectorAll('.btn-floating').forEach(btn => {
                     btn.style.width = '36px';
