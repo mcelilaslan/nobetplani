@@ -432,6 +432,26 @@
             </div>
         </div>
 
+        <div id="emailConfirmModal" class="modal" style="max-width: 450px; border-radius: 12px;">
+            <div class="modal-content">
+                <h4 style="color: #f57c00; display: flex; align-items: center;">
+                    <i class="material-icons" style="margin-right: 10px; font-size: 32px;">contact_mail</i>
+                    E-posta Belirtmediniz
+                </h4>
+                <div class="divider"></div>
+                <p style="font-size: 1.1rem; margin-top: 15px;">
+                    E-posta adresi yazmadığınız için mesajınıza <b>geri dönüş yapamayacağız.</b>
+                </p>
+                <p class="grey-text">
+                    Sorunuzu yanıtlamamızı ister misiniz, yoksa anonim olarak göndermeye devam mı edilsin?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <a href="#!" class="modal-close waves-effect waves-grey btn-flat" onclick="focusEmailField()">E-POSTA EKLE</a>
+                <a href="#!" class="modal-close waves-effect waves-green btn teal" onclick="executeFeedbackSend(true)">YİNE DE GÖNDER</a>
+            </div>
+        </div>
+
         <!-- GeçmişEkranı -->
         <div id="historyModal" class="modal modal-fixed-footer" style="width: 90% !important; max-width: 1200px !important; height: 85% !important; max-height: 85% !important; border-radius: 12px; top: 5% !important;">
             <div class="modal-content" style="padding: 0;">
@@ -2462,55 +2482,70 @@
         }
 
         // Geri Bildirim Gönderme Fonksiyonu
+        
         function sendFeedback() {
-             const nameInput = document.getElementById('feedbackName');
-             const emailInput = document.getElementById('feedbackEmail');
-             const messageInput = document.getElementById('feedbackMessage');
-             const submitButton = document.getElementById('feedback_submit');
-             const feedbackLoading = document.getElementById('feedbackLoading');
-         
-             // Elementlerin varlığını kontrol et
-             if (!nameInput || !emailInput || !messageInput || !submitButton || !feedbackLoading) {
-                 M.toast({ html: 'Form elementleri bulunamadı! Lütfen sayfayı yenileyin.' });
-                 console.error('Missing elements:', {
-                     nameInput, emailInput, messageInput, submitButton, feedbackLoading
-                 });
-                 return;
-             }
-         
-             const name = nameInput.value.trim();
-             const email = emailInput.value.trim();
-             const message = messageInput.value.trim();
-         
-             if (!name || !message) {
-                 M.toast({ html: 'Lütfen adınızı ve mesajınızı doldurun!' });
-                 return;
-             }
-         
-             submitButton.classList.add('disabled');
-             feedbackLoading.style.display = 'block';
-         
-             emailjs.send('nobet_plani', 'template_3nxu9rm', {
-                 from_name: name,
-                 from_email: email || 'Bilinmiyor',
-                 message: message,
-                 reply_to: email || 'nobetplani@gmail.com'
-             })
-             .then(() => {
-                 M.toast({ html: 'Geri bildiriminiz başarıyla gönderildi! Bize Instagram adresimizden de ulaşabilirsiniz!' });
-                 document.getElementById('feedbackForm').reset();
-                 M.Modal.getInstance(document.getElementById('feedbackModal')).close();
-             })
-             .catch((error) => {
-                 console.error('EmailJS Hatası:', error);
-                 M.toast({ html: 'Mesaj gönderilirken bir hata oluştu. Detay: ' + error.text });
-             })
-             .finally(() => {
-                 submitButton.classList.remove('disabled');
-                 feedbackLoading.style.display = 'none';
-             });
-         }
-
+            const email = document.getElementById('feedbackEmail').value.trim();
+            const name = document.getElementById('feedbackName').value.trim();
+            const message = document.getElementById('feedbackMessage').value.trim();
+        
+            // Temel alan kontrolü (Ad ve Mesaj zorunlu)
+            if (!name || !message) {
+                M.toast({ html: 'Lütfen adınızı ve mesajınızı doldurun!' });
+                return;
+            }
+        
+            // E-posta boşsa uyarı modalını aç
+            if (!email) {
+                const modalElem = document.getElementById('emailConfirmModal');
+                M.Modal.getInstance(modalElem).open();
+            } else {
+                // E-posta varsa direkt gönder
+                executeFeedbackSend(false);
+            }
+        }
+        
+        // 2. Asıl gönderim işlemini yapan fonksiyon
+        function executeFeedbackSend(isAnonymous = false) {
+            const nameInput = document.getElementById('feedbackName');
+            const emailInput = document.getElementById('feedbackEmail');
+            const messageInput = document.getElementById('feedbackMessage');
+            const submitButton = document.getElementById('feedback_submit');
+            const feedbackLoading = document.getElementById('feedbackLoading');
+        
+            const name = nameInput.value.trim();
+            const email = emailInput.value.trim();
+            const message = messageInput.value.trim();
+        
+            submitButton.classList.add('disabled');
+            feedbackLoading.style.display = 'block';
+        
+            emailjs.send('nobet_plani', 'template_3nxu9rm', {
+                from_name: name,
+                from_email: isAnonymous ? 'Anonim (E-posta Yok)' : email,
+                message: message,
+                reply_to: email || 'nobetplani@gmail.com'
+            })
+            .then(() => {
+                M.toast({ html: 'Geri bildiriminiz başarıyla gönderildi!' });
+                document.getElementById('feedbackForm').reset();
+                M.Modal.getInstance(document.getElementById('feedbackModal')).close();
+            })
+            .catch((error) => {
+                console.error('EmailJS Hatası:', error);
+                M.toast({ html: 'Hata oluştu: ' + error.text });
+            })
+            .finally(() => {
+                submitButton.classList.remove('disabled');
+                feedbackLoading.style.display = 'none';
+            });
+        }
+        
+        // Yardımcı fonksiyon: E-posta alanına odaklanma
+        function focusEmailField() {
+            setTimeout(() => {
+                document.getElementById('feedbackEmail').focus();
+            }, 200);
+        }
     
         
     </script>
