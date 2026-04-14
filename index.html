@@ -143,10 +143,10 @@
                             <li>Birlikte nöbet tutmak isteyen/ tutması gereken personeller varsa aynı gruba ekleyerek aynı güne nöbetçi atanmalarını sağlayabilirsiniz</li>
                             <li>Nöbet yazılacak tarih aralığını ve 1 nöbette bulunacak kişi sayısını girerek süreci başlatınız.</li>
                             <li><a class="btn-floating tiny waves-effect waves-light grey"><i class="material-icons">more_vert</i></a>tuşu ile oluşturduğunuz personel listesini indirebilir, sonraki kullanımlarda yükleyerek süreci hızlandırabilirsiniz.</li>
-                            <li>Nöbet sayıları "<a class="btn-floating tiny waves-effect waves-light blue"><i class="material-icons">event</i></a>Nöbet Sayılarını Dağıt" tuşu ile otomatik dağıtılır, kendiniz de düzenleyebilirsiniz.</li>
+                            <li>Nöbet sayıları "<a class="btn-floating tiny waves-effect waves-light blue"><i class="material-icons">event</i></a>Takvimi Oluştur ve İlerle" tuşu ile otomatik dağıtılır, kendiniz de düzenleyebilirsiniz.</li>
                             <li>Kişilere ayrı ayrı hafta içi / hafta sonu nöbet sayıları belirleyebilirsiniz.</li>
                             <li>İki nöbet arası en az boşluk toplu veya kişiye özel olabilir.</li>
-                            <li>Personel planı bittiğinde "<a class="btn-floating tiny waves-effect waves-light blue"><i class="material-icons">event</i></a>Nöbet Sayılarını Dağıt" tuşuna basınız. Takvimin oluşturulduğunu göreceksiniz.</li>
+                            <li>Personel planı bittiğinde "<a class="btn-floating tiny waves-effect waves-light blue"><i class="material-icons">event</i></a>Takvimi Oluştur ve İlerle" tuşuna basınız. Takvimin oluşturulduğunu göreceksiniz.</li>
                             <li>Varsa <font color="red">istenmeyen ✖</font>/<font color="green">istenen ✓</font> günleri takvim üzerinde işaretleyerek "<a class="btn-floating tiny waves-effect waves-light purple"><i class="material-icons">auto_fix_high</i></a>Otomatik Ata" tuşuna basınız.</li>
                             <li>Cuma ve Perşembe günlerini dengelemek isterseniz ilgili kutucukları tikleyiniz.</li>
                             <li>Geri al tuşu ile takvimdeki son değişikliği geri alabilirsiniz. Temizle butonu takvimi sıfırlar.</li>
@@ -239,7 +239,7 @@
                         <div class="row control-buttons">
                             <div class="col s12">
                                 <button class="btn waves-effect waves-light blue" onclick="generateCalendar()">
-                                    <i class="material-icons left">event</i>Nöbet Sayılarını Dağıt
+                                    <i class="material-icons left">event</i>Takvimi Oluştur ve İlerle
                                 </button>
                                 <button class="btn waves-effect waves-light grey darken-3" onclick="resetDuties()">
                                     <i class="material-icons left">refresh</i>Dağıtımı Sıfırla
@@ -2795,7 +2795,7 @@
         const endInput = document.getElementById('endDate').value;
         
         if (!startInput || Object.keys(selectedCells).length === 0) {
-            M.toast({html: 'Kaydedilecek bir nöbet tablosu yok! Önce takvimi oluşturun.', classes: 'red'});
+            M.toast({html: 'Kaydedilecek bir nöbet tablosu yok! Önce takvimi oluşturun ve işaretleme yapın.', classes: 'red'});
             return;
         }
 
