@@ -795,31 +795,42 @@
             guideCollapsible = M.Collapsible.getInstance(document.querySelector('#guideCollapsible'));
 
             setTimeout(() => {
-    const guideBody = document.querySelector('#guideCollapsible .collapsible-body');
-    if (guideBody) {
-       
-        guideBody.style.display = 'block';
-        guideBody.style.maxHeight = '0px';
-        guideBody.style.overflow = 'hidden';
-        guideBody.style.transition = 'max-height 0.8s ease-in-out';
-        
-        
-        setTimeout(() => {
-            guideBody.style.maxHeight = '150px'; 
-        }, 100);
+                const guideBody = document.querySelector('#guideCollapsible .collapsible-body');
+                if (guideBody) {
+                    // 1. Hazırlık aşaması: Padding'leri de sıfırlıyoruz
+                    guideBody.style.display = 'block';
+                    guideBody.style.overflow = 'hidden';
+                    guideBody.style.maxHeight = '0px';
+                    guideBody.style.paddingTop = '0px';
+                    guideBody.style.paddingBottom = '0px';
+                    // Animasyona padding'i de dahil ediyoruz (Süreleri 0.5s yaparak biraz daha seri hale getirdim)
+                    guideBody.style.transition = 'max-height 0.5s ease-in-out, padding 0.5s ease-in-out';
+                    
+                    // 2. Burnunu gösterme
+                    setTimeout(() => {
+                        guideBody.style.maxHeight = '100px'; // 150px yerine 100px daha estetik bir peek(göz atma) sağlar
+                        guideBody.style.paddingTop = '1rem'; // Kendi padding'ini yumuşakça ver
+                        guideBody.style.paddingBottom = '1rem';
+                    }, 100);
 
-        
-        setTimeout(() => {
-            guideBody.style.maxHeight = '0px';
-            
-            setTimeout(() => {
-                guideBody.style.display = 'none';
-                guideBody.style.maxHeight = ''; 
-                guideBody.style.overflow = '';
-            }, 1200);
-        }, 2500);
-    }
-}, 1000); 
+                    // 3. Yumuşakça kapanma
+                    setTimeout(() => {
+                        guideBody.style.maxHeight = '0px';
+                        guideBody.style.paddingTop = '0px';
+                        guideBody.style.paddingBottom = '0px';
+                        
+                        // 4. Sistemi Materialize'ın varsayılan ayarlarına temiz bir şekilde geri döndürme
+                        setTimeout(() => {
+                            guideBody.style.display = '';
+                            guideBody.style.maxHeight = '';
+                            guideBody.style.overflow = '';
+                            guideBody.style.paddingTop = '';
+                            guideBody.style.paddingBottom = '';
+                            guideBody.style.transition = '';
+                        }, 500); // Transition süresi kadar bekleyip temizliyoruz
+                    }, 2500);
+                }
+            }, 1000);
         
            
             collapsibleCalendar.options.onOpenStart = function() {
