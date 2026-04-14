@@ -3354,14 +3354,106 @@
     }
 
     function downloadHistoryTable(docId) {
-        const table = document.getElementById(`historyCalendarTable_${docId}`);
-        if (!table) {
-            M.toast({html: 'Tablo oluşturulamadı!', classes: 'red'});
+        // 1. İlgili belgenin verilerini geçmiş hafızasından bul
+        const data = window.allHistoryDocs.find(d => d.id === docId);
+        if (!data) {
+            M.toast({html: 'Veri bulunamadı!', classes: 'red'});
             return;
         }
-        const wb = XLSX.utils.table_to_book(table, {sheet: "Gecmis_Nobet"});
-        XLSX.writeFile(wb, `Gecmis_Nobet_Listesi_${docId}.xlsx`);
-        M.toast({html: 'Geçmiş liste indiriliyor...', classes: 'green'});
+
+        // 2. Veritabanından gelen verileri çözümle
+        const assignments = JSON.parse(data.assignments || '{}');
+        const personnel = JSON.parse(data.personnelSnapshot || '[]');
+        const holidayInput = data.holidays || "";
+        const holidays = holidayInput ? holidayInput.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d)) : [];
+
+        const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
+        const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
+        const start = new Date(startYear, startMonth - 1, startDay);
+        const end = new Date(endYear, endMonth - 1, endDay);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(0, 0, 0, 0);
+
+        const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+        const scheduleData = {};
+
+        // 3. Gün gün kimlerin nöbetçi olduğunu tespit et
+        for (let d = 0; d < days; d++) {
+            const currentDate = new Date(start);
+            currentDate.setDate(currentDate.getDate() + d);
+            const dateStr = currentDate.toLocaleDateString('tr-TR');
+            scheduleData[dateStr] = [];
+
+            personnel.forEach((p, pIndex) => {
+                if (assignments[`${pIndex}-${d}`]) {
+                    scheduleData[dateStr].push(p.name);
+                }
+            });
+        }
+
+        // 4. En yoğun gündeki nöbetçi sayısını (Sütun miktarını) bul
+        let columnCount = 1;
+        for (const date in scheduleData) {
+            columnCount = Math.max(columnCount, scheduleData[date].length);
+        }
+
+        // 5. Excel için stilli veriyi hazırla (Ana sayfa formatının aynısı)
+        const styledData = [];
+        const headers = [{ v: 'Tarih', t: 's', s: { font: { bold: true, sz: 16 } } }];
+        for (let i = 1; i <= columnCount; i++) {
+            headers.push({ v: `Nöbetçi ${i}`, t: 's', s: { font: { bold: true, sz: 16 } } });
+        }
+        styledData.push(headers);
+
+        for (let d = 0; d < days; d++) {
+            const currentDate = new Date(start);
+            currentDate.setDate(currentDate.getDate() + d);
+            const dateStr = currentDate.toLocaleDateString('tr-TR');
+            const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6;
+            const isHoliday = holidays.includes(currentDate.getDate());
+
+            let dateStyle = { font: { bold: true, sz: 16 } }; 
+            if (isWeekend && !isHoliday) {
+                dateStyle.fill = { fgColor: { rgb: "808080" } }; 
+            }
+            if (isHoliday) {
+                dateStyle = {
+                    fill: { fgColor: { rgb: "808080" } }, 
+                    font: { bold: true, sz: 16, color: { rgb: "FF0000" } } 
+                };
+            }
+
+            const row = [{ v: dateStr, t: 's', s: dateStyle }]; 
+            const assigned = scheduleData[dateStr] || [];
+            for (let i = 0; i < columnCount; i++) {
+                row.push({ v: assigned[i] || '', t: 's', s: { font: { sz: 16 } } }); 
+            }
+            styledData.push(row);
+        }
+
+        // 6. Dosyayı oluştur, sütun genişliklerini ayarla ve indir
+        const ws = XLSX.utils.aoa_to_sheet(styledData);
+        ws['!cols'] = [
+            { wch: 14 }, 
+            ...Array(columnCount).fill({ wch: 22 }) 
+        ];
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Geçmiş Nöbet Listesi");
+
+        const blob = new Blob([XLSX.write(wb, { bookType: 'xlsx', type: 'array' })], { type: 'application/octet-stream' });
+        const fileName = `Gecmis_Nobet_Listesi_${docId}.xlsx`;
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        M.toast({html: 'Geçmiş liste indirildi!', classes: 'green'});
     }
 
     function getMonthName(monthIndex) {
