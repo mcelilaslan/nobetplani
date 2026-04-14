@@ -2452,8 +2452,10 @@
                 dates.forEach((dateObj, dIndex) => {
                     const isWeekend = dateObj.isWeekend;
                     const cellKey = `${pIndex}-${dIndex}`;
-                    const isUnavailable = unavailableCells[cellKey];
-                    const isSelected = selectedCells[cellKey];
+                    
+                    // İstenmeyen gün ve atanan gün kontrolü burada garanti altına alınıyor
+                    const isUnavailable = unavailableCells[cellKey] === true;
+                    const isSelected = selectedCells[cellKey] === true;
 
                     html += `
                         <td class="calendar-cell 
@@ -2507,7 +2509,6 @@
             historyIndex = -1;
             saveToHistory(); 
         }
-
         // Geri Bildirim Gönderme Fonksiyonu
         
         function sendFeedback() {
@@ -2799,31 +2800,31 @@
         }
 
         // --- EKSİK GÜN KONTROLÜ (Senin Orijinal Kodun) ---
-        const dutyPerDay = parseInt(document.getElementById('dutyPerDay').value) || 1;
-        const [startDay, startMonth, startYear] = startInput.split('-').map(Number);
-        const [endDay, endMonth, endYear] = endInput.split('-').map(Number);
-        const start = new Date(startYear, startMonth - 1, startDay);
-        const end = new Date(endYear, endMonth - 1, endDay);
+       // const dutyPerDay = parseInt(document.getElementById('dutyPerDay').value) || 1;
+       // const [startDay, startMonth, startYear] = startInput.split('-').map(Number);
+      //  const [endDay, endMonth, endYear] = endInput.split('-').map(Number);
+      //  const start = new Date(startYear, startMonth - 1, startDay);
+       // const end = new Date(endYear, endMonth - 1, endDay);
         
-        // Tarih hesaplamaları
-        start.setHours(0, 0, 0, 0);
-        end.setHours(0, 0, 0, 0);
+      //  // Tarih hesaplamaları
+      //  start.setHours(0, 0, 0, 0);
+      //  end.setHours(0, 0, 0, 0);
         
-        const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+      //  const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
     
-        let allDaysFilled = true;
-        for (let d = 0; d < days; d++) {
-            const assigned = document.querySelectorAll(`td[data-dindex="${d}"].selected`).length;
-            if (assigned < dutyPerDay) {
-                allDaysFilled = false;
-                break;
-            }
-        }
+      //  let allDaysFilled = true;
+     //   for (let d = 0; d < days; d++) {
+      //      const assigned = document.querySelectorAll(`td[data-dindex="${d}"].selected`).length;
+       //     if (assigned < dutyPerDay) {
+        //        allDaysFilled = false;
+       //         break;
+       //     }
+      //  }
     
-        if (!allDaysFilled) {
-            M.toast({ html: 'Tüm günlere yeteri kadar nöbetçi atanmadı, takvimi doldurun!', classes: 'red' });
-            return;
-        }
+     //   if (!allDaysFilled) {
+     //       M.toast({ html: 'Tüm günlere yeteri kadar nöbetçi atanmadı, takvimi doldurun!', classes: 'red' });
+     //       return;
+     //   }
         // -----------------------------------------------------
 
         // 2. KONTROL: ID Oluşturma (YIL-AY Formatı)
