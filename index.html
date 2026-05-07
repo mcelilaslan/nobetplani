@@ -3732,17 +3732,82 @@ function renderMagicList(data) {
 }
 
 // Şimdilik hazırlık fonksiyonu (Bir sonraki adımda içini Google Calendar API ile dolduracağız)
-function addToGoogleCalendar() {
+async function addToGoogleCalendar() {
     const selectBox = document.getElementById('magicPersonSelect');
     const selectedIndex = selectBox.value;
     
     if (!selectedIndex) {
-        M.toast({html: 'Lütfen önce isminizi seçin!', classes: 'red rounded'});
+        M.toast({html: 'Lütfen önce listeden isminizi seçin!', classes: 'red rounded'});
         return;
     }
 
-    const personName = selectBox.options[selectBox.selectedIndex].text;
-    M.toast({html: `Hazırlanıyor: ${personName} için Google Takvim ekranı açılacak...`, classes: 'orange rounded', displayLength: 4000});
+    const data = window.magicListData;
+    const personnel = JSON.parse(data.personnelSnapshot || '[]');
+    const personName = personnel[selectedIndex].name;
+    const assignments = JSON.parse(data.assignments || '{}');
+
+    // Nöbet tarihlerini ayıkla
+    const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
+    const startDate = new Date(startYear, startMonth - 1, startDay);
+    const endDateStr = data.endDate.split('-').reverse().join('-');
+    const endDateObj = new Date(endDateStr);
+    const daysDiff = Math.ceil((endDateObj - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+    const dutyDates = [];
+    for (let d = 0; d < daysDiff; d++) {
+        if (assignments[`${selectedIndex}-${d}`]) {
+            const dObj = new Date(startDate);
+            dObj.setDate(startDate.getDate() + d);
+            dutyDates.push(new Date(dObj));
+        }
+    }
+
+    if (dutyDates.length === 0) {
+        M.toast({html: 'Seçilen isim için bu ay nöbet bulunamadı!', classes: 'blue rounded'});
+        return;
+    }
+
+    try {
+        // Google Takvim İzni İste (Calendar Scope ekleyerek)
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.addScope('https://www.googleapis.com/auth/calendar.events');
+        
+        M.toast({html: 'Google Takvim bağlantısı kuruluyor...', classes: 'blue'});
+        const result = await firebase.auth().signInWithPopup(provider);
+        const token = result.credential.accessToken;
+
+        M.toast({html: `${dutyDates.length} nöbet takvime işleniyor...`, classes: 'orange'});
+
+        // Her nöbet günü için Google API'sine istek gönder
+        for (const date of dutyDates) {
+            const startStr = date.toISOString().split('T')[0];
+            const nextDay = new Date(date);
+            nextDay.setDate(date.getDate() + 1);
+            const endStr = nextDay.toISOString().split('T')[0];
+
+            const event = {
+                'summary': `Hastane Nöbeti (${personName})`,
+                'description': 'nobetplani.com üzerinden otomatik eklendi.',
+                'start': { 'date': startStr },
+                'end': { 'date': endStr } // Tüm gün etkinliği formatı
+            };
+
+            await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(event)
+            });
+        }
+
+        M.toast({html: '✅ Tüm nöbetler takviminize eklendi!', classes: 'green darken-2 rounded', displayLength: 5000});
+
+    } catch (error) {
+        console.error("Takvim Hatası:", error);
+        M.toast({html: 'Takvime eklenirken bir sorun oluştu. (API izinlerini kontrol edin)', classes: 'red'});
+    }
 }
     
 </script>
