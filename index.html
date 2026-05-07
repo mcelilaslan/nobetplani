@@ -3569,20 +3569,37 @@ function downloadAsImage() {
 
     M.toast({html: '📸 Fotoğraf hazırlanıyor, lütfen bekleyin...', classes: 'blue rounded', displayLength: 2000});
 
-    // HATAYI DÜZELTEN KISIM: Fotoğraf çekmeden önce alta boşluk ve çizgi ekle
-    const originalMargin = targetElement.style.marginBottom;
-    targetElement.style.marginBottom = "20px";
-    targetElement.style.borderBottom = "1px solid #ccc";
+    // 1. Alt satırın kesilmesini önleyen geçici boşluk
+    const originalPadding = targetElement.style.paddingBottom;
+    const originalBorder = targetElement.style.borderBottom;
+    targetElement.style.paddingBottom = "15px"; 
+    targetElement.style.borderBottom = "1px solid #ddd";
+
+    // 2. YENİ: İstenmeyen günleri (kırmızı çarpıları) fotoğrafta gizle
+    const unavailableCellsList = targetElement.querySelectorAll('.unavailable');
+    unavailableCellsList.forEach(cell => {
+        cell.classList.remove('unavailable'); // Çarpıyı ve kırmızı rengi geçici kaldır
+        cell.classList.add('temp-unavailable'); // İşlem bitince geri getirmek için işaret koy
+    });
 
     html2canvas(targetElement, {
         scale: 2, 
-        backgroundColor: "#ffffff", 
-        logging: false
+        backgroundColor: "#ffffff",
+        logging: false,
+        useCORS: true
     }).then(canvas => {
-        // Fotoğraf çekildikten sonra siteyi eski haline getir
-        targetElement.style.marginBottom = originalMargin;
-        targetElement.style.borderBottom = "";
+        // İşlem bitti, boyutları eski haline getir
+        targetElement.style.paddingBottom = originalPadding;
+        targetElement.style.borderBottom = originalBorder;
 
+        // Kırmızı çarpıları ekrana (senin gördüğün tabloya) geri getir
+        const tempCells = targetElement.querySelectorAll('.temp-unavailable');
+        tempCells.forEach(cell => {
+            cell.classList.remove('temp-unavailable');
+            cell.classList.add('unavailable');
+        });
+
+        // Resmi indir
         const imgData = canvas.toDataURL('image/png');
         const link = document.createElement('a');
         link.download = `Nobet_Listesi_${new Date().toISOString().split('T')[0]}.png`;
@@ -3590,8 +3607,16 @@ function downloadAsImage() {
         link.click();
         M.toast({html: '✅ Fotoğraf başarıyla cihazınıza indirildi!', classes: 'green darken-2 rounded'});
     }).catch(err => {
-        targetElement.style.marginBottom = originalMargin;
-        console.error("Resim oluşturma hatası:", err);
+        // Hata olursa da ekranı bozuk bırakma, her şeyi eski haline getir
+        targetElement.style.paddingBottom = originalPadding;
+        targetElement.style.borderBottom = originalBorder;
+        const tempCells = targetElement.querySelectorAll('.temp-unavailable');
+        tempCells.forEach(cell => {
+            cell.classList.remove('temp-unavailable');
+            cell.classList.add('unavailable');
+        });
+
+        console.error("Resim hatası:", err);
         M.toast({html: 'Resim oluşturulurken bir hata oluştu.', classes: 'red rounded'});
     });
 }
