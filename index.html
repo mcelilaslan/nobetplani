@@ -3569,17 +3569,17 @@ function downloadAsImage() {
 
     M.toast({html: '📸 Fotoğraf hazırlanıyor, lütfen bekleyin...', classes: 'blue rounded', displayLength: 2000});
 
-    // 1. Alt satırın kesilmesini önleyen geçici boşluk
-    const originalPadding = targetElement.style.paddingBottom;
+    // 1. KESİN ÇÖZÜM: Alt satır kaymasını önleyen dış boşluk (Margin)
+    const originalMargin = targetElement.style.marginBottom;
     const originalBorder = targetElement.style.borderBottom;
-    targetElement.style.paddingBottom = "15px"; 
-    targetElement.style.borderBottom = "1px solid #ddd";
+    targetElement.style.marginBottom = "20px"; 
+    targetElement.style.borderBottom = "1px solid #ccc";
 
-    // 2. YENİ: İstenmeyen günleri (kırmızı çarpıları) fotoğrafta gizle
+    // 2. İstenmeyen günleri (kırmızı çarpıları) fotoğrafta gizle
     const unavailableCellsList = targetElement.querySelectorAll('.unavailable');
     unavailableCellsList.forEach(cell => {
-        cell.classList.remove('unavailable'); // Çarpıyı ve kırmızı rengi geçici kaldır
-        cell.classList.add('temp-unavailable'); // İşlem bitince geri getirmek için işaret koy
+        cell.classList.remove('unavailable');
+        cell.classList.add('temp-unavailable');
     });
 
     html2canvas(targetElement, {
@@ -3588,11 +3588,11 @@ function downloadAsImage() {
         logging: false,
         useCORS: true
     }).then(canvas => {
-        // İşlem bitti, boyutları eski haline getir
-        targetElement.style.paddingBottom = originalPadding;
+        // İşlem bitti, tablo boyutlarını eski haline getir
+        targetElement.style.marginBottom = originalMargin;
         targetElement.style.borderBottom = originalBorder;
 
-        // Kırmızı çarpıları ekrana (senin gördüğün tabloya) geri getir
+        // Çarpıları senin ekranına geri getir
         const tempCells = targetElement.querySelectorAll('.temp-unavailable');
         tempCells.forEach(cell => {
             cell.classList.remove('temp-unavailable');
@@ -3607,8 +3607,8 @@ function downloadAsImage() {
         link.click();
         M.toast({html: '✅ Fotoğraf başarıyla cihazınıza indirildi!', classes: 'green darken-2 rounded'});
     }).catch(err => {
-        // Hata olursa da ekranı bozuk bırakma, her şeyi eski haline getir
-        targetElement.style.paddingBottom = originalPadding;
+        // Hata olursa da ekranı bozuk bırakma
+        targetElement.style.marginBottom = originalMargin;
         targetElement.style.borderBottom = originalBorder;
         const tempCells = targetElement.querySelectorAll('.temp-unavailable');
         tempCells.forEach(cell => {
