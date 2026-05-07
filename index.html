@@ -3789,6 +3789,14 @@ async function addToGoogleCalendar() {
         return;
     }
 
+    // YEREL TARİHİ KORUYAN YARDIMCI FONKSİYON (Timezone hatasını önler)
+    const formatDateLocal = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     try {
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.addScope('https://www.googleapis.com/auth/calendar.events');
@@ -3800,17 +3808,17 @@ async function addToGoogleCalendar() {
         M.toast({html: `${dutyDates.length} nöbet işleniyor...`, classes: 'orange'});
 
         for (const date of dutyDates) {
-            const startStr = date.toISOString().split('T')[0];
+            // toISOString yerine hazırladığımız yerel formatı kullanıyoruz
+            const startStr = formatDateLocal(date);
             const nextDay = new Date(date);
             nextDay.setDate(date.getDate() + 1);
-            const endStr = nextDay.toISOString().split('T')[0];
+            const endStr = formatDateLocal(nextDay);
 
             const event = {
-                'summary': 'Nöbet', // İstediğin gibi sadeleştirildi
+                'summary': 'Nöbet',
                 'description': 'nobetplani.com üzerinden otomatik eklendi.',
                 'start': { 'date': startStr },
                 'end': { 'date': endStr },
-                // BİR GÜN ÖNCESİ HATIRLATICI (1440 dakika = 24 saat)
                 'reminders': {
                     'useDefault': false,
                     'overrides': [
@@ -3834,7 +3842,7 @@ async function addToGoogleCalendar() {
             }
         }
 
-        M.toast({html: '✅ Tüm nöbetler "Nöbet" etiketiyle ve hatırlatıcıyla eklendi!', classes: 'green darken-2 rounded', displayLength: 5000});
+        M.toast({html: '✅ Tüm nöbetler doğru tarihlerle eklendi!', classes: 'green darken-2 rounded', displayLength: 5000});
 
     } catch (error) {
         console.error("Takvim Hatası:", error);
