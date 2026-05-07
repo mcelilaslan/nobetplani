@@ -74,6 +74,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
   <link rel="stylesheet" href="style.css">  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
     <div class="container-wrapper">
@@ -328,12 +329,31 @@
                                 </div>
                             </div>
                             <!-- İndir -->
-                            <div class="col s4" style="display: flex; justify-content: flex-end; gap: 10px;">
+                            <div class="col s4" style="display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
+    
                                 <button class="waves-effect waves-light btn teal tooltipped" onclick="downloadSchedule()" data-position="bottom" data-tooltip="Excel Olarak İndir">
                                     <i class="material-icons left">file_download</i>İndir
                                 </button>
-
-                                <button class="waves-effect waves-light btn orange darken-3 tooltipped" onclick="saveScheduleToHistory()" data-position="bottom" data-tooltip="Bu listeyi hafızaya kaydet">
+                            
+                                <a class="dropdown-trigger waves-effect waves-light btn blue darken-1 tooltipped" href="#" data-target="paylasSecenekleri" data-position="bottom" data-tooltip="Paylaşma Seçenekleri">
+                                    <i class="material-icons left">share</i>Paylaş
+                                </a>
+                                
+                                <ul id="paylasSecenekleri" class="dropdown-content" style="min-width: 210px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+                                    <li>
+                                        <a href="#!" onclick="createMagicLink(this)" style="color: #1565c0; font-weight: 500;">
+                                            <i class="material-icons">link</i>WhatsApp Linki Oluştur
+                                        </a>
+                                    </li>
+                                    <li class="divider"></li>
+                                    <li>
+                                        <a href="#!" onclick="downloadAsImage()" style="color: #2e7d32; font-weight: 500;">
+                                            <i class="material-icons">image</i>Liste Fotoğrafını İndir
+                                        </a>
+                                    </li>
+                                </ul>
+                            
+                                <button class="waves-effect waves-light btn orange darken-3 tooltipped" onclick="saveScheduleToHistory()" data-position="bottom" data-tooltip="Buluta Yedekle">
                                     <i class="material-icons left">cloud_upload</i>Kaydet
                                 </button>
                             </div>
@@ -3507,6 +3527,90 @@
         elem.style.backgroundColor = ''; 
         elem.style.color = 'white';
     }
+
+    
+    // RESİM İNDİRME VE PAYLAŞMA
+   
+function downloadAsImage() {
+    const targetElement = document.getElementById('calendarTable');
+    
+    if (!targetElement || targetElement.innerHTML.trim() === '') {
+        M.toast({html: 'İndirilecek bir takvim bulunamadı!', classes: 'red rounded'});
+        return;
+    }
+
+    M.toast({html: '📸 Resim hazırlanıyor, lütfen bekleyin...', classes: 'blue rounded', displayLength: 2000});
+
+    html2canvas(targetElement, {
+        scale: 2, // Yüksek çözünürlük için
+        backgroundColor: "#ffffff", 
+        logging: false
+    }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = `Nobet_Listesi_${new Date().toISOString().split('T')[0]}.png`;
+        link.href = imgData;
+        link.click();
+        M.toast({html: '✅ Resim başarıyla cihazınıza indirildi!', classes: 'green darken-2 rounded'});
+    }).catch(err => {
+        console.error("Resim oluşturma hatası:", err);
+        M.toast({html: 'Resim oluşturulurken bir hata oluştu.', classes: 'red rounded'});
+    });
+}
+
+function createMagicLink(btn) {
+    const startInput = document.getElementById('startDate').value;
+    if (!startInput || Object.keys(selectedCells).length === 0) {
+        M.toast({html: 'Paylaşılacak bir liste yok! Önce takvimi oluşturun.', classes: 'red rounded'});
+        return;
+    }
+
+    // Butonu yükleniyor durumuna al
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="material-icons left">loop</i>Bekleyin...';
+    btn.classList.add('disabled');
+
+    // Benzersiz ve tahmin edilemez bir ID oluştur
+    const listId = 'liste_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+
+    const scheduleData = {
+        startDate: startInput,
+        endDate: document.getElementById('endDate').value,
+        assignments: JSON.stringify(selectedCells),
+        unavailable: JSON.stringify(unavailableCells),
+        personnelSnapshot: JSON.stringify(persons),
+        holidays: document.getElementById('holidays').value || "",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    // Firebase'de 'public_lists' koleksiyonuna kaydet
+    db.collection("public_lists").doc(listId).set(scheduleData)
+        .then(() => {
+            const magicLink = `https://nobetplani.com/?listeID=${listId}`;
+            
+            // Linki panoya kopyala
+            navigator.clipboard.writeText(magicLink).then(() => {
+                M.toast({
+                    html: `✅ Link kopyalandı! WhatsApp'a yapıştırabilirsiniz.`, 
+                    classes: 'green darken-2 rounded', 
+                    displayLength: 5000
+                });
+            }).catch(err => {
+                // Kopyalama başarısız olursa ekranda göster
+                prompt("Bağlantıyı kopyalayınız:", magicLink);
+            });
+        })
+        .catch((error) => {
+            console.error("Paylaşım hatası: ", error);
+            M.toast({html: 'Paylaşım linki oluşturulamadı: ' + error.message, classes: 'red rounded'});
+        })
+        .finally(() => {
+            // Butonu eski haline getir
+            btn.innerHTML = originalHtml;
+            btn.classList.remove('disabled');
+        });
+}
+    
 </script>
 
 </body>
