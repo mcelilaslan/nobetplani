@@ -3346,49 +3346,51 @@
     // --- YARDIMCI HESAPLAMA FONKSİYONLARI ---
 
     function calculateStatsForDoc(data) {
-        const assignments = JSON.parse(data.assignments || '{}');
-        const personnel = JSON.parse(data.personnelSnapshot || '[]');
-        const savedHolidays = (data.holidays || "").split(',').map(d => parseInt(d)).filter(n => !isNaN(n));
-        const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
+    const assignments = JSON.parse(data.assignments || '{}');
+    const personnel = JSON.parse(data.personnelSnapshot || '[]');
+    const savedHolidays = (data.holidays || "").split(',').map(d => parseInt(d)).filter(n => !isNaN(n));
+    
+    
+    const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
+    const startDate = new Date(startYear, startMonth - 1, startDay);
+    const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
+    const endDateObj = new Date(endYear, endMonth - 1, endDay);
+    const daysDiff = Math.round((endDateObj - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+    const stats = personnel.map(p => ({
+        name: p.name, weekday: 0, weekend: 0, thursday: 0, friday: 0, officialHoliday: 0, totalHours: 0
+    }));
+
+    for (let d = 0; d < daysDiff; d++) {
+        const current = new Date(startDate);
+        current.setDate(startDate.getDate() + d);
         
-        const startDate = new Date(startYear, startMonth - 1, startDay);
-        const endDateObj = new Date(data.endDate.split('-').reverse().join('-'));
-        const daysDiff = Math.ceil((endDateObj - startDate) / (1000 * 60 * 60 * 24)) + 1;
+        const dayNum = current.getDate();
+        const dayOfWeek = current.getDay(); 
+        const isOfficialHoliday = savedHolidays.includes(dayNum);
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+        const isFriday = dayOfWeek === 5;
+        const isThursday = dayOfWeek === 4;
 
-        const stats = personnel.map(p => ({
-            name: p.name, weekday: 0, weekend: 0, thursday: 0, friday: 0, officialHoliday: 0, totalHours: 0
-        }));
-
-        for (let d = 0; d < daysDiff; d++) {
-            const current = new Date(startDate);
-            current.setDate(startDate.getDate() + d);
-            
-            const dayNum = current.getDate();
-            const dayOfWeek = current.getDay(); 
-            const isOfficialHoliday = savedHolidays.includes(dayNum);
-            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-            const isFriday = dayOfWeek === 5;
-            const isThursday = dayOfWeek === 4;
-
-            personnel.forEach((p, pIndex) => {
-                if (assignments[`${pIndex}-${d}`]) {
-                    if (isOfficialHoliday) {
-                        stats[pIndex].officialHoliday++;
-                        stats[pIndex].totalHours += 24;
-                    } else if (isWeekend) {
-                        stats[pIndex].weekend++;
-                        stats[pIndex].totalHours += 24;
-                    } else {
-                        stats[pIndex].weekday++;
-                        stats[pIndex].totalHours += 16;
-                        if (isFriday) stats[pIndex].friday++;
-                        if (isThursday) stats[pIndex].thursday++;
-                    }
+        personnel.forEach((p, pIndex) => {
+            if (assignments[`${pIndex}-${d}`]) {
+                if (isOfficialHoliday) {
+                    stats[pIndex].officialHoliday++;
+                    stats[pIndex].totalHours += 24;
+                } else if (isWeekend) {
+                    stats[pIndex].weekend++;
+                    stats[pIndex].totalHours += 24;
+                } else {
+                    stats[pIndex].weekday++;
+                    stats[pIndex].totalHours += 16;
+                    if (isFriday) stats[pIndex].friday++;
+                    if (isThursday) stats[pIndex].thursday++;
                 }
-            });
-        }
-        return stats;
+            }
+        });
     }
+    return stats;
+}
 
     function generateStatsTableHTML(stats, isCumulative = false) {
         let html = `
@@ -3429,52 +3431,55 @@
     }
 
     function generateMiniCalendarHTML(data) {
-        const [year, month] = data.id.split('-');
-        const assignments = JSON.parse(data.assignments || '{}');
-        const personnel = JSON.parse(data.personnelSnapshot || '[]');
-        const savedHolidays = (data.holidays || "").split(',').map(d => parseInt(d)).filter(n => !isNaN(n));
-        const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
-        const startDate = new Date(startYear, startMonth - 1, startDay);
-        const endDateObj = new Date(data.endDate.split('-').reverse().join('-'));
-        const daysDiff = Math.ceil((endDateObj - startDate) / (1000 * 60 * 60 * 24)) + 1;
+    const [year, month] = data.id.split('-');
+    const assignments = JSON.parse(data.assignments || '{}');
+    const personnel = JSON.parse(data.personnelSnapshot || '[]');
+    const savedHolidays = (data.holidays || "").split(',').map(d => parseInt(d)).filter(n => !isNaN(n));
+    
+    
+    const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
+    const startDate = new Date(startYear, startMonth - 1, startDay);
+    const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
+    const endDateObj = new Date(endYear, endMonth - 1, endDay);
+    const daysDiff = Math.round((endDateObj - startDate) / (1000 * 60 * 60 * 24)) + 1;
 
-        let contentHtml = `<h6 class="teal-text" style="margin-top: 30px;">Nöbet Çizelgesi</h6>
-                        <div style="overflow-x:auto;">
-                        <table id="historyCalendarTable_${data.id}" class="bordered centered" style="font-size:0.8rem; border:1px solid #eee;">
-                        <thead><tr><th>Gün</th>`;
-        
+    let contentHtml = `<h6 class="teal-text" style="margin-top: 30px;">Nöbet Çizelgesi</h6>
+                    <div style="overflow-x:auto;">
+                    <table id="historyCalendarTable_${data.id}" class="bordered centered" style="font-size:0.8rem; border:1px solid #eee;">
+                    <thead><tr><th>Gün</th>`;
+    
+    for(let d=0; d<daysDiff; d++){
+        const current = new Date(startDate);
+        current.setDate(startDate.getDate() + d);
+        const dayNum = current.getDate();
+        const isOfficial = savedHolidays.includes(dayNum);
+        const isWknd = current.getDay() === 0 || current.getDay() === 6;
+        let colorStyle = "";
+        if(isOfficial) colorStyle = "background-color: #ffcdd2; color: #d32f2f;"; 
+        else if(isWknd) colorStyle = "background-color: #cfd8dc;"; 
+        contentHtml += `<th style="${colorStyle}; min-width:30px; padding: 5px;">${dayNum}</th>`;
+    }
+    contentHtml += `</tr></thead><tbody>`;
+
+    personnel.forEach((p, pIndex) => {
+        contentHtml += `<tr><td style="text-align:left; font-weight:bold; padding: 5px;">${p.name}</td>`;
         for(let d=0; d<daysDiff; d++){
+            const isAssigned = assignments[`${pIndex}-${d}`];
             const current = new Date(startDate);
             current.setDate(startDate.getDate() + d);
-            const dayNum = current.getDate();
-            const isOfficial = savedHolidays.includes(dayNum);
+            const isOfficial = savedHolidays.includes(current.getDate());
             const isWknd = current.getDay() === 0 || current.getDay() === 6;
-            let colorStyle = "";
-            if(isOfficial) colorStyle = "background-color: #ffcdd2; color: #d32f2f;"; 
-            else if(isWknd) colorStyle = "background-color: #cfd8dc;"; 
-            contentHtml += `<th style="${colorStyle}; min-width:30px; padding: 5px;">${dayNum}</th>`;
+            let cellStyle = "border: 1px solid #eee;";
+            if(isOfficial) cellStyle += "background-color: #ffebee;";
+            else if(isWknd) cellStyle += "background-color: #eceff1;";
+            let cellContent = isAssigned ? '<span style="color:green; font-weight:bold;">✓</span>' : '';
+            contentHtml += `<td style="${cellStyle}">${cellContent}</td>`;
         }
-        contentHtml += `</tr></thead><tbody>`;
-
-        personnel.forEach((p, pIndex) => {
-            contentHtml += `<tr><td style="text-align:left; font-weight:bold; padding: 5px;">${p.name}</td>`;
-            for(let d=0; d<daysDiff; d++){
-                const isAssigned = assignments[`${pIndex}-${d}`];
-                const current = new Date(startDate);
-                current.setDate(startDate.getDate() + d);
-                const isOfficial = savedHolidays.includes(current.getDate());
-                const isWknd = current.getDay() === 0 || current.getDay() === 6;
-                let cellStyle = "border: 1px solid #eee;";
-                if(isOfficial) cellStyle += "background-color: #ffebee;";
-                else if(isWknd) cellStyle += "background-color: #eceff1;";
-                let cellContent = isAssigned ? '<span style="color:green; font-weight:bold;">✓</span>' : '';
-                contentHtml += `<td style="${cellStyle}">${cellContent}</td>`;
-            }
-            contentHtml += `</tr>`;
-        });
-        contentHtml += `</tbody></table></div>`;
-        return contentHtml;
-    }
+        contentHtml += `</tr>`;
+    });
+    contentHtml += `</tbody></table></div>`;
+    return contentHtml;
+}
 
     function downloadHistoryTable(docId) {
         // 1. İlgili belgenin verilerini geçmiş hafızasından bul
@@ -3785,10 +3790,12 @@ function renderMagicList(data) {
     const personnel = JSON.parse(data.personnelSnapshot || '[]');
     const holidays = (data.holidays || "").split(',').map(d => parseInt(d)).filter(n => !isNaN(n));
     
+    // ZAMAN DİLİMİ HATASINI ÖNLEYEN YENİ HESAPLAMA
     const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
-    const endDateObj = new Date(data.endDate.split('-').reverse().join('-'));
     const startDate = new Date(startYear, startMonth - 1, startDay);
-    const daysDiff = Math.ceil((endDateObj - startDate) / (1000 * 60 * 60 * 24)) + 1;
+    const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
+    const endDateObj = new Date(endYear, endMonth - 1, endDay);
+    const daysDiff = Math.round((endDateObj - startDate) / (1000 * 60 * 60 * 24)) + 1;
 
     // Seçim Kutusunu Doldur
     const selectBox = document.getElementById('magicPersonSelect');
@@ -3841,11 +3848,12 @@ async function addToGoogleCalendar() {
     const personName = personnel[selectedIndex].name;
     const assignments = JSON.parse(data.assignments || '{}');
 
+    // ZAMAN DİLİMİ HATASINI ÖNLEYEN YENİ HESAPLAMA
     const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
     const startDate = new Date(startYear, startMonth - 1, startDay);
-    const endDateStr = data.endDate.split('-').reverse().join('-');
-    const endDateObj = new Date(endDateStr);
-    const daysDiff = Math.ceil((endDateObj - startDate) / (1000 * 60 * 60 * 24)) + 1;
+    const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
+    const endDateObj = new Date(endYear, endMonth - 1, endDay);
+    const daysDiff = Math.round((endDateObj - startDate) / (1000 * 60 * 60 * 24)) + 1;
 
     const dutyDates = [];
     for (let d = 0; d < daysDiff; d++) {
@@ -3880,7 +3888,6 @@ async function addToGoogleCalendar() {
         M.toast({html: `${dutyDates.length} nöbet işleniyor...`, classes: 'orange'});
 
         for (const date of dutyDates) {
-            // toISOString yerine hazırladığımız yerel formatı kullanıyoruz
             const startStr = formatDateLocal(date);
             const nextDay = new Date(date);
             nextDay.setDate(date.getDate() + 1);
@@ -3914,7 +3921,7 @@ async function addToGoogleCalendar() {
             }
         }
 
-        M.toast({html: '✅ Tüm nöbetler google takviminize eklendi!', classes: 'green darken-2 rounded', displayLength: 5000});
+        M.toast({html: '✅ Tüm nöbetler takviminize eklendi!', classes: 'green darken-2 rounded', displayLength: 5000});
 
     } catch (error) {
         console.error("Takvim Hatası:", error);
