@@ -1778,53 +1778,117 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Veriyi Tabloya Çeviren Fonksiyon
+function getAbbreviatedName(fullName) {
+    if (!fullName) return "";
+    const names = fullName.replace(/\./g, ' ').split(/\s+/).filter(name => name.length > 0);
+    if (names.length <= 1) return fullName;
+    const lastName = names.pop();
+    const abbreviatedFirstNames = names.map(name => name.charAt(0).toUpperCase() + ".");
+    return abbreviatedFirstNames.join(" ") + " " + lastName;
+}
+
 function renderMagicList(data) {
     const assignments = JSON.parse(data.assignments || '{}');
     const personnel = JSON.parse(data.personnelSnapshot || '[]');
-    const holidays = (data.holidays || "").split(',').map(d => parseInt(d)).filter(n => !isNaN(n));
+    const savedHolidays = (data.holidays || "").split(',').map(d => parseInt(d)).filter(n => !isNaN(n));
     
-    // ZAMAN DİLİMİ HATASINI ÖNLEYEN YENİ HESAPLAMA
+    // ZAMAN DİLİMİ HATASINI ÖNLEYEN HESAPLAMA (Tarih aralığı için)
     const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
-    const startDate = new Date(startYear, startMonth - 1, startDay);
+    const startDateObj = new Date(startYear, startMonth - 1, startDay);
     const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
     const endDateObj = new Date(endYear, endMonth - 1, endDay);
-    const daysDiff = Math.round((endDateObj - startDate) / (1000 * 60 * 60 * 24)) + 1;
+    const daysDiff = Math.round((endDateObj - startDateObj) / (1000 * 60 * 60 * 24)) + 1;
 
-    // Seçim Kutusunu Doldur
+    // Seçim Kutusunu Doldur (Değişmedi)
     const selectBox = document.getElementById('magicPersonSelect');
     selectBox.innerHTML = '<option value="" disabled selected>Listeden isminizi bulun...</option>';
     personnel.forEach((p, index) => {
         selectBox.innerHTML += `<option value="${index}">${p.name}</option>`;
     });
 
-    // Tabloyu Çiz
-    let html = '<table class="striped bordered centered" style="font-size: 0.85rem;"><thead><tr><th style="min-width: 80px;">İsim</th>';
-    for(let d=0; d<daysDiff; d++){
-        const current = new Date(startDate);
-        current.setDate(startDate.getDate() + d);
-        html += `<th style="padding: 5px; min-width: 25px;">${current.getDate()}</th>`;
-    }
-    html += '</tr></thead><tbody>';
+    // --- GOOGLE TAKVİM TARZI AYLIK GRID ÇİZİMİ ---
+    const monthName = startDateObj.toLocaleString('tr-TR', { month: 'long' });
+    const yearNum = startDateObj.getFullYear();
+    const firstDayOfMonth = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), 1);
+    const lastDayOfMonth = new Date(startDateObj.getFullYear(), startDateObj.getMonth() + 1, 0);
+    const daysInMonth = lastDayOfMonth.getDate();
+    const firstDayOfWeek = firstDayOfMonth.getDay(); // 0: Pazar, 1: Pzt, ...
 
-    personnel.forEach((p, pIndex) => {
-        html += `<tr><td style="font-weight:bold; text-align:left; padding-left: 5px;">${p.name}</td>`;
-        for(let d=0; d<daysDiff; d++){
-            const isAssigned = assignments[`${pIndex}-${d}`];
-            const current = new Date(startDate);
-            current.setDate(startDate.getDate() + d);
-            const isWknd = current.getDay() === 0 || current.getDay() === 6 || holidays.includes(current.getDate());
-            
-            let cellStyle = isWknd ? "background-color: #eceff1;" : "";
-            let cellContent = isAssigned ? '<span style="color: green; font-weight: bold;">✓</span>' : '';
-            
-            html += `<td style="${cellStyle}">${cellContent}</td>`;
-        }
-        html += '</tr>';
+    // Haftanın Günleri Başlıkları (Days of Week)
+    const dayNames = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
+    let calendarHtml = `<h6 class="teal-text center-align" style="font-weight:bold; margin-top:20px; font-size:1.3rem;">${monthName} ${yearNum} Nöbetleri</h6>
+                    <div style="overflow-x:auto;">
+                    <table class="centered magic-calendar-table" style="border:1px solid #eee; border-collapse: collapse; width: 100%;">
+                    <thead><tr style="border-bottom: 2px solid #26a69a;">`;
+    
+    dayNames.forEach(day => {
+        calendarHtml += `<th style="padding: 10px 5px; font-weight: bold; color: #26a69a; border: 1px solid #ddd; width: 14.28%;">${day}</th>`;
     });
-    html += '</tbody></table>';
+    calendarHtml += `</tr></thead><tbody>`;
 
-    document.getElementById('magicLinkCalendarContainer').innerHTML = html;
+    // Grid'i Oluşturma (4-5 hafta)
+    let currentDay = 1;
+    for (let i = 0; i < 6; i++) { // Max 6 hafta
+        calendarHtml += `<tr>`;
+        for (let j = 0; j < 7; j++) {
+            let cellStyle = "border: 1px solid #ddd; width: 14.28%; height: 95px; vertical-align: top; padding: 5px !important; position: relative;";
+            let cellContent = "";
+
+            // Ayın ilk gününe kadar boşluk
+            if (i === 0 && j < (firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1)) {
+                calendarHtml += `<td style="${cellStyle} background-color: #f9f9f9;"></td>`;
+                continue;
+            }
+
+            // Ayın bittiği yer
+            if (currentDay > daysInMonth) {
+                calendarHtml += `<td style="${cellStyle} background-color: #f9f9f9;"></td>`;
+                continue;
+            }
+
+            // --- BUGÜNÜN HÜCRESİNİ DOLDUR ---
+            const dObj = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), currentDay);
+            
+            // Hafta sonu / Resmî Tatil Stili
+            const isOfficial = savedHolidays.includes(currentDay);
+            const isWknd = dObj.getDay() === 0 || dObj.getDay() === 6;
+            if(isOfficial) cellStyle += "background-color: #ffebee;";
+            else if(isWknd) cellStyle += "background-color: #eceff1;";
+
+            // Tarih Numarası (Sağ Üstte)
+            let dateNumStyle = "position: absolute; top: 2px; right: 5px; font-weight: bold; font-size: 1rem; color: #757575;";
+            if (currentDay === new Date().getDate() && dObj.getMonth() === new Date().getMonth() && dObj.getFullYear() === new Date().getFullYear()) {
+                dateNumStyle += "background-color: #26a69a; color: white; border-radius: 50%; width: 25px; height: 25px; display: flex; justify-content: center; align-items: center;";
+            }
+            cellContent += `<span style="${dateNumStyle}">${currentDay}</span>`;
+
+            // --- NÖBETÇİLERİ BUL VE LİSTELE ---
+            // Bu günün sihirli link tarih aralığı içinde olup olmadığını kontrol et
+            const daysDiffFromStart = Math.round((dObj - startDateObj) / (1000 * 60 * 60 * 24));
+            
+            if (daysDiffFromStart >= 0 && daysDiffFromStart < daysDiff) {
+                // Nöbetçilerin isimlerini topla
+                let assignedPersons = personnel.filter((p, pIndex) => assignments[`${pIndex}-${daysDiffFromStart}`]);
+                
+                if (assignedPersons.length > 0) {
+                    cellContent += `<ul style="list-style-type: none; margin: 25px 0 0 0; padding: 0; font-size: 0.85rem; text-align: left;">`;
+                    assignedPersons.forEach(p => {
+                        const abbreviated = getAbbreviatedName(p.name);
+                        cellContent += `<li style="background-color: #f1f8e9; border: 1px solid #c5e1a5; color: #33691e; border-radius: 4px; padding: 2px 5px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${p.name}">${abbreviated}</li>`;
+                    });
+                    cellContent += `</ul>`;
+                }
+            }
+
+            calendarHtml += `<td style="${cellStyle}">${cellContent}</td>`;
+            currentDay++;
+        }
+        calendarHtml += `</tr>`;
+        if (currentDay > daysInMonth) break;
+    }
+    calendarHtml += `</tbody></table></div>`;
+
+    document.getElementById('magicLinkCalendarContainer').innerHTML = calendarHtml;
 }
 
 // Takvime Ekle
