@@ -364,7 +364,7 @@
                 </li>
             </ul>
         </div>
-
+        <!-- Takvime ekleme Konteynırı -->
         <div id="magicLinkModal" class="modal modal-fixed-footer" style="width: 95%; max-width: 1000px; max-height: 85%; border-radius: 12px; z-index: 10005;">
             <div class="modal-content">
                 <h4 style="color: #26a69a; display: flex; align-items: center;">
@@ -393,6 +393,36 @@
             </div>
         </div>
 
+        <div id="shareLinkModal" class="modal" style="max-width: 500px; border-radius: 12px; z-index: 10006;">
+            <div class="modal-content center-align">
+                <h5 style="color: #26a69a; font-weight: bold; margin-bottom: 15px; display: flex; justify-content: center; align-items: center;">
+                    <i class="material-icons" style="margin-right: 8px; font-size: 32px;">check_circle</i>Bağlantı Hazır
+                </h5>
+                <p style="font-size: 1.1rem; color: #374151; line-height: 1.5;">
+                    Personele bu linki yollayabilir, takvim uygulamalarına senkronize etmelerini sağlayabilirsiniz.
+                </p>
+                
+                <div style="margin: 25px 0; display: flex; align-items: center; background: #f8f9fa; border-radius: 8px; padding: 5px; border: 2px solid #e0e0e0;">
+                    <input type="text" id="generatedMagicLink" readonly style="border: none; margin: 0; padding: 0 10px; background: transparent; color: #1565c0; font-weight: 600; font-size: 0.95rem; width: 100%; height: 40px; box-shadow: none !important; border-bottom: none !important;">
+                    <button class="btn waves-effect waves-light teal" onclick="copyGeneratedLink()" style="border-radius: 6px; height: 40px; display: flex; align-items: center; padding: 0 15px;">
+                        <i class="material-icons left" style="margin-right: 5px;">content_copy</i>KOPYALA
+                    </button>
+                </div>
+
+                <div class="divider" style="margin: 20px 0;"></div>
+                
+                <p style="font-size: 0.95rem; color: #757575; margin-bottom: 15px;">
+                    Kendi nöbetlerinizi google takviminize işlemek ister misiniz?
+                </p>
+                <button class="btn waves-effect waves-light orange darken-3" onclick="openAdminCalendarModal()" style="border-radius: 25px; width: 100%; height: 45px; display: flex; justify-content: center; align-items: center;">
+                    <i class="material-icons" style="margin-right: 8px;">insert_invitation</i>TAKVİMİME EKLE
+                </button>
+            </div>
+            <div class="modal-footer">
+                <a href="#!" class="modal-close waves-effect waves-grey btn-flat" style="font-weight: bold;">KAPAT</a>
+            </div>
+        </div>
+        
         <!-- İstatistik Konteynırı -->
         <div class="custom-container">
             <ul class="collapsible popout" id="statsCollapsible">
@@ -3186,16 +3216,33 @@
         document.getElementById('historyDetailTitle').innerText = title;
         
         
-        document.getElementById('historyActions').innerHTML = `
-            <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button class="btn waves-effect waves-light orange darken-3" onclick="loadHistoryForEditing()">
-                    <i class="material-icons left">edit</i>Düzenle
-                </button>
-                <button class="btn waves-effect waves-light teal" onclick="downloadHistoryTable('${data.id}')">
-                    <i class="material-icons left">file_download</i>İndir
-                </button>
-            </div>
-        `;
+        
+    document.getElementById('historyActions').innerHTML = `
+        <div style="display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
+            
+            <a class="dropdown-trigger btn waves-effect waves-light blue darken-1" href="#" data-target="historyShareDropdown" style="height: 36px; line-height: 36px;">
+                <i class="material-icons left">share</i>Paylaş
+            </a>
+
+            <ul id="historyShareDropdown" class="dropdown-content" style="min-width: 210px; border-radius: 8px;">
+                <li><a href="#!" onclick="shareHistoryAsLink()"><i class="material-icons">link</i>WhatsApp Linki Oluştur</a></li>
+                <li class="divider"></li>
+                <li><a href="#!" onclick="downloadHistoryAsImage('${data.id}')"><i class="material-icons">image</i>Liste Fotoğrafını İndir</a></li>
+            </ul>
+
+            <button class="btn waves-effect waves-light orange darken-3" onclick="loadHistoryForEditing()">
+                <i class="material-icons left">edit</i>Düzenle
+            </button>
+            
+            <button class="btn waves-effect waves-light teal" onclick="downloadHistoryTable('${data.id}')">
+                <i class="material-icons left">file_download</i>Excel
+            </button>
+        </div>
+    `;
+
+    // Dropdown'u manuel başlat (Dinamik eklendiği için gerekli)
+    const shareBtn = document.querySelector('.dropdown-trigger[data-target="historyShareDropdown"]');
+    if(shareBtn) M.Dropdown.init(shareBtn, { coverTrigger: false, constrainWidth: false });
 
         // İstatistikleri Hesapla ve Tabloyu Bas
         const contentDiv = document.getElementById('historyStatsContent');
@@ -3621,6 +3668,7 @@ function downloadAsImage() {
     });
 }
 
+// YENİ: Modern Paylaşım Modalı ve Link Üretimi
 function createMagicLink(btn) {
     const startInput = document.getElementById('startDate').value;
     if (!startInput || Object.keys(selectedCells).length === 0) {
@@ -3628,12 +3676,10 @@ function createMagicLink(btn) {
         return;
     }
 
-    // Butonu yükleniyor durumuna al
     const originalHtml = btn.innerHTML;
     btn.innerHTML = '<i class="material-icons left">loop</i>Bekleyin...';
     btn.classList.add('disabled');
 
-    // Benzersiz ve tahmin edilemez bir ID oluştur
     const listId = 'liste_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
 
     const scheduleData = {
@@ -3646,32 +3692,58 @@ function createMagicLink(btn) {
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
-    // Firebase'de 'public_lists' koleksiyonuna kaydet
     db.collection("public_lists").doc(listId).set(scheduleData)
         .then(() => {
             const magicLink = `https://nobetplani.com/?listeID=${listId}`;
             
-            // Linki panoya kopyala
-            navigator.clipboard.writeText(magicLink).then(() => {
-                M.toast({
-                    html: `✅ Link kopyalandı! WhatsApp'a yapıştırabilirsiniz.`, 
-                    classes: 'green darken-2 rounded', 
-                    displayLength: 5000
-                });
-            }).catch(err => {
-                // Kopyalama başarısız olursa ekranda göster
-                prompt("Bağlantıyı kopyalayınız:", magicLink);
-            });
+            // Linki yeni modal içindeki inputa yaz ve global hafızaya al
+            document.getElementById('generatedMagicLink').value = magicLink;
+            window.lastGeneratedScheduleData = scheduleData; 
+            
+            // Yeni Paylaşım Modalını Aç
+            const modalElem = document.getElementById('shareLinkModal');
+            M.Modal.getInstance(modalElem).open();
         })
         .catch((error) => {
             console.error("Paylaşım hatası: ", error);
             M.toast({html: 'Paylaşım linki oluşturulamadı: ' + error.message, classes: 'red rounded'});
         })
         .finally(() => {
-            // Butonu eski haline getir
             btn.innerHTML = originalHtml;
             btn.classList.remove('disabled');
         });
+}
+
+// YENİ: Modal içindeki kopyalama fonksiyonu
+function copyGeneratedLink() {
+    const linkInput = document.getElementById('generatedMagicLink');
+    linkInput.select();
+    linkInput.setSelectionRange(0, 99999); // Mobil cihazlar için stabilite
+    navigator.clipboard.writeText(linkInput.value).then(() => {
+        M.toast({html: '✅ Link başarıyla kopyalandı! WhatsApp\'a yapıştırabilirsiniz.', classes: 'green darken-2 rounded', displayLength: 4000});
+    }).catch(err => {
+        M.toast({html: 'Kopyalama başarısız, lütfen manuel kopyalayın.', classes: 'red rounded'});
+    });
+}
+
+// Asıl kullanıcının doğrudan takvimine eklemesini sağlayan köprü fonksiyon
+function openAdminCalendarModal() {
+    // 1. Önce paylaşım modalını kapat
+    const shareModalElem = document.getElementById('shareLinkModal');
+    const shareModal = M.Modal.getInstance(shareModalElem);
+    if(shareModal) shareModal.close();
+
+    //Var olan link modalını eldeki verilerle aç
+    if (window.lastGeneratedScheduleData) {
+        window.magicListData = window.lastGeneratedScheduleData;
+        renderMagicList(window.magicListData); 
+        
+        const magicModalElem = document.getElementById('magicLinkModal');
+        const magicModal = M.Modal.getInstance(magicModalElem);
+        if(magicModal) magicModal.open();
+    } else {
+        M.toast({html: 'Veri bulunamadı, lütfen sayfayı yenileyin.', classes: 'red rounded'});
+    }
 }
 
 // ==========================================
@@ -3842,12 +3914,96 @@ async function addToGoogleCalendar() {
             }
         }
 
-        M.toast({html: '✅ Tüm nöbetler doğru tarihlerle eklendi!', classes: 'green darken-2 rounded', displayLength: 5000});
+        M.toast({html: '✅ Tüm nöbetler google takviminize eklendi!', classes: 'green darken-2 rounded', displayLength: 5000});
 
     } catch (error) {
         console.error("Takvim Hatası:", error);
         M.toast({html: 'Hata: ' + error.message, classes: 'red', displayLength: 8000});
     }
+}
+
+    // 1. Geçmişteki Listeyi Resim Olarak İndir 
+function downloadHistoryAsImage(docId) {
+    const targetId = `historyCalendarTable_${docId}`;
+    const targetElement = document.getElementById(targetId);
+    
+    if (!targetElement) {
+        M.toast({html: 'Tablo bulunamadı!', classes: 'red'});
+        return;
+    }
+
+    M.toast({html: '📸 Geçmiş liste resim olarak hazırlanıyor...', classes: 'blue', displayLength: 2000});
+
+    // Kayma sorununu önleyen geçici görsel düzeltmeler
+    const originalMargin = targetElement.style.marginBottom;
+    const originalBorder = targetElement.style.borderBottom;
+    targetElement.style.marginBottom = "20px"; 
+    targetElement.style.borderBottom = "1px solid #ccc";
+
+    html2canvas(targetElement, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true
+    }).then(canvas => {
+        // Eski haline getir
+        targetElement.style.marginBottom = originalMargin;
+        targetElement.style.borderBottom = originalBorder;
+
+        const link = document.createElement('a');
+        link.download = `Gecmis_Nobet_Listesi_${docId}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        M.toast({html: '✅ Resim indirildi!', classes: 'green'});
+    }).catch(err => {
+        targetElement.style.marginBottom = originalMargin;
+        console.error("Resim hatası:", err);
+        M.toast({html: 'Resim oluşturulurken hata oluştu.', classes: 'red'});
+    });
+}
+
+
+function shareHistoryAsLink() {
+    const data = window.currentViewingHistory;
+    if(!data) {
+        M.toast({html: 'Veri hatası!', classes: 'red'});
+        return;
+    }
+
+    M.toast({html: '🔗 Link oluşturuluyor...', classes: 'blue'});
+
+    const listId = 'liste_gecmis_' + Math.random().toString(36).substr(2, 9);
+
+    // Geçmiş verisini paylaşım veritabanına kopyala
+    db.collection("public_lists").doc(listId).set({
+        startDate: data.startDate,
+        endDate: data.endDate,
+        assignments: data.assignments,
+        unavailable: data.unavailable,
+        personnelSnapshot: data.personnelSnapshot,
+        holidays: data.holidays || "",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        isHistoryLink: true
+    })
+    .then(() => {
+        const magicLink = `https://nobetplani.com/?listeID=${listId}`;
+        
+        // Yeni Paylaşım Modalını (Dün yaptığımız modern kutu) tetikle
+        document.getElementById('generatedMagicLink').value = magicLink;
+        window.lastGeneratedScheduleData = {
+            startDate: data.startDate,
+            endDate: data.endDate,
+            assignments: data.assignments,
+            unavailable: data.unavailable,
+            personnelSnapshot: data.personnelSnapshot,
+            holidays: data.holidays || ""
+        };
+
+        const modalElem = document.getElementById('shareLinkModal');
+        M.Modal.getInstance(modalElem).open();
+    })
+    .catch(err => {
+        M.toast({html: 'Hata: ' + err.message, classes: 'red'});
+    });
 }
     
 </script>
