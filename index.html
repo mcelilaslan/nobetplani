@@ -1047,152 +1047,161 @@
     window.selectedYears = [];
 
     function loadHistoryList() {
-        const user = auth.currentUser;
-        if (!user) {
-            document.getElementById('historyList').innerHTML = '<a class="collection-item">Görüntülemek için giriş yapmalısınız.</a>';
-            return;
-        }
+    // 1. KONTROL: auth değişkeninin ve Firebase'in hazır olduğundan emin ol
+    const currentAuth = (typeof auth !== 'undefined') ? auth : firebase.auth();
+    const user = currentAuth.currentUser;
 
-        const listContainer = document.getElementById('historyList');
-        const loader = document.getElementById('historyLoading');
-        const detailPanel = document.getElementById('historyDetail');
-        const placeholder = document.getElementById('historyPlaceholder');
+    const listContainer = document.getElementById('historyList');
+    const loader = document.getElementById('historyLoading');
+    const detailPanel = document.getElementById('historyDetail');
+    const placeholder = document.getElementById('historyPlaceholder');
 
-        // Ekranı sıfırla
-        listContainer.innerHTML = '';
-        detailPanel.style.display = 'none';
-        placeholder.style.display = 'none'; 
-        loader.style.display = 'block';
+    if (!user) {
+        
+        listContainer.innerHTML = '<div class="center-align" style="padding:20px;"><div class="preloader-wrapper small active"><div class="spinner-layer spinner-teal-only"><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div></div><p class="grey-text" style="font-size:0.8rem;">Oturum kontrol ediliyor...</p></div>';
+        
+        setTimeout(() => {
+            if (currentAuth.currentUser) {
+                loadHistoryList(); // Oturum geldiyse fonksiyonu baştan çalıştır
+            } else {
+                listContainer.innerHTML = '<a class="collection-item red-text center-align" style="font-weight:bold;"><i class="material-icons left">error_outline</i>Görüntülemek için giriş yapmalısınız.</a>';
+            }
+        }, 1000);
+        return;
+    }
 
-        db.collection("users").doc(user.uid).collection("history").orderBy("updatedAt", "desc").get()
-            .then((querySnapshot) => {
-                loader.style.display = 'none';
+    // Ekranı sıfırla (Orijinal Kodun Başlangıcı)
+    listContainer.innerHTML = '';
+    detailPanel.style.display = 'none';
+    placeholder.style.display = 'none'; 
+    loader.style.display = 'block';
+
+    db.collection("users").doc(user.uid).collection("history").orderBy("updatedAt", "desc").get()
+        .then((querySnapshot) => {
+            loader.style.display = 'none';
+            
+            if (querySnapshot.empty) {
+                listContainer.innerHTML = '<a class="collection-item">Henüz kaydedilmiş bir geçmiş bulunamadı.</a>';
+                placeholder.style.display = 'block';
+                return;
+            }
+
+            window.allHistoryDocs = [];
+            const yearsMap = {}; 
+
+            querySnapshot.forEach(doc => {
+                const data = doc.data();
+                data.id = doc.id; 
+                window.allHistoryDocs.push(data);
+
+                const [year, month] = data.id.split('-');
+                if (!yearsMap[year]) yearsMap[year] = [];
+                yearsMap[year].push(data);
+            });
+
+            // --- KÜMÜLATİF İSTATİSTİKLER ---
+            const cumItem = document.createElement('a');
+            cumItem.className = 'collection-item waves-effect';
+            cumItem.style.fontWeight = 'bold';
+            cumItem.style.color = '#d32f2f';
+            cumItem.style.backgroundColor = '#fff3e0';
+            cumItem.style.borderBottom = '2px solid #e0e0e0';
+            cumItem.innerHTML = `<i class="material-icons left" style="margin-right: 10px;">stacked_line_chart</i>Kümülatif İstatistikler`;
+            cumItem.onclick = () => showCumulativeView();
+            listContainer.appendChild(cumItem);
+
+            const sortedYears = Object.keys(yearsMap).sort((a, b) => b - a);
+            const currentYear = new Date().getFullYear().toString();
+
+            sortedYears.forEach(year => {
+                // --- YIL BAŞLIĞI (Açılır/Kapanır Menü) ---
+                const yearHeader = document.createElement('div');
+                yearHeader.className = 'collection-item waves-effect grey lighten-4 black-text';
+                yearHeader.style.cursor = 'pointer';
+                yearHeader.style.fontWeight = '700';
+                yearHeader.style.display = 'flex';
+                yearHeader.style.justifyContent = 'space-between';
+                yearHeader.style.alignItems = 'center';
+                yearHeader.style.borderTop = '1px solid #e0e0e0';
+                yearHeader.innerHTML = `
+                    <span><i class="material-icons left" style="font-size: 1.2rem; margin-top:2px;">calendar_today</i>${year} Kayıtları</span>
+                    <i class="material-icons grey-text" id="icon_${year}">expand_more</i>
+                `;
                 
-                if (querySnapshot.empty) {
-                    listContainer.innerHTML = '<a class="collection-item">Henüz kaydedilmiş bir geçmiş bulunamadı.</a>';
-                    placeholder.style.display = 'block';
-                    return;
+                const monthsContainer = document.createElement('div');
+                monthsContainer.id = `container_${year}`;
+                monthsContainer.style.transition = 'all 0.3s ease';
+                
+                const isCurrentOrNewest = (year === currentYear) || (year === sortedYears[0]);
+                
+                if (isCurrentOrNewest) {
+                    monthsContainer.style.display = 'block';
+                    yearHeader.querySelector('i:last-child').innerText = 'expand_less';
+                    yearHeader.classList.add('teal', 'lighten-5');
+                } else {
+                    monthsContainer.style.display = 'none';
                 }
 
-                window.allHistoryDocs = [];
-                const yearsMap = {}; 
-
-                querySnapshot.forEach(doc => {
-                    const data = doc.data();
-                    data.id = doc.id; 
-                    window.allHistoryDocs.push(data);
-
-                    const [year, month] = data.id.split('-');
-                    if (!yearsMap[year]) yearsMap[year] = [];
-                    yearsMap[year].push(data);
-                });
-
-                const cumItem = document.createElement('a');
-                cumItem.className = 'collection-item waves-effect';
-                cumItem.style.fontWeight = 'bold';
-                cumItem.style.color = '#d32f2f';
-                cumItem.style.backgroundColor = '#fff3e0';
-                cumItem.style.borderBottom = '2px solid #e0e0e0';
-                cumItem.innerHTML = `<i class="material-icons left" style="margin-right: 10px;">stacked_line_chart</i>Kümülatif İstatistikler`;
-                cumItem.onclick = () => showCumulativeView();
-                listContainer.appendChild(cumItem);
-
-                const sortedYears = Object.keys(yearsMap).sort((a, b) => b - a);
-                const currentYear = new Date().getFullYear().toString();
-
-                sortedYears.forEach(year => {
-                    // --- YIL BAŞLIĞI (Açılır/Kapanır Menü) ---
-                    const yearHeader = document.createElement('div');
-                    yearHeader.className = 'collection-item waves-effect grey lighten-4 black-text';
-                    yearHeader.style.cursor = 'pointer';
-                    yearHeader.style.fontWeight = '700';
-                    yearHeader.style.display = 'flex';
-                    yearHeader.style.justifyContent = 'space-between';
-                    yearHeader.style.alignItems = 'center';
-                    yearHeader.style.borderTop = '1px solid #e0e0e0';
-                    yearHeader.innerHTML = `
-                        <span><i class="material-icons left" style="font-size: 1.2rem; margin-top:2px;">calendar_today</i>${year} Kayıtları</span>
-                        <i class="material-icons grey-text" id="icon_${year}">expand_more</i>
-                    `;
-                    
-                    const monthsContainer = document.createElement('div');
-                    monthsContainer.id = `container_${year}`;
-                    monthsContainer.style.transition = 'all 0.3s ease';
-                    
-                    const isCurrentOrNewest = (year === currentYear) || (year === sortedYears[0]);
-                    
-                    if (isCurrentOrNewest) {
+                yearHeader.onclick = () => {
+                    const isHidden = monthsContainer.style.display === 'none';
+                    if (isHidden) {
                         monthsContainer.style.display = 'block';
-                        yearHeader.querySelector('i:last-child').innerText = 'expand_less'; // Ok yukarı baksın
-                        yearHeader.classList.add('teal', 'lighten-5'); // Aktif yıl 
+                        document.getElementById(`icon_${year}`).innerText = 'expand_less';
+                        yearHeader.classList.add('teal', 'lighten-5');
                     } else {
                         monthsContainer.style.display = 'none';
+                        document.getElementById(`icon_${year}`).innerText = 'expand_more';
+                        yearHeader.classList.remove('teal', 'lighten-5');
                     }
+                };
 
-                    // Başlığa Tıklama Olayı
-                    yearHeader.onclick = () => {
-                        const isHidden = monthsContainer.style.display === 'none';
-                        if (isHidden) {
-                            monthsContainer.style.display = 'block';
-                            document.getElementById(`icon_${year}`).innerText = 'expand_less';
-                            yearHeader.classList.add('teal', 'lighten-5');
-                        } else {
-                            monthsContainer.style.display = 'none';
-                            document.getElementById(`icon_${year}`).innerText = 'expand_more';
-                            yearHeader.classList.remove('teal', 'lighten-5');
-                        }
-                    };
+                listContainer.appendChild(yearHeader);
 
-                    listContainer.appendChild(yearHeader);
-
-                    // --- AYLARI LİSTELE ---
-                    // Ayları yeniden eskiye sıralayalım (Aralık -> Ocak)
-                    yearsMap[year].sort((a, b) => {
-                        const monthA = parseInt(a.id.split('-')[1]);
-                        const monthB = parseInt(b.id.split('-')[1]);
-                        return monthB - monthA;
-                    });
-
-                    yearsMap[year].forEach(data => {
-                        const [y, m] = data.id.split('-');
-                        const monthName = getMonthName(parseInt(m));
-                        
-                        const li = document.createElement('a');
-                        li.className = 'collection-item waves-effect black-text'; // EKLENDİ
-                        li.style.paddingLeft = '45px'; 
-                        li.style.borderLeft = '4px solid transparent'; 
-                        li.style.color = '#374151'; // EKLENDİ (Varsayılan koyu renk)
-                        li.innerHTML = `
-                            <span class="title" style="font-weight: 500; font-size: 1rem;">${monthName}</span>
-                            <br><span class="grey-text" style="font-size: 0.75rem;">
-                                <i class="material-icons tiny" style="vertical-align: middle;">update</i> 
-                                ${data.updatedAt ? new Date(data.updatedAt.seconds * 1000).toLocaleDateString('tr-TR') : '-'}
-                            </span>
-                        `;
-                        
-                        // Tıklama
-                        li.onclick = function() {
-                            showHistoryDetail(data);
-                            // Seçili olduğunu belli et (Soluna renkli çizgi koy)
-                            const allItems = listContainer.querySelectorAll('a.collection-item');
-                            allItems.forEach(item => item.style.borderLeft = '4px solid transparent');
-                            this.style.borderLeft = '4px solid #009688';
-                        };
-                        
-                        monthsContainer.appendChild(li);
-                    });
-
-                    listContainer.appendChild(monthsContainer);
+                // --- AYLARI LİSTELE ---
+                yearsMap[year].sort((a, b) => {
+                    const monthA = parseInt(a.id.split('-')[1]);
+                    const monthB = parseInt(b.id.split('-')[1]);
+                    return monthB - monthA;
                 });
-                
-                placeholder.style.display = 'block';
-            })
-            .catch((error) => {
-                console.error("Geçmiş yükleme hatası:", error);
-                loader.style.display = 'none';
-                listContainer.innerHTML = '<a class="collection-item red-text">Hata oluştu.</a>';
+
+                yearsMap[year].forEach(data => {
+                    const [y, m] = data.id.split('-');
+                    const monthName = getMonthName(parseInt(m));
+                    
+                    const li = document.createElement('a');
+                    li.className = 'collection-item waves-effect black-text';
+                    li.style.paddingLeft = '45px'; 
+                    li.style.borderLeft = '4px solid transparent'; 
+                    li.style.color = '#374151';
+                    li.innerHTML = `
+                        <span class="title" style="font-weight: 500; font-size: 1rem;">${monthName}</span>
+                        <br><span class="grey-text" style="font-size: 0.75rem;">
+                            <i class="material-icons tiny" style="vertical-align: middle;">update</i> 
+                            ${data.updatedAt ? new Date(data.updatedAt.seconds * 1000).toLocaleDateString('tr-TR') : '-'}
+                        </span>
+                    `;
+                    
+                    li.onclick = function() {
+                        showHistoryDetail(data);
+                        const allItems = listContainer.querySelectorAll('a.collection-item');
+                        allItems.forEach(item => item.style.borderLeft = '4px solid transparent');
+                        this.style.borderLeft = '4px solid #009688';
+                    };
+                    
+                    monthsContainer.appendChild(li);
+                });
+
+                listContainer.appendChild(monthsContainer);
             });
-    }
+            
+            placeholder.style.display = 'block';
+        })
+        .catch((error) => {
+            console.error("Geçmiş yükleme hatası:", error);
+            loader.style.display = 'none';
+            listContainer.innerHTML = '<a class="collection-item red-text">Hata oluştu.</a>';
+        });
+}
     // --- TEKİL AY DETAYI ---
     function showHistoryDetail(data) {
         highlightActiveItem(event.currentTarget);
