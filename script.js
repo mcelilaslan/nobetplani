@@ -2983,13 +2983,19 @@ function createMagicLink(btn) {
         return;
     }
 
+    if (!auth.currentUser) {
+        M.toast({html: 'Paylaşım linki oluşturmak için giriş yapmalısınız.', classes: 'orange darken-2'});
+        googleLogin();
+        return;
+    }
+
     const originalHtml = btn.innerHTML;
     btn.innerHTML = '<i class="material-icons left">loop</i>Bekleyin...';
     btn.classList.add('disabled');
 
     // Deterministik ID: aynı ay için her zaman aynı belge -> duplicate oluşmaz
     const [day, month, year] = startInput.split('-');
-    const uid = auth.currentUser ? auth.currentUser.uid : 'anon';
+    const uid = auth.currentUser.uid;
     const listId = `liste_${uid}_${year}-${month}`;
 
     const scheduleData = {
