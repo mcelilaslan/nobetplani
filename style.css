@@ -284,7 +284,8 @@ header h3 {
     padding: 18px 20px !important;
     border: none !important;
     cursor: pointer;
-    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    border-radius: var(--radius-md) !important;
+    transition: background 0.2s ease !important;
     gap: 10px;
     align-items: center;
 }
@@ -304,6 +305,7 @@ header h3 {
     border: none !important;
     display: none;
     overflow: visible;
+    border-radius: 0 0 var(--radius-md) var(--radius-md) !important;
 }
 
 /* ─── Kılavuz Collapsible ─── */
@@ -318,7 +320,8 @@ header h3 {
     color: var(--primary-dark) !important;
     font-weight: 700 !important;
     border: 1.5px solid var(--primary-mid) !important;
-    border-radius: var(--radius-sm) !important;
+    border-radius: var(--radius-md) !important;
+    transition: background 0.2s ease !important;
 }
 
 #guideCollapsible .collapsible-header i {
@@ -326,14 +329,14 @@ header h3 {
 }
 
 #guideCollapsible .collapsible-header.active {
-    border-radius: var(--radius-sm) var(--radius-sm) 0 0 !important;
+    border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
 }
 
 #guideCollapsible .collapsible-body {
     background: var(--surface-2) !important;
     border: 1.5px solid var(--primary-mid) !important;
     border-top: none !important;
-    border-radius: 0 0 var(--radius-sm) var(--radius-sm) !important;
+    border-radius: 0 0 var(--radius-md) var(--radius-md) !important;
     box-shadow: var(--shadow-sm) !important;
 }
 
@@ -1511,6 +1514,16 @@ table#personTable thead th {
 /* ─── Geçiş Animasyonları (Kılavuz sneak-peek) ─── */
 .collapsible li.active .collapsible-body {
     display: block;
+}
+
+/* Collapsible smooth açılma/kapanma */
+.collapsible-body {
+    will-change: height;
+}
+
+.collapsible li {
+    overflow: hidden;
+    border-radius: var(--radius-md) !important;
 }
 
 /* ─── Material Icons Renk Override ─── */
