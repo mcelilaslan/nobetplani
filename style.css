@@ -1102,7 +1102,6 @@ table#personTable thead th {
     font-family: var(--font) !important;
     border-radius: var(--radius-sm) !important;
     font-weight: 600 !important;
-    background: linear-gradient(135deg, var(--primary-dark) 0%, #146e66 100%) !important;
 }
 
 /* ─── Email Modal ─── */
