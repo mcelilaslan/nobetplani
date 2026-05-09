@@ -1,8 +1,4 @@
-/* =====================================================
-   nobetplani.com — Modern Yeniden Tasarım
-   Font: Plus Jakarta Sans (ücretsiz, Apple-benzeri)
-   Palet: Açık, temiz, teal/mint vurgular
-   ===================================================== */
+
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
 
@@ -76,12 +72,6 @@ body {
 
 .custom-container.expanded {
     max-width: 1573px;
-}
-
-/* Collapsible içeren kartlarda padding olmamalı, header tam köşeden başlar */
-.custom-container:has(> .collapsible) {
-    padding: 0;
-    overflow: hidden;
 }
 
 /* ─── Navigasyon ─── */
@@ -266,14 +256,6 @@ header h3 {
     box-shadow: none !important;
 }
 
-.collapsible.popout > li,
-.collapsible > li {
-    margin: 0 !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    border-radius: 0 !important;
-}
-
 .collapsible-header {
     font-family: var(--font) !important;
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
@@ -284,8 +266,7 @@ header h3 {
     padding: 18px 20px !important;
     border: none !important;
     cursor: pointer;
-    border-radius: var(--radius-md) !important;
-    transition: background 0.2s ease !important;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
     gap: 10px;
     align-items: center;
 }
@@ -305,7 +286,6 @@ header h3 {
     border: none !important;
     display: none;
     overflow: visible;
-    border-radius: 0 0 var(--radius-md) var(--radius-md) !important;
 }
 
 /* ─── Kılavuz Collapsible ─── */
@@ -320,8 +300,7 @@ header h3 {
     color: var(--primary-dark) !important;
     font-weight: 700 !important;
     border: 1.5px solid var(--primary-mid) !important;
-    border-radius: var(--radius-md) !important;
-    transition: background 0.2s ease !important;
+    border-radius: var(--radius-sm) !important;
 }
 
 #guideCollapsible .collapsible-header i {
@@ -329,14 +308,14 @@ header h3 {
 }
 
 #guideCollapsible .collapsible-header.active {
-    border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0 !important;
 }
 
 #guideCollapsible .collapsible-body {
     background: var(--surface-2) !important;
     border: 1.5px solid var(--primary-mid) !important;
     border-top: none !important;
-    border-radius: 0 0 var(--radius-md) var(--radius-md) !important;
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm) !important;
     box-shadow: var(--shadow-sm) !important;
 }
 
@@ -1514,16 +1493,6 @@ table#personTable thead th {
 /* ─── Geçiş Animasyonları (Kılavuz sneak-peek) ─── */
 .collapsible li.active .collapsible-body {
     display: block;
-}
-
-/* Collapsible smooth açılma/kapanma */
-.collapsible-body {
-    will-change: height;
-}
-
-.collapsible li {
-    overflow: hidden;
-    border-radius: var(--radius-md) !important;
 }
 
 /* ─── Material Icons Renk Override ─── */
