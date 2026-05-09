@@ -360,8 +360,8 @@
 
         function addPerson() {
             const name = document.getElementById('personName').value.trim().toUpperCase();
-            if (!name) return M.toast({html: 'Lütfen isim girin!'});
-            if (persons.some(p => p.name === name)) return M.toast({html: 'Bu isim zaten var!'});
+            if (!name) return M.toast({html: 'Lütfen isim girin!', classes: 'teal'});
+            if (persons.some(p => p.name === name)) return M.toast({html: 'Bu isim zaten var!', classes: 'teal'});
 
             if (persons.length === 0 && (!auth || !auth.currentUser) && !loginSuggestionShown) {
                  const modalElem = document.getElementById('loginSuggestionModal');
@@ -386,7 +386,7 @@
             document.getElementById('personName').value = '';
             renderTable();
             if (collapsiblePersonel) collapsiblePersonel.open(0);
-            M.toast({html: `${name} eklendi!`});
+            M.toast({html: `${name} eklendi!`, classes: 'teal'});
             savePersonsToLocalStorage(); // KAYDET
         }
 
@@ -394,7 +394,7 @@
             const name = persons[index].name;
             persons.splice(index, 1);
             renderTable();
-            M.toast({html: `${name} silindi!`});
+            M.toast({html: `${name} silindi!`, classes: 'teal'});
             savePersonsToLocalStorage(); // KAYDET
         }
 
@@ -695,7 +695,7 @@
         function generateCalendar() {
 
             if (persons.length < 3) {
-                M.toast({ html: 'Lütfen en az 3 personel ekleyin!' });
+                M.toast({ html: 'Lütfen en az 3 personel ekleyin!', classes: 'purple' });
                 return;
             }
             
@@ -704,18 +704,18 @@
             const dutyPerDayInput = document.getElementById('dutyPerDay').value.trim();
 
             if (!dutyPerDayInput || dutyPerDayInput === "") {
-                M.toast({ html: 'Kaçar kişinin nöbetçi olacağını belirleyiniz!' });
+                M.toast({ html: 'Kaçar kişinin nöbetçi olacağını belirleyiniz!', classes: 'purple' });
                 return;
             }
 
             const dutyPerDay = parseInt(dutyPerDayInput);
             if (isNaN(dutyPerDay) || dutyPerDay < 1) {
-                M.toast({ html: 'Lütfen geçerli bir sayı girin (1 veya daha fazla)!' });
+                M.toast({ html: 'Lütfen geçerli bir sayı girin (1 veya daha fazla)!', classes: 'purple' });
                 return;
             }
 
             if (!startInput || !endInput) {
-                M.toast({ html: 'Lütfen tarih seçin!' });
+                M.toast({ html: 'Lütfen tarih seçin!', classes: 'purple' });
                 return;
             }
 
@@ -1254,7 +1254,7 @@
             if (validationErrors.length > 0) {
                 showErrorModal();
             } else {
-                M.toast({ html: 'Lütfen bir paylaşım seçeneği seçin!' });
+                M.toast({ html: 'Lütfen bir paylaşım seçeneği seçin!', classes: 'blue' });
             }
         }
 
@@ -1381,7 +1381,7 @@
                 }
             }
             if (!allDaysFilled) {
-                M.toast({ html: 'Tüm günlere yeteri kadar nöbetçi atanmadı, takvimi doldurun!' });
+                M.toast({ html: 'Tüm günlere yeteri kadar nöbetçi atanmadı, takvimi doldurun!', classes: 'teal' });
                 return;
             }
 
@@ -1701,7 +1701,7 @@
                 csvUploadInput.click();
             } else {
                 console.error('csvUpload input elementi bulunamadı!');
-                M.toast({ html: 'Dosya yükleme alanı bulunamadı!' });
+                M.toast({ html: 'Dosya yükleme alanı bulunamadı!', classes: 'teal' });
             }
         }
 
@@ -1710,11 +1710,11 @@
 
             const file = event.target.files[0];
             if (!file) {
-                M.toast({ html: 'Lütfen bir dosya seçin!' });
+                M.toast({ html: 'Lütfen bir dosya seçin!', classes: 'teal' });
                 return;
             }
             if (!file.name.endsWith('.csv')) {
-                M.toast({ html: 'Lütfen geçerli bir CSV dosyası yükleyin!' });
+                M.toast({ html: 'Lütfen geçerli bir CSV dosyası yükleyin!', classes: 'teal' });
                 return;
             }
 
@@ -1729,7 +1729,7 @@
                 const headers = rows[0];
 
                 if (headers[0] !== 'İsim') {
-                    M.toast({ html: 'Geçersiz CSV formatı! Başlık "İsim" olmalı.' });
+                    M.toast({ html: 'Geçersiz CSV formatı! Başlık "İsim" olmalı.', classes: 'teal' });
                     loadingOverlay.style.display = 'none';
                     isUploading = false;
                     return;
@@ -1752,7 +1752,7 @@
                 persons = newPersons.filter(p => p.name && !persons.some(existing => existing.name === p.name));
                 renderTable();
                 savePersonsToLocalStorage(); // KAYDET
-                M.toast({ html: 'Personel listesi başarıyla yüklendi!' });
+                M.toast({ html: 'Personel listesi başarıyla yüklendi!', classes: 'teal' });
                 loadingOverlay.style.display = 'none';
                 isUploading = false;
             };
@@ -1794,7 +1794,7 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            M.toast({ html: 'Personel listesi CSV olarak indirildi! Sonraki kullanımda buradan yüklemeniz yeterli!' });
+            M.toast({ html: 'Personel listesi CSV olarak indirildi! Sonraki kullanımda buradan yüklemeniz yeterli!', classes: 'teal' });
         }
 
         function clearCalendar() {
@@ -2308,7 +2308,7 @@
 
         docRef.set(scheduleData)
             .then(() => {
-                M.toast({html: '✅ Nöbet listesi başarıyla kaydedildi!', classes: 'green darken-2'});
+                M.toast({html: '✅ Nöbet listesi başarıyla kaydedildi!', classes: 'orange darken-3'});
                 
                 if (btn) {
                     btn.innerHTML = '<i class="material-icons left">check</i>Tamam';
@@ -2317,7 +2317,7 @@
             })
             .catch((error) => {
                 console.error("Kaydetme hatası: ", error);
-                M.toast({html: 'Hata: ' + error.message, classes: 'red'});
+                M.toast({html: 'Hata: ' + error.message, classes: 'orange darken-3'});
                 
                 if (btn) {
                     resetButton(btn, originalText);
@@ -2917,11 +2917,11 @@ function downloadAsImage() {
     const targetElement = document.getElementById('calendarTable');
     
     if (!targetElement || targetElement.innerHTML.trim() === '') {
-        M.toast({html: 'İndirilecek bir takvim bulunamadı!', classes: 'red rounded'});
+        M.toast({html: 'İndirilecek bir takvim bulunamadı!', classes: 'teal rounded'});
         return;
     }
 
-    M.toast({html: '📸 Fotoğraf hazırlanıyor, lütfen bekleyin...', classes: 'blue rounded', displayLength: 2000});
+    M.toast({html: '📸 Fotoğraf hazırlanıyor, lütfen bekleyin...', classes: 'blue darken-1 rounded', displayLength: 2000});
 
     // 1. KESİN ÇÖZÜM: Alt satır kaymasını önleyen dış boşluk (Margin)
     const originalMargin = targetElement.style.marginBottom;
@@ -2959,7 +2959,7 @@ function downloadAsImage() {
         link.download = `Nobet_Listesi_${new Date().toISOString().split('T')[0]}.png`;
         link.href = imgData;
         link.click();
-        M.toast({html: '✅ Fotoğraf başarıyla cihazınıza indirildi!', classes: 'green darken-2 rounded'});
+        M.toast({html: '✅ Fotoğraf başarıyla cihazınıza indirildi!', classes: 'blue darken-1 rounded'});
     }).catch(err => {
         // Hata olursa da ekranı bozuk bırakma
         targetElement.style.marginBottom = originalMargin;
@@ -2971,7 +2971,7 @@ function downloadAsImage() {
         });
 
         console.error("Resim hatası:", err);
-        M.toast({html: 'Resim oluşturulurken bir hata oluştu.', classes: 'red rounded'});
+        M.toast({html: 'Resim oluşturulurken bir hata oluştu.', classes: 'blue darken-1 rounded'});
     });
 }
 
@@ -2979,12 +2979,12 @@ function downloadAsImage() {
 function createMagicLink(btn) {
     const startInput = document.getElementById('startDate').value;
     if (!startInput || Object.keys(selectedCells).length === 0) {
-        M.toast({html: 'Paylaşılacak bir liste yok! Önce takvimi oluşturun.', classes: 'red rounded'});
+        M.toast({html: 'Paylaşılacak bir liste yok! Önce takvimi oluşturun.', classes: 'blue darken-1 rounded'});
         return;
     }
 
     if (!auth.currentUser) {
-        M.toast({html: 'Paylaşım linki oluşturmak için giriş yapmalısınız.', classes: 'orange darken-2'});
+        M.toast({html: 'Paylaşım linki oluşturmak için giriş yapmalısınız.', classes: 'blue darken-1'});
         googleLogin();
         return;
     }
@@ -3029,7 +3029,7 @@ function createMagicLink(btn) {
         })
         .catch((error) => {
             console.error("Paylaşım hatası: ", error);
-            M.toast({html: 'Paylaşım linki oluşturulamadı: ' + error.message, classes: 'red rounded'});
+            M.toast({html: 'Paylaşım linki oluşturulamadı: ' + error.message, classes: 'blue darken-1 rounded'});
         })
         .finally(() => {
             btn.innerHTML = originalHtml;
@@ -3043,9 +3043,9 @@ function copyGeneratedLink() {
     linkInput.select();
     linkInput.setSelectionRange(0, 99999); // Mobil cihazlar için stabilite
     navigator.clipboard.writeText(linkInput.value).then(() => {
-        M.toast({html: '✅ Link başarıyla kopyalandı! WhatsApp\'a yapıştırabilirsiniz.', classes: 'green darken-2 rounded', displayLength: 4000});
+        M.toast({html: '✅ Link başarıyla kopyalandı! WhatsApp\'a yapıştırabilirsiniz.', classes: 'blue darken-1 rounded', displayLength: 4000});
     }).catch(err => {
-        M.toast({html: 'Kopyalama başarısız, lütfen manuel kopyalayın.', classes: 'red rounded'});
+        M.toast({html: 'Kopyalama başarısız, lütfen manuel kopyalayın.', classes: 'blue darken-1 rounded'});
     });
 }
 
@@ -3358,7 +3358,7 @@ function shareHistoryAsLink() {
         return;
     }
 
-    M.toast({html: '🔗 Link oluşturuluyor...', classes: 'blue'});
+    M.toast({html: '🔗 Link oluşturuluyor...', classes: 'blue darken-1'});
 
     // Deterministik ID: history doc ID zaten yıl-ay formatında (ör: 2025-06)
     const uid = auth.currentUser ? auth.currentUser.uid : 'anon';
@@ -3392,6 +3392,6 @@ function shareHistoryAsLink() {
         M.Modal.getInstance(modalElem).open();
     })
     .catch(err => {
-        M.toast({html: 'Hata: ' + err.message, classes: 'red'});
+        M.toast({html: 'Hata: ' + err.message, classes: 'blue darken-1'});
     });
 }
