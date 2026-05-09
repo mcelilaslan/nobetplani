@@ -1,1043 +1,1543 @@
- body {
-            background: url('background.png') #F5E9D9 !important;
-            background-size: cover !important;
-            background-repeat: no-repeat !important;
-            background-position: center !important;
-            background-attachment: fixed !important;
-            min-height: 100vh !important;
-            padding: 20px !important;
-            margin: 0 !important;
-            display: flex !important;
-            justify-content: center !important;
-            align-items: flex-start !important;
-        }
-
-        .container-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 1600px;
-        }
-
-        .custom-container {
-            background: rgba(255, 255, 255, 0.97);
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            margin: 10px 0;
-            width: 100%;
-            max-width: 780px;
-            box-sizing: border-box;
-            transition: max-width 0.3s ease;
-            position: relative;
-        }
-
-        .custom-container.expanded {
-            max-width: 1573px;
-        }
-
-         /* Menü Çubuğu Stilleri */
-        /* Menü Çubuğu Stilleri */
-        .nav-container {
-            background: rgba(255, 255, 255, 0.97);
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            padding: 0;
-            margin: 10px 0;
-            width: 100%;
-            max-width: 780px;
-            box-sizing: border-box;
-            font-family: 'Bricolage Grotesque', sans-serif !important;
-        }
-        
-        .nav-wrapper {
-            background-color: rgba(119,190,186,255) !important;
-            border-radius: 8px 8px 0 0;
-            display: flex;
-            align-items: center; /* Dikey ortalama */
-            padding: 0 20px; /* Kenarlardan biraz boşluk bıraktık */
-            height: 64px; /* Yükseklik sabitleme */
-        }
-        
-        .nav-wrapper .container {
-            display: flex;
-            justify-content: space-between; /* ÖNEMLİ: Biri sağa biri sola yaslansın */
-            align-items: center;
-            width: 100%;
-            max-width: 780px;
-            position: relative;
-            height: 100%;
-        }
-        
-        .nav-mobile {
-            /* Mobilde ikonun konumu için */
-            display: none; 
-            margin-right: 10px;
-        }
-        
-        /* Eski 'center' sınıfı kalsa bile 'right' sınıfını hedefliyoruz */
-        .nav-wrapper ul.right {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            margin: 0;
-            padding: 0;
-            list-style: none;
-            height: 100%;
-        }
-        
-        .nav-wrapper ul.right li {
-            height: 100%;
-            display: flex;
-            align-items: center;
-        }
-        
-        .nav-wrapper ul.right li a {
-            color: #fff;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: color 0.3s ease;
-            display: flex;
-            align-items: center;
-            height: 100%;
-            padding: 0 15px; /* Linkler arası boşluk */
-        }
-        
-        .nav-wrapper ul.right li a:hover {
-            color: #e0f7fa;
-            background-color: rgba(0, 0, 0, 0.1);
-        }
-
-        /* Yedek olarak eski center stillerini de koruyoruz (bozulmasın diye) */
-        .nav-wrapper ul.center {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-        
-        .sidenav {
-            background-color: rgba(255, 255, 255, 0.97);
-            width: 250px;
-        }
-        
-        .sidenav li a {
-            color: #26a69a;
-            font-size: 1.1rem;
-            font-weight: 500;
-            font-family: 'Bricolage Grotesque', sans-serif !important;
-        }
-        
-        .sidenav li a:hover {
-            background-color: #f5f5f5;
-            color: #00796b;
-        }
-        
-        .sidenav-trigger {
-            display: flex;
-            align-items: center;
-            color: #fff !important;
-            font-size: 1.2rem;
-            font-weight: 600;
-            font-family: 'Bricolage Grotesque', sans-serif !important;
-            padding: 0;
-            margin: 0;
-            cursor: pointer;
-        }
-        
-        .sidenav-trigger i {
-            margin: 0;
-        }
-        
-        @media only screen and (max-width: 900px) {
-            .nav-container {
-                max-width: 100%;
-                padding: 10px;
-            }
-        
-            .nav-wrapper .container {
-                max-width: 100%;
-                padding: 0 10px;
-                justify-content: flex-start; /* Mobilde sola yasla */
-            }
-        
-            .nav-mobile {
-                display: block; /* Mobilde ikonu göster */
-            }
-        
-            .nav-wrapper ul.right, .nav-wrapper ul.center {
-                display: none; /* Mobilde masaüstü menüyü gizle */
-            }
-        }
-
-            .mobile-menu-custom {
-                    display: none !important; 
-            }
-
-            @media only screen and (max-width: 992px) {
-                .mobile-menu-custom {
-                    display: flex !important;
-                    align-items: center;
-                    height: 100%;
-                    padding: 0 10px;
-                    cursor: pointer;
-                    margin-right: 15px;
-                }
-            }
-
-        /* Mevcut Stiller */
-        header h3 {
-            font-family: 'Bricolage Grotesque', sans-serif !important;
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: black;
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .input-field label {
-            color: #26a69a;
-        }
-
-        .weekend, .holiday {
-            background-color: #757575 !important;
-            color: #ffffff;
-        }
-
-        .unavailable {
-            background-color: #ffebee !important;
-            position: relative;
-        }
-
-        .unavailable::after {
-            content: "✖";
-            color: #ff1744;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 1.2rem;
-            pointer-events: none;
-        }
-
-        .dragging {
-            background-color: rgba(200, 230, 201, 0.8);
-        }
-
-        .selected {
-            background-color: #c8e6c9 !important;
-            position: relative;
-        }
-
-        .selected::after {
-            content: "✓";
-            color: #2e7d32;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 1.4rem;
-            font-weight: bold;
-            pointer-events: none;
-        }
-
-        .collapsible.popout {
-            margin: 0;
-        }
-
-        .collapsible-header {
-            font-family: 'Bricolage Grotesque', sans-serif !important;
-            background-color: rgba(119,190,186,255) !important;
-            font-weight: 500;
-            padding: 20px;
-            border-bottom: 1px solid #ddd;
-            cursor: pointer;
-        }
-
-        .collapsible-body {
-            font-family: 'Bricolage Grotesque', sans-serif !important;
-            background: white;
-            padding: 15px;
-            border-bottom: 1px solid #ddd;
-            display: none;
-            overflow: visible;
-        }
-
-        #calendarTable {
-            font-family: 'Bricolage Grotesque', sans-serif !important;
-            width: 100%;
-            overflow-x: auto;
-            table-layout: fixed;
-        }
-
-        #calendarTable th:first-child {
-            width: 100px !important;
-            min-width: 100px !important;
-            text-align: left;
-        }
-
-        #calendarTable th {
-            text-align: center;
-            vertical-align: middle;
-        }
-
-        .calendar-cell {
-            position: relative;
-            min-width: 40px;
-            height: 40px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            vertical-align: middle;
-            border: 1px solid #ddd;
-            touch-action: manipulation;
-            -webkit-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        #calendarAlert {
-            transition: opacity 0.3s ease;
-        }
-
-        .name-column {
-            min-width: 100px !important;
-            width: 100px !important;
-            max-width: 200px !important;
-            overflow: hidden;
-            padding: 0 5px;
-            font-size: 14px;
-        }
-
-        .no-personnel-message {
-            font-style: italic;
-            font-size: 14px;
-            color: #757575;
-            text-align: center;
-            padding: 20px 0;
-        }
-
-        .modal-content h4 {
-            color: #d32f2f;
-        }
-
-        .error-list {
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-
-        .error-item {
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .error-type {
-            font-weight: bold;
-            color: #d32f2f;
-        }
-
-        .warning-type {
-            font-weight: bold;
-            color: #f57c00;
-        }
-
-        #statsTable td {
-            padding: 10px 15px;
-        }
-
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            display: none;
-        }
-
-        .left-align {
-            text-align: left;
-        }
-
-        .duty-gap-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            white-space: nowrap;
-            width: 100%;
-            height: 100%;
-            text-align: center;
-        }
-
-        .duty-gap-cell {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .increment-btn, .decrement-btn {
-            padding: 0 10px;
-            margin: 0 2px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 20px;
-            height: 20px;
-        }
-
-        table.striped > tbody > tr > td,
-        table.striped > tbody > tr > th,
-        td, th {
-            padding: 0 !important;
-        }
-
-        #personTable tbody tr {
-            height: 30px !important;
-            min-height: 30px !important;
-            max-height: 30px !important;
-            overflow: visible !important;
-        }
-
-        #personTable tbody td {
-            padding: 0 6px !important;
-            height: 30px !important;
-            vertical-align: middle !important;
-            line-height: 30px !important;
-            box-sizing: border-box !important;
-            overflow: visible !important;
-        }
-
-        #personTable tbody td input[type="number"] {
-            height: 20px !important;
-            padding: 0 5px !important;
-            line-height: 20px !important;
-            margin: 0 2px !important;
-            font-size: 12px !important;
-            margin: 0 !important;
-            box-sizing: border-box !important;
-            border: 1px solid #9e9e9e !important;
-            border-radius: 2px !important;
-        }
-
-        #personTable tbody td input[type="number"]:focus {
-            border-bottom: 1px solid #26a69a !important;
-            box-shadow: 0 1px 0 0 #26a69a !important;
-        }
-
-        #personTable tbody td .btn-floating {
-            width: 20px !important;
-            height: 20px !important;
-            line-height: 20px !important;
-            font-size: 10px !important;
-            margin: 0 2px !important;
-            padding: 0 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            box-shadow: none !important;
-        }
-
-        #personTable tbody td .btn-floating i {
-            line-height: 20px !important;
-            font-size: 12px !important;
-            margin: 0 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-        }
-
-        #personTable tbody td .duty-gap-cell span {
-            font-size: 12px !important;
-            line-height: 20px !important;
-            margin-right: 5px !important;
-        }
-
-        table#personTable thead th {
-            text-align: center !important;
-            vertical-align: middle !important;
-            padding: 5px !important;
-        }
-
-        #guideCollapsible {
-            margin: 0;
-        }
-
-        #guideCollapsible .collapsible-header {
-            background-color: rgba(119,190,186,0.9) !important;
-            border-radius: 0;
-            border-bottom: none;
-        }
-
-        #guideCollapsible .collapsible-body {
-            background: rgba(255, 255, 255, 0.97);
-            border-radius: 0 0 8px 8px;
-            box-shadow: none;
-        }
-
-        #guideCollapsible ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        #guideCollapsible ul li {
-            font-size: 1rem;
-            color: #424242;
-            margin-bottom: 10px;
-            line-height: 1.4;
-            position: relative;
-            padding-left: 25px;
-        }
-
-        #guideCollapsible ul li:before {
-            content: "•";
-            color: #26a69a;
-            font-size: 1.2rem;
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        #guideCollapsible ul li .btn-floating.tiny {
-            width: 20px !important;
-            height: 20px !important;
-            line-height: 20px !important;
-            font-size: 12px !important;
-            margin-right: 5px;
-            vertical-align: middle;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0;
-        }
-
-        #guideCollapsible ul li .btn-floating.tiny i {
-            font-size: 12px !important;
-            line-height: 20px !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100%;
-        }
-
-        .dropdown-content {
-            min-width: 100px !important;
-            background-color: #fff;
-            border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .dropdown-content li {
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            padding: 5px 0 !important;
-        }
-
-        .dropdown-content li > a {
-            color: #26a69a !important;
-            font-size: 14px;
-            padding: 10px 16px !important;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .dropdown-content li > a > i {
-            font-size: 24px !important;
-            color: #26a69a !important;
-        }
-
-        .dropdown-content li:hover {
-            background-color: #f5f5f5 !important;
-        }
-
-        .switch input[type="checkbox"] + .lever {
-            background-color: #f44336 !important;
-        }
-
-        .switch input[type="checkbox"]:checked + .lever {
-            background-color: #4caf50 !important;
-        }
-
-        .switch input[type="checkbox"] + .lever:after {
-            background-color: #d32f2f !important;
-        }
-
-        .switch input[type="checkbox"]:checked + .lever:after {
-            background-color: #388e3c !important;
-        }
-
-        .switch label .lever {
-            width: 48px !important;
-            height: 20px !important;
-        }
-
-        .switch label .lever:after {
-            width: 28px !important;
-            height: 28px !important;
-            top: -4px !important;
-        }
-
-        .switch label input[type="checkbox"]:checked + .lever:after {
-            left: 18px !important;
-        }
-
-        .switch-container {
-            background-color: rgba(119,190,186,255) !important;
-            border: 2px solid #b0bec5;
-            padding: 6px 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            display: inline-flex;
-            flex-direction: column;
-            align-items: flex-start;
-            width: auto;
-            box-sizing: border-box;
-        }
-
-        .switch-container label {
-            width: auto;
-            white-space: nowrap;
-        }
-
-        .balance-label {
-            display: flex;
-            align-items: center;
-            margin: 2px 0;
-        }
-
-        .balance-label span {
-            font-size: 0.8rem;
-            color: #000;
-            padding-left: 20px;
-        }
-
-        .balance-checkbox + span:not(.lever)::before {
-            width: 14px;
-            height: 14px;
-            border: 2px solid #5a5a5a;
-            border-radius: 2px;
-            background-color: #fff;
-        }
-
-        .balance-checkbox:checked + span:not(.lever)::before {
-            width: 8px;
-            height: 16px;
-            border: none;
-            border-right: 2px solid #26a69a;
-            border-bottom: 2px solid #26a69a;
-            background: transparent;
-            transform: rotate(45deg);
-            margin-top: -3px;
-            margin-left: 3px;
-        }
-
-        .fixed-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: #2F4F4F;
-            padding: 6.5px 0;
-            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
-            z-index: 10000;
-        }
-
-        .footer-content {
-            font-family: 'Bricolage Grotesque', sans-serif;
-            font-size: 1.0rem;
-            font-weight: 500;
-            color: #fff;
-            text-align: center;
-            margin: 0;
-        }
-
-        .tooltip-wrapper {
-            position: relative;
-            display: inline-block;
-        }
-
-        .tooltip {
-            position: absolute;
-            top: -50px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 14px;
-            font-family: 'Bricolage Grotesque', sans-serif;
-            white-space: nowrap;
-            z-index: 1000;
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-        }
-
-        .tooltip-wrapper:hover .tooltip {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .tooltip-icon {
-            font-size: 16px !important;
-            vertical-align: middle;
-            margin: 0 2px;
-            color: #26a69a;
-        }
-
-        .btn {
-            transition: 0.5s !important;
-        }
-
-        .btn:hover {
-            transform: scale(1.1) !important;
-        }
-
-        .control-buttons .btn {
-            margin-right: 20px !important;
-        }
-
-        .control-buttons .btn:last-child {
-            margin-right: 0 !important;
-        }
-
-        .btn-floating {
-            transition: 0.5s !important;
-        }
-
-        .btn-floating:hover {
-            transform: scale(1.1) !important;
-        }
-
-        #emailModal {
-            max-width: 400px;
-        }
-
-        .grouping-container {
-            display: flex;
-            align-items: center;
-            margin-left: 10px;
-        }
-
-        .grouping-label {
-            display: flex;
-            align-items: center;
-            color: #374151;
-            white-space: nowrap;
-        }
-
-        .grouping-label span {
-            font-size: 12px;
-            margin-left: 5px;
-        }
-
-        .standalone-select-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 100%;
-            margin-left: 0 !important;
-            padding-left: 0 !important;
-        }
-
-        .standalone-select-wrapper .select-container {
-            position: relative;
-            width: 100%;
-        }
-
-        .standalone-select-wrapper .select-container select {
-            appearance: none !important;
-            display: block !important;
-            width: 100% !important;
-            height: 40px !important;
-            padding: 0 30px 0 15px !important;
-            margin: 0 !important;
-            font-size: 16px !important;
-            font-family: 'Bricolage Grotesque', sans-serif !important;
-            color: #374151 !important;
-            background-color: #ffffff !important;
-            border: 2px solid #d1d5db !important;
-            border-radius: 8px !important;
-            cursor: pointer !important;
-            box-sizing: border-box !important;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%23707177" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>') !important;
-            background-repeat: no-repeat !important;
-            background-position: right 10px center !important;
-        }
-
-        .standalone-select-wrapper .select-container select:focus {
-            outline: none !important;
-            border-color: #26a69a !important;
-            box-shadow: 0 0 5px rgba(38, 166, 154, 0.5) !important;
-        }
-
-        .standalone-select-wrapper .select-container select option {
-            padding: 8px 15px !important;
-            background-color: #ffffff !important;
-            color: #374151 !important;
-        }
-
-        .standalone-select-wrapper .select-container select option:hover {
-            background-color: #f1f5f9 !important;
-        }
-
-        .standalone-select-wrapper .select-container label {
-            position: absolute !important;
-            top: -10px !important;
-            left: 15px !important;
-            font-size: 12px !important;
-            color: #26a69a !important;
-            background-color: #ffffff !important;
-            padding: 0 5px !important;
-            font-family: 'Bricolage Grotesque', sans-serif !important;
-            pointer-events: none !important;
-            transition: all 0.3s ease !important;
-        }
-
-        .standalone-select-wrapper[data-tooltip]:hover:after {
-            content: attr(data-tooltip);
-            position: absolute;
-            top: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 14px;
-            font-family: 'Bricolage Grotesque', sans-serif;
-            white-space: nowrap;
-            z-index: 1000;
-        }
-
-        .row .col.s6 {
-            padding-left: 0 !important;
-            margin-left: 0 !important;
-        }
-
-        .input-field, .standalone-select-wrapper .select-container {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-        }
-
-        .input-field input, .standalone-select-wrapper .select-container select {
-            margin: 0 !important;
-            padding-left: 15px !important;
-        }
-
-        .glow {
-            animation: glow 4s ease-in-out infinite;
-        }
-
-        .waves-effect.waves-light.btn.teal {
-            width: auto;
-            min-width: 0;
-            padding: 0 8px;
-            box-sizing: border-box;
-            display: inline-flex;
-            align-items: center;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            75% { transform: translateX(-5px); }
-        }
-
-        .toast.shake {
-            animation: shake 0.5s ease-in-out 3;
-        }
-
-        @keyframes glow {
-            0% { box-shadow: 0 0 5px 5px #26a69a; }
-            50% { box-shadow: 0 0 20px 10px #26a69a; }
-            100% { box-shadow: 0 0 5px 5px #26a69a; }
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
-        }
-
-        .bounce {
-            animation: bounce 1s infinite;
-        }
-
-        @media only screen and (max-width: 600px) {
-            .control-buttons .btn {
-                font-size: 0.8rem;
-            }
-        }
-
-        @media only screen and (max-width: 900px) {
-            .custom-container {
-                max-width: 100%;
-                padding: 10px;
-            }
-
-            .custom-container.expanded {
-                max-width: 100%;
-            }
-
-            .custom-container .row .input-field {
-                margin-left: 0 !important;
-                padding-left: 0 !important;
-                text-align: left !important;
-                display: block !important;
-                width: 100% !important;
-            }
-
-            .custom-container .row .input-field input {
-                text-align: left !important;
-                margin-left: 0 !important;
-                width: 100% !important;
-            }
-
-            #personelCollapsible .row .input-field.col.s8 {
-                margin-left: 0 !important;
-                padding-left: 0 !important;
-                text-align: left !important;
-                display: block !important;
-                width: 100% !important;
-            }
-
-            #personelCollapsible .row .input-field.col.s8 input {
-                text-align: left !important;
-                margin-left: 0 !important;
-                width: 100% !important;
-            }
-
-            .row {
-                display: flex;
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .row .col {
-                width: 100%;
-                margin-bottom: 10px;
-            }
-
-            .control-buttons .col.s12 {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .control-buttons .btn {
-                width: 100%;
-                margin-bottom: 10px;
-                margin-right: 0 !important;
-            }
-
-            #calendarContainer .row {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-
-            #calendarContainer .col {
-                width: 100%;
-                margin-bottom: 10px;
-            }
-
-            #calendarContainer .col.s3,
-            #calendarContainer .col.s2 {
-                width: 100%;
-                display: flex;
-                justify-content: center;
-            }
-
-            #calendarContainer .switch-container {
-                width: 100%;
-                justify-content: center;
-            }
-
-            #calendarContainer .btn {
-                width: auto;
-                min-width: 100px;
-                padding: 0 15px;
-                white-space: nowrap;
-                margin-bottom: 10px;
-            }
-
-            .switch-container {
-                padding: 5px 8px;
-                width: 100%;
-                box-sizing: border-box;
-            }
-
-            .balance-label span {
-                font-size: 0.75rem;
-                padding-left: 18px;
-            }
-
-            .balance-checkbox + span:not(.lever)::before {
-                width: 12px;
-                height: 12px;
-            }
-
-            .balance-checkbox:checked + span:not(.lever)::before {
-                width: 6px;
-                height: 14px;
-                margin-top: -3px;
-                margin-left: 2px;
-            }
-
-            #calendarAlert {
-                max-width: 280px;
-            }
-
-            #calendarAlert .card-content span {
-                font-size: 0.9rem !important;
-                line-height: 1.3;
-            }
-
-            #calendarAlert .btn-floating {
-                width: 36px !important;
-                height: 36px !important;
-                line-height: 36px !important;
-            }
-
-            #calendarAlert .material-icons {
-                font-size: 24px !important;
-                line-height: 36px !important;
-            }
-
-            .grouping-container {
-                margin-left: 0;
-                width: 100%;
-                justify-content: flex-start;
-                padding-left: 10px;
-            }
-
-            .standalone-select-wrapper {
-                text-align: left !important;
-                margin-left: 0 !important;
-                padding-left: 10px !important;
-            }
-
-            .standalone-select-wrapper .select-container select {
-                font-size: 14px !important;
-                height: 36px !important;
-            }
-        }
+/* =====================================================
+   nobetplani.com — Modern Yeniden Tasarım
+   Font: Plus Jakarta Sans (ücretsiz, Apple-benzeri)
+   Palet: Açık, temiz, teal/mint vurgular
+   ===================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
+/* ─── CSS Değişkenleri ─── */
+:root {
+    --primary:        #2cb5a8;
+    --primary-light:  #e6f7f6;
+    --primary-mid:    #b2e8e4;
+    --primary-dark:   #1a8c82;
+    --accent:         #ff6b6b;
+    --surface:        #ffffff;
+    --surface-2:      #f7fafa;
+    --border:         #e4eeec;
+    --text-primary:   #1a2e2c;
+    --text-secondary: #5a7773;
+    --text-light:     #90aaa8;
+    --shadow-sm:      0 2px 8px rgba(44,181,168,0.08);
+    --shadow-md:      0 4px 20px rgba(44,181,168,0.12);
+    --shadow-lg:      0 8px 32px rgba(44,181,168,0.16);
+    --radius-sm:      10px;
+    --radius-md:      16px;
+    --radius-lg:      22px;
+    --font:           'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --transition:     0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Temel Reset ─── */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(145deg, #e8f5f4 0%, #f0faf9 40%, #e4f3f1 100%) !important;
+    background-attachment: fixed !important;
+    min-height: 100vh !important;
+    padding: 16px 12px 60px !important;
+    margin: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    font-family: var(--font) !important;
+    color: var(--text-primary) !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Ana Wrapper ─── */
+.container-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 1600px;
+    gap: 0;
+}
+
+/* ─── Genel Kart Konteynır ─── */
+.custom-container {
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+    padding: 20px;
+    margin: 6px 0;
+    width: 100%;
+    max-width: 800px;
+    box-sizing: border-box;
+    transition: max-width 0.3s ease;
+    position: relative;
+}
+
+.custom-container.expanded {
+    max-width: 1573px;
+}
+
+/* ─── Navigasyon ─── */
+.nav-container {
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+    padding: 0;
+    margin: 6px 0;
+    width: 100%;
+    max-width: 800px;
+    box-sizing: border-box;
+    font-family: var(--font) !important;
+    overflow: hidden;
+}
+
+.nav-wrapper {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    height: 60px;
+}
+
+.nav-wrapper .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 800px;
+    position: relative;
+    height: 100%;
+}
+
+.nav-mobile {
+    display: none;
+    margin-right: 10px;
+}
+
+.nav-wrapper ul.right {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    height: 100%;
+    gap: 2px;
+}
+
+.nav-wrapper ul.right li {
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.nav-wrapper ul.right li a {
+    color: rgba(255,255,255,0.92);
+    font-family: var(--font) !important;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 0 14px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+}
+
+.nav-wrapper ul.right li a:hover {
+    color: #fff;
+    background-color: rgba(255,255,255,0.15);
+}
+
+.nav-wrapper ul.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* ─── Sidenav (Mobil Menü) ─── */
+.sidenav {
+    background: var(--surface) !important;
+    width: 270px !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.sidenav li a {
+    color: var(--primary-dark) !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    font-family: var(--font) !important;
+    border-radius: var(--radius-sm) !important;
+    margin: 2px 8px !important;
+    padding: 14px 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    transition: all var(--transition) !important;
+}
+
+.sidenav li a:hover {
+    background-color: var(--primary-light) !important;
+    color: var(--primary-dark) !important;
+}
+
+.sidenav-trigger {
+    display: flex;
+    align-items: center;
+    color: #fff !important;
+    font-family: var(--font) !important;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    gap: 6px;
+    text-transform: uppercase;
+}
+
+.sidenav-trigger i {
+    margin: 0;
+}
+
+/* ─── Mobil Menü Trigger Görünürlük ─── */
+.mobile-menu-custom {
+    display: none !important;
+}
+
+@media only screen and (max-width: 992px) {
+    .mobile-menu-custom {
+        display: flex !important;
+        align-items: center;
+        height: 100%;
+        padding: 0 10px;
+        cursor: pointer;
+        margin-right: 15px;
+    }
+}
+
+/* ─── Başlık ─── */
+header h3 {
+    font-family: var(--font) !important;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    text-align: center;
+    margin: 16px 0 20px;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+/* ─── Input Alanları ─── */
+.input-field label {
+    color: var(--primary) !important;
+    font-family: var(--font) !important;
+    font-weight: 500 !important;
+}
+
+.input-field input:focus + label,
+.input-field input.valid + label {
+    color: var(--primary) !important;
+}
+
+.input-field input:focus {
+    border-bottom-color: var(--primary) !important;
+    box-shadow: 0 1px 0 0 var(--primary) !important;
+}
+
+/* ─── Collapsible (Açılır Paneller) ─── */
+.collapsible.popout {
+    margin: 0;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.collapsible-header {
+    font-family: var(--font) !important;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+    letter-spacing: 0.01em;
+    padding: 18px 20px !important;
+    border: none !important;
+    cursor: pointer;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    gap: 10px;
+    align-items: center;
+}
+
+.collapsible-header i.material-icons {
+    color: rgba(255,255,255,0.9) !important;
+}
+
+.collapsible-header:hover {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, #146e66 100%) !important;
+}
+
+.collapsible-body {
+    font-family: var(--font) !important;
+    background: var(--surface) !important;
+    padding: 20px !important;
+    border: none !important;
+    display: none;
+    overflow: visible;
+}
+
+/* ─── Kılavuz Collapsible ─── */
+#guideCollapsible {
+    margin: 0;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+#guideCollapsible .collapsible-header {
+    background: linear-gradient(135deg, rgba(44,181,168,0.15) 0%, rgba(26,140,130,0.1) 100%) !important;
+    color: var(--primary-dark) !important;
+    font-weight: 700 !important;
+    border: 1.5px solid var(--primary-mid) !important;
+    border-radius: var(--radius-sm) !important;
+}
+
+#guideCollapsible .collapsible-header i {
+    color: var(--primary) !important;
+}
+
+#guideCollapsible .collapsible-header.active {
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0 !important;
+}
+
+#guideCollapsible .collapsible-body {
+    background: var(--surface-2) !important;
+    border: 1.5px solid var(--primary-mid) !important;
+    border-top: none !important;
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+#guideCollapsible ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#guideCollapsible ul li {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    line-height: 1.55;
+    position: relative;
+    padding-left: 24px;
+    font-family: var(--font);
+}
+
+#guideCollapsible ul li:before {
+    content: "•";
+    color: var(--primary);
+    font-size: 1.2rem;
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+#guideCollapsible ul li .btn-floating.tiny {
+    width: 20px !important;
+    height: 20px !important;
+    line-height: 20px !important;
+    font-size: 12px !important;
+    margin-right: 5px;
+    vertical-align: middle;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+}
+
+#guideCollapsible ul li .btn-floating.tiny i {
+    font-size: 12px !important;
+    line-height: 20px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+/* ─── Takvim Tablosu ─── */
+#calendarTable {
+    font-family: var(--font) !important;
+    width: 100%;
+    overflow-x: auto;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+#calendarTable th:first-child {
+    width: 100px !important;
+    min-width: 100px !important;
+    text-align: left;
+}
+
+#calendarTable th {
+    text-align: center;
+    vertical-align: middle;
+    background: var(--surface-2);
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.03em;
+    padding: 10px 4px !important;
+    border-bottom: 2px solid var(--border);
+}
+
+.calendar-cell {
+    position: relative;
+    min-width: 38px;
+    height: 38px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid var(--border);
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    font-size: 0.8rem;
+    font-family: var(--font);
+}
+
+.calendar-cell:hover {
+    background: var(--primary-light);
+}
+
+/* ─── Hafta Sonu / Tatil ─── */
+.weekend, .holiday {
+    background-color: #cfd8dc !important;
+    color: #546e7a !important;
+    font-weight: 600 !important;
+}
+
+/* ─── İstenmeyen Gün ─── */
+.unavailable {
+    background-color: #fff0f0 !important;
+    position: relative;
+}
+
+.unavailable::after {
+    content: "✖";
+    color: #ef5350;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1rem;
+    pointer-events: none;
+}
+
+/* ─── Sürükleme ─── */
+.dragging {
+    background-color: rgba(178, 232, 228, 0.7);
+}
+
+/* ─── İstenen Gün ─── */
+.selected {
+    background-color: #d4edda !important;
+    position: relative;
+}
+
+.selected::after {
+    content: "✓";
+    color: #2e7d32;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.1rem;
+    font-weight: bold;
+    pointer-events: none;
+}
+
+/* ─── Takvim Uyarı Balonu ─── */
+#calendarAlert {
+    transition: opacity 0.3s ease;
+}
+
+/* ─── İsim Kolonu ─── */
+.name-column {
+    min-width: 100px !important;
+    width: 100px !important;
+    max-width: 200px !important;
+    overflow: hidden;
+    padding: 0 6px;
+    font-size: 13px;
+    font-family: var(--font);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* ─── Personel Mesajı ─── */
+.no-personnel-message {
+    font-style: italic;
+    font-size: 14px;
+    color: var(--text-light);
+    text-align: center;
+    padding: 24px 0;
+    font-family: var(--font);
+}
+
+/* ─── Modal İçerik ─── */
+.modal {
+    border-radius: var(--radius-md) !important;
+    font-family: var(--font) !important;
+}
+
+.modal-content h4 {
+    font-family: var(--font) !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.01em;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border) !important;
+}
+
+/* ─── Hata Listesi ─── */
+.error-list {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.error-item {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.error-type {
+    font-weight: 700;
+    color: #e53935;
+    font-family: var(--font);
+}
+
+.warning-type {
+    font-weight: 700;
+    color: #fb8c00;
+    font-family: var(--font);
+}
+
+/* ─── İstatistik Tablosu ─── */
+#statsTable td {
+    padding: 10px 12px !important;
+    font-family: var(--font) !important;
+    font-size: 0.9rem !important;
+}
+
+#statsTable th {
+    font-family: var(--font) !important;
+    font-weight: 700 !important;
+    color: var(--text-secondary) !important;
+    font-size: 0.8rem !important;
+    letter-spacing: 0.03em;
+    padding: 10px 12px !important;
+}
+
+/* ─── Yükleme Ekranı ─── */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(26, 46, 44, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    display: none;
+}
+
+.loading-overlay span {
+    font-family: var(--font) !important;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.02em;
+}
+
+/* ─── Footer ─── */
+.fixed-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(135deg, var(--primary-dark) 0%, #146e66 100%);
+    padding: 8px 0;
+    box-shadow: 0 -2px 12px rgba(44,181,168,0.2);
+    z-index: 10000;
+}
+
+.footer-content {
+    font-family: var(--font) !important;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: rgba(255,255,255,0.9);
+    text-align: center;
+    margin: 0;
+}
+
+.footer-content a {
+    color: rgba(255,255,255,0.85) !important;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color var(--transition);
+}
+
+.footer-content a:hover {
+    color: #fff !important;
+}
+
+/* ─── Tooltip ─── */
+.tooltip-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip {
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(26, 46, 44, 0.88);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: var(--font);
+    white-space: nowrap;
+    z-index: 1000;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.tooltip-wrapper:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.tooltip-icon {
+    font-size: 16px !important;
+    vertical-align: middle;
+    margin: 0 2px;
+    color: var(--primary);
+}
+
+/* ─── Butonlar ─── */
+.btn {
+    font-family: var(--font) !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em !important;
+    border-radius: 10px !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+}
+
+.btn:hover {
+    transform: translateY(-1px) scale(1.02) !important;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15) !important;
+}
+
+.btn-floating {
+    transition: transform 0.18s ease, box-shadow 0.18s ease !important;
+}
+
+.btn-floating:hover {
+    transform: scale(1.1) !important;
+}
+
+.waves-effect.waves-light.btn.teal {
+    width: auto;
+    min-width: 0;
+    padding: 0 10px;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Teal buton renk override */
+.btn.teal,
+.btn.waves-light.teal {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+}
+
+.btn.teal:hover {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, #146e66 100%) !important;
+}
+
+/* ─── Kontrol Butonları ─── */
+.control-buttons .btn {
+    margin-right: 12px !important;
+}
+
+.control-buttons .btn:last-child {
+    margin-right: 0 !important;
+}
+
+/* ─── Switch/Toggle ─── */
+.switch input[type="checkbox"] + .lever {
+    background-color: #ffcdd2 !important;
+}
+
+.switch input[type="checkbox"]:checked + .lever {
+    background-color: #a5d6a7 !important;
+}
+
+.switch input[type="checkbox"] + .lever:after {
+    background-color: #e53935 !important;
+}
+
+.switch input[type="checkbox"]:checked + .lever:after {
+    background-color: #388e3c !important;
+}
+
+.switch label .lever {
+    width: 48px !important;
+    height: 20px !important;
+}
+
+.switch label .lever:after {
+    width: 28px !important;
+    height: 28px !important;
+    top: -4px !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+}
+
+.switch label input[type="checkbox"]:checked + .lever:after {
+    left: 18px !important;
+}
+
+/* ─── Switch Konteynır ─── */
+.switch-container {
+    background: linear-gradient(135deg, rgba(44,181,168,0.12) 0%, rgba(44,181,168,0.06) 100%) !important;
+    border: 1.5px solid var(--primary-mid) !important;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: auto;
+    box-sizing: border-box;
+}
+
+.switch-container label {
+    width: auto;
+    white-space: nowrap;
+    font-family: var(--font);
+}
+
+/* ─── Balance/Checkbox Etiketler ─── */
+.balance-label {
+    display: flex;
+    align-items: center;
+    margin: 3px 0;
+    cursor: pointer;
+}
+
+.balance-label span {
+    font-size: 0.82rem;
+    color: var(--text-primary);
+    padding-left: 22px;
+    font-family: var(--font);
+    font-weight: 500;
+}
+
+.balance-checkbox + span:not(.lever)::before {
+    width: 15px;
+    height: 15px;
+    border: 2px solid var(--text-secondary);
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.balance-checkbox:checked + span:not(.lever)::before {
+    width: 8px;
+    height: 16px;
+    border: none;
+    border-right: 2.5px solid var(--primary);
+    border-bottom: 2.5px solid var(--primary);
+    background: transparent;
+    transform: rotate(45deg);
+    margin-top: -3px;
+    margin-left: 3px;
+}
+
+/* ─── Grouping Checkbox ─── */
+.grouping-container {
+    display: flex;
+    align-items: center;
+    margin-left: 8px;
+    padding: 8px 12px;
+    background: var(--primary-light);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--primary-mid);
+}
+
+.grouping-label {
+    display: flex;
+    align-items: center;
+    color: var(--text-primary);
+    white-space: nowrap;
+    font-family: var(--font);
+    cursor: pointer;
+}
+
+.grouping-label span {
+    font-size: 0.85rem;
+    margin-left: 8px;
+    font-weight: 500;
+}
+
+/* ─── Dropdown ─── */
+.dropdown-content {
+    min-width: 150px !important;
+    background: var(--surface);
+    border-radius: var(--radius-sm) !important;
+    box-shadow: var(--shadow-lg) !important;
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.dropdown-content li {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 0 !important;
+}
+
+.dropdown-content li > a {
+    color: var(--primary-dark) !important;
+    font-family: var(--font) !important;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 12px 16px !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    transition: background var(--transition);
+}
+
+.dropdown-content li > a > i {
+    font-size: 20px !important;
+    color: var(--primary) !important;
+}
+
+.dropdown-content li:hover {
+    background-color: var(--primary-light) !important;
+}
+
+/* ─── Select ─── */
+.standalone-select-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}
+
+.standalone-select-wrapper .select-container {
+    position: relative;
+    width: 100%;
+}
+
+.standalone-select-wrapper .select-container select {
+    appearance: none !important;
+    display: block !important;
+    width: 100% !important;
+    height: 42px !important;
+    padding: 0 32px 0 14px !important;
+    margin: 0 !important;
+    font-size: 15px !important;
+    font-family: var(--font) !important;
+    font-weight: 500 !important;
+    color: var(--text-primary) !important;
+    background-color: var(--surface) !important;
+    border: 1.5px solid var(--border) !important;
+    border-radius: var(--radius-sm) !important;
+    cursor: pointer !important;
+    box-sizing: border-box !important;
+    transition: border-color var(--transition), box-shadow var(--transition) !important;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%232cb5a8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>') !important;
+    background-repeat: no-repeat !important;
+    background-position: right 10px center !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.standalone-select-wrapper .select-container select:focus {
+    outline: none !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(44,181,168,0.15) !important;
+}
+
+.standalone-select-wrapper .select-container select option {
+    padding: 8px 14px !important;
+    background-color: var(--surface) !important;
+    color: var(--text-primary) !important;
+}
+
+.standalone-select-wrapper .select-container label {
+    position: absolute !important;
+    top: -10px !important;
+    left: 12px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: var(--primary) !important;
+    background-color: var(--surface) !important;
+    padding: 0 4px !important;
+    font-family: var(--font) !important;
+    pointer-events: none !important;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.standalone-select-wrapper[data-tooltip]:hover:after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(26, 46, 44, 0.88);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: var(--font);
+    white-space: nowrap;
+    z-index: 1000;
+}
+
+/* ─── Row/Col Düzeltmeler ─── */
+.row .col.s6 {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+}
+
+.input-field, .standalone-select-wrapper .select-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.input-field input, .standalone-select-wrapper .select-container select {
+    margin: 0 !important;
+    padding-left: 14px !important;
+}
+
+/* ─── Personel Tablosu ─── */
+table.striped > tbody > tr > td,
+table.striped > tbody > tr > th,
+td, th {
+    padding: 0 !important;
+    font-family: var(--font) !important;
+}
+
+table.striped > tbody > tr:nth-child(odd) {
+    background-color: var(--surface-2) !important;
+}
+
+#personTable tbody tr {
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    overflow: visible !important;
+}
+
+#personTable tbody td {
+    padding: 0 6px !important;
+    height: 34px !important;
+    vertical-align: middle !important;
+    line-height: 34px !important;
+    box-sizing: border-box !important;
+    overflow: visible !important;
+    font-size: 0.82rem;
+    font-family: var(--font) !important;
+}
+
+#personTable tbody td input[type="number"] {
+    height: 22px !important;
+    padding: 0 6px !important;
+    line-height: 22px !important;
+    margin: 0 2px !important;
+    font-size: 12px !important;
+    box-sizing: border-box !important;
+    border: 1.5px solid var(--border) !important;
+    border-radius: 6px !important;
+    font-family: var(--font) !important;
+    transition: border-color var(--transition) !important;
+}
+
+#personTable tbody td input[type="number"]:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 2px rgba(44,181,168,0.12) !important;
+    outline: none !important;
+}
+
+#personTable tbody td .btn-floating {
+    width: 22px !important;
+    height: 22px !important;
+    line-height: 22px !important;
+    font-size: 11px !important;
+    margin: 0 2px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: none !important;
+    border-radius: 6px !important;
+}
+
+#personTable tbody td .btn-floating i {
+    line-height: 22px !important;
+    font-size: 13px !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+#personTable tbody td .duty-gap-cell span {
+    font-size: 12px !important;
+    line-height: 22px !important;
+    margin-right: 5px !important;
+}
+
+table#personTable thead th {
+    text-align: center !important;
+    vertical-align: middle !important;
+    padding: 8px 4px !important;
+    font-weight: 700 !important;
+    font-size: 0.75rem !important;
+    color: var(--text-secondary) !important;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--surface-2) !important;
+    border-bottom: 2px solid var(--border) !important;
+}
+
+/* ─── Yardımcı Hücreler ─── */
+.duty-gap-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    font-family: var(--font);
+}
+
+.duty-gap-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.increment-btn, .decrement-btn {
+    padding: 0 8px;
+    margin: 0 2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 20px;
+    height: 20px;
+}
+
+/* ─── Animasyonlar ─── */
+.glow {
+    animation: glow 4s ease-in-out infinite;
+}
+
+@keyframes glow {
+    0%   { box-shadow: 0 0 5px 3px rgba(44,181,168,0.4); }
+    50%  { box-shadow: 0 0 18px 8px rgba(44,181,168,0.5); }
+    100% { box-shadow: 0 0 5px 3px rgba(44,181,168,0.4); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25%  { transform: translateX(-5px); }
+    50%  { transform: translateX(5px); }
+    75%  { transform: translateX(-5px); }
+}
+
+.toast.shake {
+    animation: shake 0.5s ease-in-out 3;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40%  { transform: translateY(-8px); }
+    60%  { transform: translateY(-4px); }
+}
+
+.bounce {
+    animation: bounce 1s infinite;
+}
+
+/* ─── Toast Bildirimleri ─── */
+#toast-container .toast {
+    font-family: var(--font) !important;
+    border-radius: var(--radius-sm) !important;
+    font-weight: 600 !important;
+    background: linear-gradient(135deg, var(--primary-dark) 0%, #146e66 100%) !important;
+}
+
+/* ─── Email Modal ─── */
+#emailModal {
+    max-width: 420px;
+}
+
+/* ─── History Modal ─── */
+#historyModal .modal-content {
+    font-family: var(--font) !important;
+}
+
+#historyModal h5 {
+    font-family: var(--font) !important;
+    font-weight: 700 !important;
+}
+
+/* ─── Divider ─── */
+.divider {
+    background-color: var(--border) !important;
+}
+
+/* ─── Collection ─── */
+.collection .collection-item {
+    font-family: var(--font) !important;
+    font-size: 0.9rem;
+    transition: background var(--transition);
+}
+
+.collection .collection-item:hover {
+    background: var(--primary-light) !important;
+}
+
+.collection .collection-item.active {
+    background: var(--primary) !important;
+    color: #fff !important;
+}
+
+/* ════════════════════════════════════════════
+   MOBİL UYUMLULUK — Ana Responsive Bölümü
+   ════════════════════════════════════════════ */
+
+@media only screen and (max-width: 900px) {
+    body {
+        padding: 10px 8px 65px !important;
+    }
+
+    .nav-container {
+        max-width: 100%;
+        padding: 0;
+    }
+
+    .nav-wrapper {
+        height: 54px;
+    }
+
+    .nav-wrapper .container {
+        max-width: 100%;
+        padding: 0 12px;
+        justify-content: flex-start;
+    }
+
+    .nav-mobile {
+        display: block;
+    }
+
+    .nav-wrapper ul.right,
+    .nav-wrapper ul.center {
+        display: none;
+    }
+
+    .custom-container {
+        max-width: 100%;
+        padding: 14px 12px;
+        border-radius: var(--radius-sm);
+    }
+
+    .custom-container.expanded {
+        max-width: 100%;
+    }
+
+    .custom-container .row .input-field {
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        text-align: left !important;
+        display: block !important;
+        width: 100% !important;
+    }
+
+    .custom-container .row .input-field input {
+        text-align: left !important;
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    #personelCollapsible .row .input-field.col.s8 {
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        display: block !important;
+        width: 100% !important;
+    }
+
+    #personelCollapsible .row .input-field.col.s8 input {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    .row {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .row .col {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .control-buttons .col.s12 {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .control-buttons .btn {
+        width: 100%;
+        margin-bottom: 10px;
+        margin-right: 0 !important;
+        justify-content: center;
+    }
+
+    /* ─── Takvim Mobil ─── */
+    #calendarContainer .row {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    #calendarContainer .col {
+        width: 100%;
+        margin-bottom: 6px;
+    }
+
+    #calendarContainer .col.s3,
+    #calendarContainer .col.s2 {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    #calendarContainer .col.s4 {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: stretch;
+        gap: 8px;
+    }
+
+    #calendarContainer .col.s4 .btn,
+    #calendarContainer .col.s4 a.btn {
+        flex: 1 1 calc(50% - 4px);
+        min-width: 120px;
+        justify-content: center;
+        white-space: nowrap;
+    }
+
+    #calendarContainer .col.s2:last-child {
+        justify-content: center;
+    }
+
+    #calendarContainer .switch-container {
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #calendarContainer .btn {
+        min-width: unset;
+        white-space: nowrap;
+        padding: 0 14px;
+    }
+
+    /* Otomatik Ata butonu tam genişlik */
+    #calendarContainer button[onclick="autoAssignDuties()"] {
+        width: 100% !important;
+        min-width: unset !important;
+    }
+
+    /* Geri/İleri/Temizle butonları grubu */
+    #calendarContainer .col.s2 > div {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .switch-container {
+        padding: 8px 12px;
+        width: 100%;
+        box-sizing: border-box;
+        align-items: flex-start;
+    }
+
+    .balance-label span {
+        font-size: 0.78rem;
+        padding-left: 18px;
+    }
+
+    .balance-checkbox + span:not(.lever)::before {
+        width: 13px;
+        height: 13px;
+    }
+
+    .balance-checkbox:checked + span:not(.lever)::before {
+        width: 6px;
+        height: 14px;
+        margin-top: -3px;
+        margin-left: 2px;
+    }
+
+    #calendarAlert {
+        max-width: 90vw;
+    }
+
+    #calendarAlert .card-content span {
+        font-size: 0.88rem !important;
+        line-height: 1.35;
+    }
+
+    #calendarAlert .btn-floating {
+        width: 36px !important;
+        height: 36px !important;
+        line-height: 36px !important;
+    }
+
+    #calendarAlert .material-icons {
+        font-size: 22px !important;
+        line-height: 36px !important;
+    }
+
+    .grouping-container {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-start;
+        padding: 8px 12px;
+    }
+
+    .standalone-select-wrapper {
+        text-align: left !important;
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+    }
+
+    .standalone-select-wrapper .select-container select {
+        font-size: 15px !important;
+        height: 42px !important;
+    }
+
+    header h3 {
+        font-size: 1.5rem;
+    }
+}
+
+/* ─── Çok Küçük Ekranlar (< 480px) ─── */
+@media only screen and (max-width: 480px) {
+    body {
+        padding: 8px 6px 65px !important;
+    }
+
+    .custom-container {
+        padding: 12px 10px;
+        border-radius: var(--radius-sm);
+    }
+
+    header h3 {
+        font-size: 1.3rem;
+        margin: 12px 0 16px;
+    }
+
+    /* Takvim tablosunu mobilde yatay kaydırılabilir yap */
+    #calendarTable {
+        font-size: 11px;
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .calendar-cell {
+        min-width: 30px;
+        height: 30px;
+    }
+
+    .calendar-cell::after {
+        font-size: 0.75rem !important;
+    }
+
+    #calendarTable th:first-child {
+        width: 70px !important;
+        min-width: 70px !important;
+    }
+
+    .name-column {
+        min-width: 70px !important;
+        width: 70px !important;
+        max-width: 110px !important;
+        font-size: 11px;
+    }
+
+    /* Personel tablosu mobil */
+    #personTable tbody td {
+        font-size: 0.75rem;
+        padding: 0 3px !important;
+    }
+
+    #personTable tbody td input[type="number"] {
+        width: 36px !important;
+        font-size: 11px !important;
+    }
+
+    /* Geri/İleri butonları grubu sıkışmasın */
+    #undoBtn, #redoBtn, #clearBtn {
+        padding: 0 10px !important;
+        min-width: 40px !important;
+    }
+
+    /* History modal tam ekran */
+    #historyModal {
+        width: 98% !important;
+        height: 95% !important;
+        top: 2% !important;
+        border-radius: var(--radius-sm) !important;
+    }
+
+    /* Modal içi liste paneli mobilde tam genişlik */
+    #historyModal .col.s12.m3 {
+        height: auto !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--border) !important;
+    }
+
+    #historyModal .col.s12.m9 {
+        height: auto !important;
+    }
+
+    .fixed-footer {
+        padding: 7px 10px;
+    }
+
+    .footer-content {
+        font-size: 0.75rem;
+    }
+
+    .btn {
+        font-size: 0.82rem !important;
+    }
+
+    /* collapsible header mobil */
+    .collapsible-header {
+        padding: 14px 14px !important;
+        font-size: 0.9rem !important;
+    }
+}
+
+/* ─── Geçiş Animasyonları (Kılavuz sneak-peek) ─── */
+.collapsible li.active .collapsible-body {
+    display: block;
+}
+
+/* ─── Material Icons Renk Override ─── */
+.material-icons.teal-text {
+    color: var(--primary) !important;
+}
+
+/* ─── Preloader ─── */
+.preloader-wrapper .spinner-layer.spinner-teal-only {
+    border-color: var(--primary) !important;
+}
+
+.preloader-wrapper .spinner-layer.spinner-blue-only {
+    border-color: var(--primary) !important;
+}
+
+/* ─── Card Panel ─── */
+.card-panel.grey.lighten-5 {
+    background: var(--surface-2) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-sm) !important;
+}
+
+/* ─── Grey lighten overrides ─── */
+.grey.lighten-5 {
+    background-color: var(--surface-2) !important;
+}
+
+/* ─── Col s12 m3 History Panel ─── */
+#historyModal .col.s12.m3.grey.lighten-5 {
+    background: var(--surface-2) !important;
+}
+
+/* ─── Scrollbar Stili ─── */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--surface-2);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-mid);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+
+/* ─── HTML & Body Font ─── */
+html, body, input, select, textarea, button {
+    font-family: var(--font) !important;
+}
+
+/* ─── Materialize Override: collapsible border kaldır ─── */
+.collapsible {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* ─── Tablo Scroll Wrapper (Mobil Takvim) ─── */
+#calendarContainer .collapsible-body > div:first-child {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
