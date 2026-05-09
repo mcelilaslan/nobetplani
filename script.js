@@ -1,4 +1,5 @@
-let persons = [];
+
+        let persons = [];
         let availabilityMode = true;
         let loginSuggestionShown = false; 
 
@@ -2986,7 +2987,10 @@ function createMagicLink(btn) {
     btn.innerHTML = '<i class="material-icons left">loop</i>Bekleyin...';
     btn.classList.add('disabled');
 
-    const listId = 'liste_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    // Deterministik ID: aynı ay için her zaman aynı belge -> duplicate oluşmaz
+    const [day, month, year] = startInput.split('-');
+    const uid = auth.currentUser ? auth.currentUser.uid : 'anon';
+    const listId = `liste_${uid}_${year}-${month}`;
 
     const scheduleData = {
         startDate: startInput,
@@ -2995,18 +2999,25 @@ function createMagicLink(btn) {
         unavailable: JSON.stringify(unavailableCells),
         personnelSnapshot: JSON.stringify(persons),
         holidays: document.getElementById('holidays').value || "",
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
-    db.collection("public_lists").doc(listId).set(scheduleData)
+    const docRef = db.collection("public_lists").doc(listId);
+
+    // Önce kontrol et: bu ay için zaten belge var mı?
+    docRef.get().then((doc) => {
+        if (doc.exists) {
+            // Var: veriyi güncelle (link aynı kalır)
+            return docRef.update(scheduleData);
+        } else {
+            // Yok: yeni oluştur
+            return docRef.set({ ...scheduleData, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        }
+    })
         .then(() => {
             const magicLink = `https://nobetplani.com/?listeID=${listId}`;
-            
-            // Linki yeni modal içindeki inputa yaz ve global hafızaya al
             document.getElementById('generatedMagicLink').value = magicLink;
-            window.lastGeneratedScheduleData = scheduleData; 
-            
-            // Yeni Paylaşım Modalını Aç
+            window.lastGeneratedScheduleData = scheduleData;
             const modalElem = document.getElementById('shareLinkModal');
             M.Modal.getInstance(modalElem).open();
         })
@@ -3343,33 +3354,34 @@ function shareHistoryAsLink() {
 
     M.toast({html: '🔗 Link oluşturuluyor...', classes: 'blue'});
 
-    const listId = 'liste_gecmis_' + Math.random().toString(36).substr(2, 9);
+    // Deterministik ID: history doc ID zaten yıl-ay formatında (ör: 2025-06)
+    const uid = auth.currentUser ? auth.currentUser.uid : 'anon';
+    const listId = `liste_${uid}_${data.id}`;
 
-    // Geçmiş verisini paylaşım veritabanına kopyala
-    db.collection("public_lists").doc(listId).set({
+    const shareData = {
         startDate: data.startDate,
         endDate: data.endDate,
         assignments: data.assignments,
         unavailable: data.unavailable,
         personnelSnapshot: data.personnelSnapshot,
         holidays: data.holidays || "",
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        isHistoryLink: true
+        isHistoryLink: true,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    const docRef = db.collection("public_lists").doc(listId);
+
+    docRef.get().then((doc) => {
+        if (doc.exists) {
+            return docRef.update(shareData);
+        } else {
+            return docRef.set({ ...shareData, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        }
     })
     .then(() => {
         const magicLink = `https://nobetplani.com/?listeID=${listId}`;
-        
-        // Yeni Paylaşım Modalını (Dün yaptığımız modern kutu) tetikle
         document.getElementById('generatedMagicLink').value = magicLink;
-        window.lastGeneratedScheduleData = {
-            startDate: data.startDate,
-            endDate: data.endDate,
-            assignments: data.assignments,
-            unavailable: data.unavailable,
-            personnelSnapshot: data.personnelSnapshot,
-            holidays: data.holidays || ""
-        };
-
+        window.lastGeneratedScheduleData = shareData;
         const modalElem = document.getElementById('shareLinkModal');
         M.Modal.getInstance(modalElem).open();
     })
