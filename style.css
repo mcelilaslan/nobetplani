@@ -266,6 +266,14 @@ header h3 {
     box-shadow: none !important;
 }
 
+.collapsible.popout > li,
+.collapsible > li {
+    margin: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+}
+
 .collapsible-header {
     font-family: var(--font) !important;
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
