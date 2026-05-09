@@ -1145,49 +1145,61 @@ table#personTable thead th {
     color: #fff !important;
 }
 
+
 /* ════════════════════════════════════════════
    MOBİL UYUMLULUK — Ana Responsive Bölümü
    ════════════════════════════════════════════ */
 
 @media only screen and (max-width: 900px) {
     body {
-        padding: 10px 8px 65px !important;
+        padding: 8px 6px 65px !important;
     }
 
-    .nav-container {
-        max-width: 100%;
-        padding: 0;
+    /* Tüm container'lar tam genişlik */
+    .nav-container,
+    .custom-container {
+        max-width: 100% !important;
+        width: 100% !important;
+        border-radius: var(--radius-sm) !important;
+        margin: 4px 0 !important;
     }
 
+    .custom-container {
+        padding: 12px 10px !important;
+    }
+
+    .custom-container.expanded {
+        max-width: 100% !important;
+    }
+
+    /* Nav */
     .nav-wrapper {
-        height: 54px;
+        height: 54px !important;
+        border-radius: var(--radius-sm) var(--radius-sm) 0 0 !important;
     }
 
     .nav-wrapper .container {
-        max-width: 100%;
-        padding: 0 12px;
-        justify-content: flex-start;
+        max-width: 100% !important;
+        padding: 0 10px !important;
+        justify-content: flex-start !important;
     }
 
     .nav-mobile {
-        display: block;
+        display: block !important;
     }
 
     .nav-wrapper ul.right,
     .nav-wrapper ul.center {
-        display: none;
+        display: none !important;
     }
 
-    .custom-container {
-        max-width: 100%;
-        padding: 14px 12px;
-        border-radius: var(--radius-sm);
+    /* Header */
+    header h3 {
+        font-size: 1.45rem !important;
+        margin: 12px 0 16px !important;
     }
 
-    .custom-container.expanded {
-        max-width: 100%;
-    }
-
+    /* Input alanları */
     .custom-container .row .input-field {
         margin-left: 0 !important;
         padding-left: 0 !important;
@@ -1214,125 +1226,109 @@ table#personTable thead th {
         width: 100% !important;
     }
 
+    /* Row/Col genel mobil davranışı */
     .row {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        margin-bottom: 0 !important;
     }
 
     .row .col {
-        width: 100%;
-        margin-bottom: 10px;
+        width: 100% !important;
+        margin-bottom: 10px !important;
+        padding: 0 !important;
     }
 
+    /* Kontrol butonları */
     .control-buttons .col.s12 {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
     }
 
     .control-buttons .btn {
-        width: 100%;
-        margin-bottom: 10px;
+        width: 100% !important;
+        margin-bottom: 10px !important;
         margin-right: 0 !important;
-        justify-content: center;
+        justify-content: center !important;
     }
 
-    /* ─── Takvim Mobil ─── */
+    /* ─── TAKVİM MOBİL — Kritik Bölüm ─── */
+    #calendarContainer .collapsible-body > div:first-child {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
     #calendarContainer .row {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        margin-top: 16px !important;
     }
 
-    #calendarContainer .col {
-        width: 100%;
-        margin-bottom: 6px;
-    }
-
+    #calendarContainer .col,
     #calendarContainer .col.s3,
-    #calendarContainer .col.s2 {
-        width: 100%;
-        display: flex;
-        justify-content: center;
+    #calendarContainer .col.s2,
+    #calendarContainer .col.s4 {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+        margin-bottom: 6px !important;
+        padding: 0 !important;
     }
 
     #calendarContainer .col.s4 {
-        width: 100%;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: stretch;
-        gap: 8px;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        justify-content: stretch !important;
     }
 
     #calendarContainer .col.s4 .btn,
     #calendarContainer .col.s4 a.btn {
-        flex: 1 1 calc(50% - 4px);
-        min-width: 120px;
-        justify-content: center;
-        white-space: nowrap;
-    }
-
-    #calendarContainer .col.s2:last-child {
-        justify-content: center;
+        flex: 1 1 calc(50% - 4px) !important;
+        min-width: 110px !important;
+        justify-content: center !important;
+        white-space: nowrap !important;
     }
 
     #calendarContainer .switch-container {
-        width: 100%;
-        justify-content: center;
-        align-items: center;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        align-items: flex-start !important;
     }
 
-    #calendarContainer .btn {
-        min-width: unset;
-        white-space: nowrap;
-        padding: 0 14px;
-    }
-
-    /* Otomatik Ata butonu tam genişlik */
     #calendarContainer button[onclick="autoAssignDuties()"] {
         width: 100% !important;
         min-width: unset !important;
     }
 
-    /* Geri/İleri/Temizle butonları grubu */
     #calendarContainer .col.s2 > div {
-        width: 100%;
-        justify-content: center;
+        width: 100% !important;
+        justify-content: center !important;
+        display: flex !important;
     }
 
     .switch-container {
-        padding: 8px 12px;
-        width: 100%;
-        box-sizing: border-box;
-        align-items: flex-start;
+        padding: 8px 12px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        align-items: flex-start !important;
     }
 
     .balance-label span {
-        font-size: 0.78rem;
-        padding-left: 18px;
-    }
-
-    .balance-checkbox + span:not(.lever)::before {
-        width: 13px;
-        height: 13px;
-    }
-
-    .balance-checkbox:checked + span:not(.lever)::before {
-        width: 6px;
-        height: 14px;
-        margin-top: -3px;
-        margin-left: 2px;
+        font-size: 0.78rem !important;
+        padding-left: 18px !important;
     }
 
     #calendarAlert {
-        max-width: 90vw;
+        max-width: 90vw !important;
     }
 
     #calendarAlert .card-content span {
         font-size: 0.88rem !important;
-        line-height: 1.35;
+        line-height: 1.35 !important;
     }
 
     #calendarAlert .btn-floating {
@@ -1347,10 +1343,10 @@ table#personTable thead th {
     }
 
     .grouping-container {
-        margin-left: 0;
-        width: 100%;
-        justify-content: flex-start;
-        padding: 8px 12px;
+        margin-left: 0 !important;
+        width: 100% !important;
+        justify-content: flex-start !important;
+        padding: 8px 12px !important;
     }
 
     .standalone-select-wrapper {
@@ -1364,74 +1360,25 @@ table#personTable thead th {
         height: 42px !important;
     }
 
-    header h3 {
-        font-size: 1.5rem;
-    }
-}
-
-/* ─── Çok Küçük Ekranlar (< 480px) ─── */
-@media only screen and (max-width: 480px) {
-    body {
-        padding: 8px 6px 65px !important;
+    .collapsible-header {
+        padding: 14px 14px !important;
+        font-size: 0.92rem !important;
     }
 
-    .custom-container {
-        padding: 12px 10px;
-        border-radius: var(--radius-sm);
+    .collapsible-body {
+        padding: 14px 12px !important;
     }
 
-    header h3 {
-        font-size: 1.3rem;
-        margin: 12px 0 16px;
+    /* Personel tablosu yatay scroll */
+    #personnelTableContainer,
+    table#personTable {
+        display: block !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: 100% !important;
     }
 
-    /* Takvim tablosunu mobilde yatay kaydırılabilir yap */
-    #calendarTable {
-        font-size: 11px;
-        display: block;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .calendar-cell {
-        min-width: 30px;
-        height: 30px;
-    }
-
-    .calendar-cell::after {
-        font-size: 0.75rem !important;
-    }
-
-    #calendarTable th:first-child {
-        width: 70px !important;
-        min-width: 70px !important;
-    }
-
-    .name-column {
-        min-width: 70px !important;
-        width: 70px !important;
-        max-width: 110px !important;
-        font-size: 11px;
-    }
-
-    /* Personel tablosu mobil */
-    #personTable tbody td {
-        font-size: 0.75rem;
-        padding: 0 3px !important;
-    }
-
-    #personTable tbody td input[type="number"] {
-        width: 36px !important;
-        font-size: 11px !important;
-    }
-
-    /* Geri/İleri butonları grubu sıkışmasın */
-    #undoBtn, #redoBtn, #clearBtn {
-        padding: 0 10px !important;
-        min-width: 40px !important;
-    }
-
-    /* History modal tam ekran */
+    /* History modal */
     #historyModal {
         width: 98% !important;
         height: 95% !important;
@@ -1439,7 +1386,6 @@ table#personTable thead th {
         border-radius: var(--radius-sm) !important;
     }
 
-    /* Modal içi liste paneli mobilde tam genişlik */
     #historyModal .col.s12.m3 {
         height: auto !important;
         border-right: none !important;
@@ -1451,23 +1397,102 @@ table#personTable thead th {
     }
 
     .fixed-footer {
-        padding: 7px 10px;
+        padding: 6px 8px !important;
     }
 
     .footer-content {
-        font-size: 0.75rem;
+        font-size: 0.75rem !important;
     }
 
     .btn {
         font-size: 0.82rem !important;
     }
+}
 
-    /* collapsible header mobil */
+/* ─── Çok Küçük Ekranlar (< 480px) ─── */
+@media only screen and (max-width: 480px) {
+    body {
+        padding: 6px 4px 65px !important;
+    }
+
+    .custom-container {
+        padding: 10px 8px !important;
+        margin: 3px 0 !important;
+    }
+
+    header h3 {
+        font-size: 1.2rem !important;
+        margin: 10px 0 14px !important;
+    }
+
+    #calendarTable {
+        font-size: 10px !important;
+        display: block !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    .calendar-cell {
+        min-width: 28px !important;
+        height: 28px !important;
+    }
+
+    .calendar-cell::after {
+        font-size: 0.7rem !important;
+    }
+
+    #calendarTable th:first-child {
+        width: 65px !important;
+        min-width: 65px !important;
+    }
+
+    .name-column {
+        min-width: 65px !important;
+        width: 65px !important;
+        max-width: 100px !important;
+        font-size: 10px !important;
+    }
+
+    #personTable tbody td {
+        font-size: 0.72rem !important;
+        padding: 0 2px !important;
+    }
+
+    #personTable tbody td input[type="number"] {
+        width: 34px !important;
+        font-size: 10px !important;
+    }
+
+    #undoBtn, #redoBtn, #clearBtn {
+        padding: 0 8px !important;
+        min-width: 36px !important;
+        font-size: 0.75rem !important;
+    }
+
+    #calendarContainer .col.s4 .btn,
+    #calendarContainer .col.s4 a.btn {
+        flex: 1 1 100% !important;
+        min-width: unset !important;
+    }
+
+    .sidenav {
+        width: 240px !important;
+    }
+
     .collapsible-header {
-        padding: 14px 14px !important;
-        font-size: 0.9rem !important;
+        padding: 12px 10px !important;
+        font-size: 0.85rem !important;
+    }
+
+    .footer-content {
+        font-size: 0.72rem !important;
+    }
+
+    .btn {
+        font-size: 0.8rem !important;
     }
 }
+
 
 /* ─── Geçiş Animasyonları (Kılavuz sneak-peek) ─── */
 .collapsible li.active .collapsible-body {

@@ -184,21 +184,21 @@
                 <h3 style="text-align: center;">NÖBET LİSTESİ HAZIRLAYICI</h3>
             </header>
             <div class="row">
-                <div class="input-field col s6">
+                <div class="input-field col s12 m6">
                     <input type="text" class="datepicker" id="startDate">
                     <label for="startDate">Başlangıç Tarihi</label>
                 </div>
-                <div class="input-field col s6">
+                <div class="input-field col s12 m6">
                     <input type="text" class="datepicker" id="endDate">
                     <label for="endDate">Bitiş Tarihi</label>
                 </div>
             </div>
             <div class="row">
-                <div class="input-field col s6 tooltipped" data-position="top" data-tooltip="Resmi tatil günlerini seçerek, onları da haftasonu olarak sayabilirsiniz.">
+                <div class="input-field col s12 m6 tooltipped" data-position="top" data-tooltip="Resmi tatil günlerini seçerek, onları da haftasonu olarak sayabilirsiniz.">
                     <input id="holidays" type="text" class="validate datepicker" readonly pattern="^(\d{1,2}(,\d{1,2})*)?$">
                     <label for="holidays">Ekstra Resmi Tatil Günü var mı</label>
                 </div>
-                <div class="standalone-select-wrapper col s6" data-tooltip="Bir nöbette bulunan kişi sayısı(toplam personel sayısı değil!)" style="padding-top: 20px;">
+                <div class="standalone-select-wrapper col s12 m6" data-tooltip="Bir nöbette bulunan kişi sayısı(toplam personel sayısı değil!)" style="padding-top: 20px;">
                     <div class="select-container">
                         <select id="dutyPerDay" class="browser-default">
                             <option value="" disabled selected>Seçiniz</option>
@@ -226,10 +226,10 @@
                     <div class="collapsible-header"><i class="material-icons">people</i>Personel Planı</div>
                     <div class="collapsible-body">
                         <div class="row" style="margin-bottom: 20px;">
-                            <div class="input-field col s8">
+                            <div class="input-field col s12 m8">
                                 <input type="text" id="personName" placeholder="Personel Adı Giriniz">
                             </div>
-                            <div class="col s4" style="display: flex; justify-content: flex-start; align-items: center;">
+                            <div class="col s12 m4" style="display: flex; justify-content: flex-start; align-items: center;">
                                 <a class="btn-floating waves-effect waves-light teal" onclick="addPerson()" style="margin-right: 10px;">
                                     <i class="material-icons">add</i>
                                 </a>
@@ -285,7 +285,7 @@
                         </div>
                         <div class="row" style="margin-top: 20px; display: flex; justify-content: space-evenly; align-items: center; flex-wrap: nowrap;">
                             <!-- İstenen/İstenmeyen Gün Switch -->
-                            <div class="col s3" style="display: flex; align-items: center; justify-content: center;">
+                            <div class="col s12 m3" style="display: flex; align-items: center; justify-content: center;">
                                 <div class="switch-container tooltipped" data-position="bottom" data-tooltip="İstenen gün/istenmeyen gün modları arasında geçiş yaparak hücrelerde işaretleme yapabilirsiniz">
                                     <div class="switch">
                                         <label style="display: flex; align-items: center;">
@@ -298,7 +298,7 @@
                                 </div>
                             </div>
                             <!-- Perşembe Cumaları Dengele Checkbox -->
-                            <div class="col s2" style="display: flex; align-items: center; justify-content: center;">
+                            <div class="col s12 m2" style="display: flex; align-items: center; justify-content: center;">
                                 <div class="switch-container">
                                     <label class="tooltipped balance-label" data-position="bottom" data-tooltip="Cuma günlerini personele dengeli paylaştırmak için tikleyin.">
                                         <input type="checkbox" id="balanceFridays" class="balance-checkbox" />
@@ -311,13 +311,13 @@
                                 </div>
                             </div>
                             <!-- Otomatik Ata -->
-                            <div class="col s2">
+                            <div class="col s12 m2">
                                 <button class="waves-effect waves-light btn purple tooltipped" onclick="autoAssignDuties()" style="min-width: 180px; white-space: nowrap; padding: 0 10px;" data-position="bottom" data-tooltip="<i class='material-icons tooltip-icon'>undo</i> ve <i class='material-icons tooltip-icon'>auto_fix_high</i> tuşu ile değişik atamalar deneyebilirsiniz">
                                     <i class="material-icons left">auto_fix_high</i>Otomatik Ata
                                 </button>
                             </div>
                             <!-- Geri-İleri -->
-                            <div class="col s2">
+                            <div class="col s12 m2">
                                 <div style="display: inline-flex; align-items: center; white-space: nowrap;">
                                     <button id="undoBtn" class="waves-effect waves-light btn grey" onclick="undo()" disabled style="margin-left: 0;">
                                         <i class="material-icons">undo</i>
@@ -331,7 +331,7 @@
                                 </div>
                             </div>
                             <!-- İndir -->
-                            <div class="col s4" style="display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
+                            <div class="col s12 m4" style="display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
     
                                 <button class="waves-effect waves-light btn teal tooltipped" onclick="downloadSchedule()" data-position="bottom" data-tooltip="Excel Olarak İndir">
                                     <i class="material-icons left">file_download</i>İndir
