@@ -647,8 +647,8 @@
         </div>
 
         <!-- Günlere Özel Kapasite Modalı -->
-        <div id="capacityModal" class="modal" style="max-width: 560px; border-radius: 12px;">
-            <div class="modal-content">
+        <div id="capacityModal" class="modal" style="max-width: 560px; border-radius: 12px; display:flex; flex-direction:column; max-height:80vh;">
+            <div class="modal-content" style="flex:1; overflow-y:auto; padding-bottom:0;">
                 <h5 style="color: #00796b; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
                     <i class="material-icons">event_note</i>Günlere Özel Nöbetçi Sayısı
                 </h5>
@@ -657,11 +657,11 @@
                     Değiştirmediğiniz günler varsayılan sayıyı kullanır.
                 </p>
                 <div class="divider" style="margin-bottom: 12px;"></div>
-                <div id="capacityListContainer" style="max-height: 380px; overflow-y: auto; padding-right: 4px;">
+                <div id="capacityListContainer" style="padding-right: 4px;">
                     <p class="grey-text center-align">Önce tarih aralığı ve günlük nöbetçi sayısını seçin.</p>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" style="flex-shrink:0; border-top:1px solid #e0e0e0;">
                 <a href="#!" class="modal-close waves-effect waves-grey btn-flat">İptal</a>
                 <a href="#!" class="modal-close waves-effect waves-light btn teal" onclick="saveCustomCapacities()">
                     <i class="material-icons left">save</i>Kaydet
