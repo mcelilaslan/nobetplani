@@ -1,5 +1,4 @@
-
-        let persons = [];
+let persons = [];
         let customDailyCapacities = {}; // { dayIndex: count } - günlere özel kapasite
         let tempCustomCapacities = {}; // Modal açıkken geçici tutar
         let availabilityMode = true;
@@ -1675,6 +1674,8 @@
                 }
             }
 
+            const customCapEnabled = document.getElementById('customCapacityEnabled').checked;
+
             for (let d = 0; d < days; d++) {
                 let selectedCount = 0;
                 for (let p = 0; p < persons.length; p++) {
@@ -1693,8 +1694,6 @@
                     return;
                 }
             }
-
-            const customCapEnabled = document.getElementById('customCapacityEnabled').checked;
 
             // Dinamik günlük kapasite yardımcısı
             function getDayCap(d) {
