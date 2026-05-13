@@ -215,6 +215,19 @@
                         </select>
                         <label for="dutyPerDay">Günlük Nöbetçi Sayısı</label>
                     </div>
+                    <!-- Günlere Özel Kapasite -->
+                    <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px;">
+                        <label style="display: flex; align-items: center; cursor: pointer; gap: 6px; margin: 0;">
+                            <input type="checkbox" id="customCapacityEnabled" class="filled-in" onchange="toggleCustomCapacity()" />
+                            <span style="font-size: 0.88rem; color: #555;">Günlere Özel Nöbetçi Sayısı</span>
+                        </label>
+                        <a id="customCapacityBtn" href="#capacityModal" class="modal-trigger tooltipped"
+                           data-position="top" data-tooltip="Bazı günler için farklı nöbetçi sayısı belirle"
+                           onclick="openCapacityModal()"
+                           style="display:none; font-size: 0.82rem; color: #26a69a; text-decoration: underline; white-space: nowrap;">
+                            📅 Günleri Düzenle
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -603,6 +616,56 @@
             </div>
             <div class="modal-footer">
                 <a href="#!" class="modal-close waves-effect waves-green btn-flat">Kapat</a>
+            </div>
+        </div>
+
+        <!-- Eksik Gün Uyarı Modalı -->
+        <div id="incompleteWarningModal" class="modal" style="max-width: 480px; border-radius: 12px;">
+            <div class="modal-content">
+                <h5 style="color: #e65100; display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                    <i class="material-icons">warning</i>Eksik Atama Var
+                </h5>
+                <p style="font-size:0.92rem; color:#555; margin-top:0;">
+                    Aşağıdaki günlere henüz yeterli nöbetçi atanmamış:
+                </p>
+                <div id="incompleteDaysList"
+                     style="max-height:220px; overflow-y:auto; background:#fff8e1;
+                            border-left:4px solid #ffa000; border-radius:4px;
+                            padding:10px 14px; font-size:0.88rem; line-height:1.8; margin-bottom:10px;">
+                </div>
+                <p style="font-size:0.88rem; color:#777; margin:0;">
+                    Yine de kaydetmek / indirmek isterseniz devam edebilirsiniz. Daha sonra geri dönüp tamamlayabilirsiniz.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <a href="#!" class="modal-close waves-effect waves-grey btn-flat">Geri Dön</a>
+                <a href="#!" id="incompleteConfirmBtn"
+                   class="modal-close waves-effect waves-light btn orange darken-1">
+                    <i class="material-icons left">check</i>Yine de Devam Et
+                </a>
+            </div>
+        </div>
+
+        <!-- Günlere Özel Kapasite Modalı -->
+        <div id="capacityModal" class="modal" style="max-width: 560px; border-radius: 12px;">
+            <div class="modal-content">
+                <h5 style="color: #00796b; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <i class="material-icons">event_note</i>Günlere Özel Nöbetçi Sayısı
+                </h5>
+                <p class="grey-text" style="font-size: 0.9rem; margin-top: 0;">
+                    Varsayılan sayıdan farklı olmasını istediğiniz günlerin nöbetçi sayısını değiştirin.
+                    Değiştirmediğiniz günler varsayılan sayıyı kullanır.
+                </p>
+                <div class="divider" style="margin-bottom: 12px;"></div>
+                <div id="capacityListContainer" style="max-height: 380px; overflow-y: auto; padding-right: 4px;">
+                    <p class="grey-text center-align">Önce tarih aralığı ve günlük nöbetçi sayısını seçin.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="#!" class="modal-close waves-effect waves-grey btn-flat">İptal</a>
+                <a href="#!" class="modal-close waves-effect waves-light btn teal" onclick="saveCustomCapacities()">
+                    <i class="material-icons left">save</i>Kaydet
+                </a>
             </div>
         </div>
 

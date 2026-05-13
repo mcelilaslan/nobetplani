@@ -1,5 +1,7 @@
 
         let persons = [];
+        let customDailyCapacities = {}; // { dayIndex: count } - günlere özel kapasite
+        let tempCustomCapacities = {}; // Modal açıkken geçici tutar
         let availabilityMode = true;
         let loginSuggestionShown = false; 
 
@@ -311,6 +313,213 @@
             } else {
                 groupingSwitch.style.display = 'none';
                 document.getElementById('groupingCheckbox').checked = false;
+            }
+            // dutyPerDay değişince özel kapasiteleri sıfırla
+            customDailyCapacities = {};
+        });
+
+        // ---- GÜNLERE ÖZEL KAPASİTE FONKSİYONLARI ----
+
+        function toggleCustomCapacity() {
+            const enabled = document.getElementById('customCapacityEnabled').checked;
+            const btn = document.getElementById('customCapacityBtn');
+            btn.style.display = enabled ? 'inline' : 'none';
+            if (!enabled) {
+                customDailyCapacities = {};
+            }
+        }
+
+        function openCapacityModal() {
+            const startInput = document.getElementById('startDate').value;
+            const endInput = document.getElementById('endDate').value;
+            const dutyPerDayInput = document.getElementById('dutyPerDay').value;
+
+            if (!startInput || !endInput || !dutyPerDayInput) {
+                M.toast({ html: 'Önce tarih aralığı ve günlük nöbetçi sayısını seçin!', classes: 'orange' });
+                return;
+            }
+
+            const dutyPerDay = parseInt(dutyPerDayInput);
+            const [sd, sm, sy] = startInput.split('-').map(Number);
+            const [ed, em, ey] = endInput.split('-').map(Number);
+            const start = new Date(sy, sm - 1, sd);
+            const end = new Date(ey, em - 1, ed);
+            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+            const holidayInput = document.getElementById('holidays').value;
+            const holidays = holidayInput ? holidayInput.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d)) : [];
+
+            const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+
+            // Geçici kopyayı yükle
+            tempCustomCapacities = Object.assign({}, customDailyCapacities);
+
+            let html = `
+            <style>
+                .cap-stepper { display:flex; align-items:center; gap:0; }
+                .cap-stepper button {
+                    width:28px; height:28px; border:1px solid #ccc; background:#f5f5f5;
+                    font-size:1.1rem; line-height:1; cursor:pointer; color:#444;
+                    transition: background .15s;
+                    flex-shrink:0;
+                }
+                .cap-stepper button:first-child { border-radius:6px 0 0 6px; border-right:none; }
+                .cap-stepper button:last-child  { border-radius:0 6px 6px 0; border-left:none; }
+                .cap-stepper button:hover:not(:disabled) { background:#e0e0e0; }
+                .cap-stepper button:disabled { opacity:.35; cursor:default; }
+                .cap-stepper .cap-val {
+                    width:36px; height:28px; border:1px solid #ccc; background:#fff;
+                    text-align:center; font-size:.9rem; line-height:28px;
+                    user-select:none; font-weight:600;
+                }
+                .cap-stepper.modified button { border-color:#26a69a; }
+                .cap-stepper.modified .cap-val {
+                    border-color:#26a69a; background:#e0f7fa; color:#00796b;
+                }
+            </style>
+            <table class="striped" style="width:100%;font-size:0.9rem;">
+            <thead><tr>
+                <th>Gün</th><th>Tarih</th><th>Tür</th>
+                <th style="width:130px; text-align:center;">Nöbetçi</th>
+            </tr></thead><tbody>`;
+
+            for (let i = 0; i < days; i++) {
+                const d = new Date(start);
+                d.setDate(d.getDate() + i);
+                const isWeekend = d.getDay() === 0 || d.getDay() === 6 || holidays.includes(d.getDate());
+                const dayLabel = dayNames[d.getDay()];
+                const dateStr = d.toLocaleDateString('tr-TR');
+                const currentVal = tempCustomCapacities[i] !== undefined ? tempCustomCapacities[i] : dutyPerDay;
+                const isModified = currentVal !== dutyPerDay;
+                const rowStyle = isWeekend ? 'background:#fafafa;' : '';
+                const modClass = isModified ? 'modified' : '';
+
+                html += `<tr style="${rowStyle}">
+                    <td><b>${dayLabel}</b></td>
+                    <td>${dateStr}</td>
+                    <td><span style="font-size:.78rem;color:${isWeekend ? '#f57c00' : '#26a69a'};">
+                        ${isWeekend ? 'Hafta Sonu' : 'Hafta İçi'}</span></td>
+                    <td style="text-align:center;">
+                        <div class="cap-stepper ${modClass}" id="stepper-${i}">
+                            <button onclick="stepCapacity(${i}, -1, ${dutyPerDay})"
+                                    id="btn-minus-${i}"
+                                    ${currentVal <= 1 ? 'disabled' : ''}>−</button>
+                            <div class="cap-val" id="capval-${i}">${currentVal}</div>
+                            <button onclick="stepCapacity(${i}, +1, ${dutyPerDay})">+</button>
+                        </div>
+                    </td>
+                </tr>`;
+            }
+
+            html += '</tbody></table>';
+            document.getElementById('capacityListContainer').innerHTML = html;
+        }
+
+        function stepCapacity(dayIndex, delta, defaultVal) {
+            const valEl   = document.getElementById(`capval-${dayIndex}`);
+            const minusBtn = document.getElementById(`btn-minus-${dayIndex}`);
+            const stepper = document.getElementById(`stepper-${dayIndex}`);
+
+            let current = parseInt(valEl.textContent);
+            const next = current + delta;
+
+            if (next < 1) return; // 0'ın altına düşmesin
+
+            valEl.textContent = next;
+            minusBtn.disabled = (next <= 1);
+
+            // State güncelle
+            if (next === defaultVal) {
+                delete tempCustomCapacities[dayIndex];
+                stepper.classList.remove('modified');
+            } else {
+                tempCustomCapacities[dayIndex] = next;
+                stepper.classList.add('modified');
+            }
+        }
+
+        function updateTempCapacity(dayIndex, value, defaultVal) {
+            // Stepper tabanlı yapıya geçildi; bu fonksiyon artık stepCapacity ile ele alınıyor.
+            // Geriye dönük uyumluluk için boş bırakıldı.
+        }
+
+        function saveCustomCapacities() {
+            customDailyCapacities = Object.assign({}, tempCustomCapacities);
+            const count = Object.keys(customDailyCapacities).length;
+            if (count > 0) {
+                M.toast({ html: `✅ ${count} gün için özel kapasite kaydedildi.`, classes: 'teal' });
+            } else {
+                M.toast({ html: 'Tüm günler varsayılan sayıyı kullanıyor.', classes: 'grey' });
+            }
+        }
+
+        // ---- EKSİK GÜN KONTROL FONKSİYONU ----
+        // Eksik gün yoksa onConfirm() direkt çalışır.
+        // Eksik gün varsa uyarı modalı açılır; kullanıcı "Devam Et" derse onConfirm() çalışır.
+        function checkIncompleteDays(onConfirm) {
+            const startInput = document.getElementById('startDate').value;
+            const endInput = document.getElementById('endDate').value;
+            if (!startInput || !endInput || Object.keys(selectedCells).length === 0) {
+                onConfirm();
+                return;
+            }
+
+            const dutyPerDay = parseInt(document.getElementById('dutyPerDay').value) || 1;
+            const customCapEnabled = document.getElementById('customCapacityEnabled').checked;
+            const [sd, sm, sy] = startInput.split('-').map(Number);
+            const [ed, em, ey] = endInput.split('-').map(Number);
+            const start = new Date(sy, sm - 1, sd);
+            const end = new Date(ey, em - 1, ed);
+            start.setHours(0, 0, 0, 0);
+            end.setHours(0, 0, 0, 0);
+            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+            const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+            const incompleteDays = [];
+
+            for (let d = 0; d < days; d++) {
+                const target = (customCapEnabled && customDailyCapacities[d] !== undefined)
+                    ? customDailyCapacities[d] : dutyPerDay;
+                const assigned = document.querySelectorAll(`td[data-dindex="${d}"].selected`).length;
+                if (assigned < target) {
+                    const date = new Date(start);
+                    date.setDate(date.getDate() + d);
+                    incompleteDays.push({
+                        label: `${dayNames[date.getDay()]} ${date.toLocaleDateString('tr-TR')}`,
+                        assigned,
+                        target
+                    });
+                }
+            }
+
+            if (incompleteDays.length === 0) {
+                onConfirm();
+                return;
+            }
+
+            // Eksik günler var — modal içeriğini doldur
+            const listHtml = incompleteDays.map(item =>
+                `<div>📅 <b>${item.label}</b> — Atanan: <b>${item.assigned}</b> / Gereken: <b>${item.target}</b></div>`
+            ).join('');
+            document.getElementById('incompleteDaysList').innerHTML = listHtml;
+
+            // Confirm butonuna callback bağla (önceki listener'ı temizle)
+            const confirmBtn = document.getElementById('incompleteConfirmBtn');
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+            newBtn.addEventListener('click', onConfirm);
+
+            // Modalı aç
+            M.Modal.getInstance(document.getElementById('incompleteWarningModal')).open();
+        }
+
+        // Modal açılırken içeriği doldur
+        document.addEventListener('DOMContentLoaded', function() {
+            const capModal = document.getElementById('capacityModal');
+            if (capModal) {
+                capModal.addEventListener('modalopen', openCapacityModal);
+                // Materialize modal open event'i
+                capModal.addEventListener('click', function() {});
             }
         });
 
@@ -748,9 +957,20 @@
                 else weekdayDays++;
             }
 
-            const totalDuties = days * dutyPerDay;
-            const totalWeekendDuties = weekendDays * dutyPerDay;
-            const totalWeekdayDuties = weekdayDays * dutyPerDay;
+            const customCapEnabled = document.getElementById('customCapacityEnabled').checked;
+
+            // --- Dinamik günlük kapasite hesabı ---
+            let totalDuties = 0;
+            let totalWeekendDuties = 0;
+            let totalWeekdayDuties = 0;
+            for (let i = 0; i < days; i++) {
+                const cap = (customCapEnabled && customDailyCapacities[i] !== undefined)
+                    ? customDailyCapacities[i]
+                    : dutyPerDay;
+                totalDuties += cap;
+                if (dates[i] && dates[i].isWeekend) totalWeekendDuties += cap;
+                else totalWeekdayDuties += cap;
+            }
 
             let preplannedWeekendDuties = 0;
             let preplannedWeekdayDuties = 0;
@@ -1117,6 +1337,7 @@
             if (!startInput || !endInput) return;
 
             const dutyPerDay = parseInt(document.getElementById('dutyPerDay').value) || 1;
+            const customCapEnabled = document.getElementById('customCapacityEnabled').checked;
             const [startDay, startMonth, startYear] = startInput.split('-').map(Number);
             const [endDay, endMonth, endYear] = endInput.split('-').map(Number);
             const start = new Date(startYear, startMonth - 1, startDay);
@@ -1126,29 +1347,38 @@
 
             const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
+            // Yardımcı: o günün hedef kapasitesini döndür
+            function getDayTarget(d) {
+                return (customCapEnabled && customDailyCapacities[d] !== undefined)
+                    ? customDailyCapacities[d]
+                    : dutyPerDay;
+            }
+
             for (let d = 0; d < days; d++) {
+                const target = getDayTarget(d);
                 const assigned = document.querySelectorAll(`td[data-dindex="${d}"].selected`).length;
-                if (assigned < dutyPerDay) {
+                if (assigned < target) {
                     const date = new Date(start);
                     date.setDate(date.getDate() + d);
                     validationErrors.push({
                         type: 'error',
-                        message: `${date.toLocaleDateString('tr-TR')} tarihine ${dutyPerDay} nöbetçi atanmamış, atanan: ${assigned}`
+                        message: `${date.toLocaleDateString('tr-TR')} tarihine ${target} nöbetçi atanmamış, atanan: ${assigned}`
                     });
                 }
             }
 
             for (let d = 0; d < days; d++) {
+                const target = getDayTarget(d);
                 const assigned = [];
                 document.querySelectorAll(`td[data-dindex="${d}"].selected`).forEach(td => {
                     assigned.push(td.closest('tr').querySelector('td:first-child').innerText);
                 });
-                if (assigned.length > dutyPerDay) {
+                if (assigned.length > target) {
                     const date = new Date(start);
                     date.setDate(date.getDate() + d);
                     validationErrors.push({
                         type: 'warning',
-                        message: `${date.toLocaleDateString('tr-TR')} tarihinde fazla atama: ${assigned.join(', ')} (${assigned.length} > ${dutyPerDay})`
+                        message: `${date.toLocaleDateString('tr-TR')} tarihinde fazla atama: ${assigned.join(', ')} (${assigned.length} > ${target})`
                     });
                 }
             }
@@ -1362,45 +1592,25 @@
         }
         
         function downloadSchedule() {
-
             const startInput = document.getElementById('startDate').value;
-            const endInput = document.getElementById('endDate').value;
-            const dutyPerDay = parseInt(document.getElementById('dutyPerDay').value) || 1;
-            const [startDay, startMonth, startYear] = startInput.split('-').map(Number);
-            const [endDay, endMonth, endYear] = endInput.split('-').map(Number);
-            const start = new Date(startYear, startMonth - 1, startDay);
-            const end = new Date(endYear, endMonth - 1, endDay);
-            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-
-            let allDaysFilled = true;
-            for (let d = 0; d < days; d++) {
-                const assigned = document.querySelectorAll(`td[data-dindex="${d}"].selected`).length;
-                if (assigned < dutyPerDay) {
-                    allDaysFilled = false;
-                    break;
-                }
-            }
-            if (!allDaysFilled) {
-                M.toast({ html: 'Tüm günlere yeteri kadar nöbetçi atanmadı, takvimi doldurun!', classes: 'teal' });
+            if (!startInput || Object.keys(selectedCells).length === 0) {
+                M.toast({ html: 'İndirilecek bir takvim yok! Önce takvimi oluşturun.', classes: 'red' });
                 return;
             }
 
-            performExport(function(blob, fileName) {
-                // 1. İndirme İşlemi
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                // Kullanıcıya bilgi ver
-                showToast('Dosya cihazınıza indi! 📂 Buluta kayıt işlemi başlatılıyor...', 4000);
-
-                // 2. Otomatik Kaydetme İşlemi (Mevcut kaydet fonksiyonunu tetikler)
-                saveScheduleToHistory();
+            checkIncompleteDays(function() {
+                performExport(function(blob, fileName) {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    showToast('Dosya cihazınıza indi! 📂 Buluta kayıt işlemi başlatılıyor...', 4000);
+                    saveScheduleToHistory();
+                });
             });
         }
         function autoAssignDuties() {
@@ -1473,18 +1683,36 @@
                         selectedCount++;
                     }
                 }
-                if (selectedCount > dutyPerDay) {
+                const dayCapCheck = (customCapEnabled && customDailyCapacities[d] !== undefined)
+                    ? customDailyCapacities[d] : dutyPerDay;
+                if (selectedCount > dayCapCheck) {
                     const date = new Date(start);
                     date.setDate(date.getDate() + d);
                     const dateStr = date.toLocaleDateString('tr-TR');
-                    M.toast({ html: `${dateStr} gününe fazla nöbetçi yazdınız! Beklenen: ${dutyPerDay}, Atanan: ${selectedCount}`, displayLength: 8000 });
+                    M.toast({ html: `${dateStr} gününe fazla nöbetçi yazdınız! Beklenen: ${dayCapCheck}, Atanan: ${selectedCount}`, displayLength: 8000 });
                     return;
                 }
             }
 
-            const totalExpectedDuties = days * dutyPerDay;
-            const expectedWeekdayDuties = dates.filter(d => !d.isWeekend).length * dutyPerDay;
-            const expectedWeekendDuties = dates.filter(d => d.isWeekend).length * dutyPerDay;
+            const customCapEnabled = document.getElementById('customCapacityEnabled').checked;
+
+            // Dinamik günlük kapasite yardımcısı
+            function getDayCap(d) {
+                return (customCapEnabled && customDailyCapacities[d] !== undefined)
+                    ? customDailyCapacities[d]
+                    : dutyPerDay;
+            }
+
+            // Dinamik toplam hesaplar
+            let totalExpectedDuties = 0;
+            let expectedWeekdayDuties = 0;
+            let expectedWeekendDuties = 0;
+            for (let d = 0; d < days; d++) {
+                const cap = getDayCap(d);
+                totalExpectedDuties += cap;
+                if (dates[d].isWeekend) expectedWeekendDuties += cap;
+                else expectedWeekdayDuties += cap;
+            }
 
             let totalPlannedDuties = 0;
             let plannedWeekdayDuties = 0;
@@ -1596,6 +1824,16 @@
                 return;
             }
 
+            // dailyCapacities dizisini oluştur (her gün için hedef kapasite)
+            const dailyCapacitiesArray = [];
+            for (let d = 0; d < days; d++) {
+                dailyCapacitiesArray.push(
+                    (customCapEnabled && customDailyCapacities[d] !== undefined)
+                        ? customDailyCapacities[d]
+                        : dutyPerDay
+                );
+            }
+
             const data = {
                personnel: personnelDuties,
                totalDays: days,
@@ -1606,6 +1844,7 @@
                preAssignedDays: preAssignedDays,
                maxConsecutiveDuties: 1,
                dutyPerDay: dutyPerDay,
+               dailyCapacities: dailyCapacitiesArray,
                balanceFridays: balanceFridays,
                balanceThursdays: balanceThursdays
             };
@@ -2199,33 +2438,15 @@
             return;
         }
 
-        // --- EKSİK GÜN KONTROLÜ (Senin Orijinal Kodun) ---
-       // const dutyPerDay = parseInt(document.getElementById('dutyPerDay').value) || 1;
-       // const [startDay, startMonth, startYear] = startInput.split('-').map(Number);
-      //  const [endDay, endMonth, endYear] = endInput.split('-').map(Number);
-      //  const start = new Date(startYear, startMonth - 1, startDay);
-       // const end = new Date(endYear, endMonth - 1, endDay);
-        
-      //  // Tarih hesaplamaları
-      //  start.setHours(0, 0, 0, 0);
-      //  end.setHours(0, 0, 0, 0);
-        
-      //  const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-    
-      //  let allDaysFilled = true;
-     //   for (let d = 0; d < days; d++) {
-      //      const assigned = document.querySelectorAll(`td[data-dindex="${d}"].selected`).length;
-       //     if (assigned < dutyPerDay) {
-        //        allDaysFilled = false;
-       //         break;
-       //     }
-      //  }
-    
-     //   if (!allDaysFilled) {
-     //       M.toast({ html: 'Tüm günlere yeteri kadar nöbetçi atanmadı, takvimi doldurun!', classes: 'red' });
-     //       return;
-     //   }
-        // -----------------------------------------------------
+        checkIncompleteDays(function() {
+            _doSaveScheduleToHistory(startInput);
+        });
+    }
+
+    function _doSaveScheduleToHistory(startInput) {
+        const user = auth.currentUser;
+        if (!user) return;
+        const endInput = document.getElementById('endDate').value;
 
         // 2. KONTROL: ID Oluşturma (YIL-AY Formatı)
         const [day, month, year] = startInput.split('-'); 
@@ -2989,11 +3210,17 @@ function createMagicLink(btn) {
         return;
     }
 
+    checkIncompleteDays(function() {
+        _doCreateMagicLink(btn);
+    });
+}
+
+function _doCreateMagicLink(btn) {
+    const startInput = document.getElementById('startDate').value;
     const originalHtml = btn.innerHTML;
     btn.innerHTML = '<i class="material-icons left">loop</i>Bekleyin...';
     btn.classList.add('disabled');
 
-    // Deterministik ID: aynı ay için her zaman aynı belge -> duplicate oluşmaz
     const [day, month, year] = startInput.split('-');
     const uid = auth.currentUser.uid;
     const listId = `liste_${uid}_${year}-${month}`;
