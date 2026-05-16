@@ -398,11 +398,21 @@ let persons = [];
                 .cap-stepper.modified .cap-val {
                     border-color:#26a69a; background:#e0f7fa; color:#00796b;
                 }
+                #capacityListContainer tr.cap-weekend,
+                #capacityListContainer tr.cap-weekend:nth-child(odd),
+                #capacityListContainer tr.cap-weekend:nth-child(even) {
+                    background-color: #fff3e0 !important;
+                }
+                #capacityListContainer tr.cap-weekday,
+                #capacityListContainer tr.cap-weekday:nth-child(odd),
+                #capacityListContainer tr.cap-weekday:nth-child(even) {
+                    background-color: #ffffff !important;
+                }
             </style>
-            <table class="striped" style="width:100%;font-size:0.9rem;">
-            <thead><tr>
-                <th>Gün</th><th>Tarih</th><th>Tür</th>
-                <th style="width:130px; text-align:center;">Nöbetçi</th>
+            <table style="width:100%;font-size:0.9rem;border-collapse:collapse;">
+            <thead><tr style="border-bottom:2px solid #e0e0e0;">
+                <th style="padding:8px 6px;">Gün</th><th style="padding:8px 6px;">Tarih</th><th style="padding:8px 6px;">Tür</th>
+                <th style="width:130px; text-align:center; padding:8px 6px;">Nöbetçi</th>
             </tr></thead><tbody>`;
 
             for (let i = 0; i < days; i++) {
@@ -413,15 +423,15 @@ let persons = [];
                 const dateStr = d.toLocaleDateString('tr-TR');
                 const currentVal = tempCustomCapacities[i] !== undefined ? tempCustomCapacities[i] : dutyPerDay;
                 const isModified = currentVal !== dutyPerDay;
-                const rowStyle = isWeekend ? 'background:#fff3e0;' : '';
+                const rowClass = isWeekend ? 'cap-weekend' : 'cap-weekday';
                 const modClass = isModified ? 'modified' : '';
 
-                html += `<tr style="${rowStyle}">
-                    <td><b>${dayLabel}</b></td>
-                    <td>${dateStr}</td>
-                    <td><span style="font-size:.78rem;color:${isWeekend ? '#f57c00' : '#26a69a'};">
+                html += `<tr class="${rowClass}" style="border-bottom:1px solid #eeeeee;">
+                    <td style="padding:6px 8px;"><b>${dayLabel}</b></td>
+                    <td style="padding:6px 8px;">${dateStr}</td>
+                    <td style="padding:6px 8px;"><span style="font-size:.78rem;color:${isWeekend ? '#f57c00' : '#26a69a'};">
                         ${isWeekend ? 'Hafta Sonu' : 'Hafta İçi'}</span></td>
-                    <td style="text-align:center;">
+                    <td style="text-align:center; padding:6px 8px;">
                         <div class="cap-stepper ${modClass}" id="stepper-${i}">
                             <button onclick="stepCapacity(${i}, -1, ${dutyPerDay})"
                                     id="btn-minus-${i}"
