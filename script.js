@@ -413,7 +413,7 @@ let persons = [];
                 const dateStr = d.toLocaleDateString('tr-TR');
                 const currentVal = tempCustomCapacities[i] !== undefined ? tempCustomCapacities[i] : dutyPerDay;
                 const isModified = currentVal !== dutyPerDay;
-                const rowStyle = isWeekend ? 'background:#fafafa;' : '';
+                const rowStyle = isWeekend ? 'background:#fff3e0;' : '';
                 const modClass = isModified ? 'modified' : '';
 
                 html += `<tr style="${rowStyle}">
@@ -644,18 +644,6 @@ let persons = [];
         function toggleAvailabilityMode() {
             const switchInput = document.getElementById('modeSwitch');
             availabilityMode = !switchInput.checked;
-        }
-
-        // Cumaları Dengele / Perşembeleri Dengele birbirini exclude eder
-        function onBalanceChange(changedId) {
-            const otherId = changedId === 'balanceFridays' ? 'balanceThursdays' : 'balanceFridays';
-            const changedEl = document.getElementById(changedId);
-            const otherEl = document.getElementById(otherId);
-            if (changedEl.checked && otherEl.checked) {
-                otherEl.checked = false;
-                const otherLabel = changedId === 'balanceFridays' ? 'Perşembeleri Dengele' : 'Cumaları Dengele';
-                M.toast({ html: `"${otherLabel}" kapatıldı — ikisi aynı anda kullanılamaz.`, classes: 'teal', displayLength: 3000 });
-            }
         }
 
         function truncateName(name) {
