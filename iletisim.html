@@ -70,7 +70,7 @@
 
                         <li id="login-li-desktop" style="margin-left: 10px;">
                             <a href="#" onclick="googleLogin()" class="btn waves-effect waves-light white black-text" style="height: 36px; line-height: 36px; padding: 0 15px; display: inline-flex; align-items: center;">
-                                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="vertical-align: middle; width: 18px; margin-right: 8px;">
+                                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="vertical-align: middle; width: 18px; margin-right: 8px;">
                                 Giriş Yap
                             </a>
                         </li>
@@ -87,7 +87,7 @@
                 
                 <li id="login-li-mobile">
                     <a href="#" onclick="googleLogin()" style="display: flex; align-items: center; padding-left: 32px;">
-                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="vertical-align: middle; width: 24px; margin-right: 15px;">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="vertical-align: middle; width: 24px; margin-right: 15px;">
                         Giriş Yap
                     </a>
                 </li>
@@ -97,6 +97,7 @@
         <!-- İletişim İçeriği -->
         <div class="custom-container">
             <header>
+                <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;">İletişim | Nobetplani.com</h1>
                 <h3 style="text-align: center;">İletişim</h3>
             </header>
             <div class="contact-info">
@@ -219,7 +220,7 @@
             <a href="gizlilik.html" style="color: #fff; text-decoration: underline;">Gizlilik Politikası ve Şartlar</a>
             
             <a href="https://www.instagram.com/nobetplani" target="_blank" style="margin-left: 15px; display: inline-flex; align-items: center;">
-                <img src="instagram-logo.png" style="width: 20px; height: 20px; margin-right: 5px;"> Instagram
+                <img src="instagram-logo.png" alt="Instagram" style="width: 20px; height: 20px; margin-right: 5px;"> Instagram
             </a>
         </div>
     </footer>
@@ -417,7 +418,7 @@
         // Masaüstü Butonu
         const userHtmlDesktop = `
             <a href="#" onclick="googleLogout()" class="btn waves-effect waves-light white black-text tooltipped" data-position="bottom" data-tooltip="Çıkış Yap">
-                <img src="${user.photoURL}" style="vertical-align: middle; width: 24px; border-radius: 50%; margin-right: 5px;">
+                <img src="${user.photoURL}" alt="Profil fotoğrafı" style="vertical-align: middle; width: 24px; border-radius: 50%; margin-right: 5px;">
                 ${firstName}
             </a>
         `;
@@ -425,7 +426,7 @@
         // Mobil Butonu
         const userHtmlMobile = `
             <a href="#" onclick="googleLogout()" style="display: flex; align-items: center; padding-left: 32px;">
-                <img src="${user.photoURL}" style="vertical-align: middle; width: 24px; border-radius: 50%; margin-right: 15px;">
+                <img src="${user.photoURL}" alt="Profil fotoğrafı" style="vertical-align: middle; width: 24px; border-radius: 50%; margin-right: 15px;">
                 ${firstName} (Çıkış)
             </a>
         `;
