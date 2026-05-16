@@ -314,12 +314,12 @@
                             <!-- Perşembe Cumaları Dengele Checkbox -->
                             <div class="col s12 m2" style="display: flex; align-items: center; justify-content: center;">
                                 <div class="switch-container">
-                                    <label class="tooltipped balance-label" data-position="bottom" data-tooltip="Cuma günlerini personele dengeli paylaştırmak için tikleyin. Perşembeleri Dengele ile aynı anda kullanılamaz.">
-                                        <input type="checkbox" id="balanceFridays" class="balance-checkbox" onchange="onBalanceChange('balanceFridays')" />
+                                    <label class="tooltipped balance-label" data-position="bottom" data-tooltip="Cuma günlerini personele dengeli paylaştırmak için tikleyin.">
+                                        <input type="checkbox" id="balanceFridays" class="balance-checkbox" />
                                         <span style="color: #000;">Cumaları Dengele</span>
                                     </label>
-                                    <label class="tooltipped balance-label" data-position="bottom" data-tooltip="Perşembe günlerini personele dengeli paylaştırmak için tikleyin. Cumaları Dengele ile aynı anda kullanılamaz.">
-                                        <input type="checkbox" id="balanceThursdays" class="balance-checkbox" onchange="onBalanceChange('balanceThursdays')" />
+                                    <label class="tooltipped balance-label" data-position="bottom" data-tooltip="Perşembe günlerini personele dengeli paylaştırmak için tikleyin.">
+                                        <input type="checkbox" id="balanceThursdays" class="balance-checkbox" />
                                         <span style="color: #000;">Perşembeleri Dengele</span>
                                     </label>
                                 </div>
@@ -648,8 +648,8 @@
         </div>
 
         <!-- Günlere Özel Kapasite Modalı -->
-        <div id="capacityModal" class="modal" style="max-width: 560px; border-radius: 12px; display:flex; flex-direction:column; max-height:80vh;">
-            <div class="modal-content" style="flex:1; overflow-y:auto; padding-bottom:0;">
+        <div id="capacityModal" class="modal modal-fixed-footer" style="max-width: 560px; border-radius: 12px;">
+            <div class="modal-content" style="padding-bottom: 0;">
                 <h5 style="color: #00796b; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
                     <i class="material-icons">event_note</i>Günlere Özel Nöbetçi Sayısı
                 </h5>
@@ -662,7 +662,7 @@
                     <p class="grey-text center-align">Önce tarih aralığı ve günlük nöbetçi sayısını seçin.</p>
                 </div>
             </div>
-            <div class="modal-footer" style="flex-shrink:0; border-top:1px solid #e0e0e0;">
+            <div class="modal-footer">
                 <a href="#!" class="modal-close waves-effect waves-grey btn-flat">İptal</a>
                 <a href="#!" class="modal-close waves-effect waves-light btn teal" onclick="saveCustomCapacities()">
                     <i class="material-icons left">save</i>Kaydet
