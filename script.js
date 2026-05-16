@@ -14,12 +14,29 @@ let persons = [];
             }
         }
 
+        // İsmi Firebase için normalize et: büyük harf + Türkçe karakter dönüşümü
+        function normalizeName(str) {
+            return str.trim()
+                .toUpperCase()
+                .replace(/Ç/g, 'C')
+                .replace(/Ğ/g, 'G')
+                .replace(/İ/g, 'I')
+                .replace(/Ö/g, 'O')
+                .replace(/Ş/g, 'S')
+                .replace(/Ü/g, 'U')
+                .replace(/ç/g, 'C')
+                .replace(/ğ/g, 'G')
+                .replace(/ı/g, 'I')
+                .replace(/ö/g, 'O')
+                .replace(/ş/g, 'S')
+                .replace(/ü/g, 'U');
+        }
+
         function loadPersonsFromLocalStorage() {
             // Hafızadan daha önce kaydedilmiş listeyi okur.
             const savedPersons = localStorage.getItem('nobetPlaniPersonelListesi');
             if (savedPersons) {
-                // Kayıtlı liste varsa, bunu geri yükler.
-                persons = JSON.parse(savedPersons);
+                persons = JSON.parse(savedPersons).map(p => ({ ...p, name: normalizeName(p.name) }));
             }
         }
         
@@ -567,7 +584,7 @@ let persons = [];
         }
 
         function addPerson() {
-            const name = document.getElementById('personName').value.trim().toUpperCase();
+            const name = normalizeName(document.getElementById('personName').value);
             if (!name) return M.toast({html: 'Lütfen isim girin!', classes: 'teal'});
             if (persons.some(p => p.name === name)) return M.toast({html: 'Bu isim zaten var!', classes: 'teal'});
 
@@ -1816,13 +1833,6 @@ let persons = [];
                 }
             }
             
-            // Hata varsa modal aç ve işlemi durdur
-            if (validationErrors.length > 0) {
-                document.getElementById('loadingOverlay').style.display = 'none';
-                showErrorModal();
-                return;
-            }
-
             // dailyCapacities dizisini oluştur (her gün için hedef kapasite)
             const dailyCapacitiesArray = [];
             for (let d = 0; d < days; d++) {
@@ -1831,6 +1841,48 @@ let persons = [];
                         ? customDailyCapacities[d]
                         : dutyPerDay
                 );
+            }
+
+            // Kontrol 3: Boşluk süresi matematiksel sınırı
+            personnelDuties.forEach(person => {
+                const minDays = person.minDaysBetween || 0;
+                const totalDuties = (person.weekdayLeft || 0) + (person.weekendLeft || 0);
+                if (minDays > 0 && totalDuties > 0) {
+                    const maxPossible = Math.floor((days + minDays) / (minDays + 1));
+                    if (totalDuties > maxPossible) {
+                        validationErrors.push({
+                            type: 'error',
+                            message: `${person.name}: ${minDays} gün boşluk kuralıyla ${days} günde en fazla ${maxPossible} nöbet mümkün, ancak ${totalDuties} nöbet yazılmış. Boşluk süresini azaltın veya nöbet sayısını düşürün.`
+                        });
+                    }
+                }
+            });
+
+            // Kontrol 4: Herhangi bir günde hiç müsait personel yok mu?
+            const blockedDaysList = [];
+            for (let d = 0; d < days; d++) {
+                const cap = dailyCapacitiesArray[d];
+                const availableCount = persons.filter((_, pIdx) => !unavailableCells[`${pIdx}-${d}`]).length;
+                if (availableCount < cap) {
+                    const date = new Date(start);
+                    date.setDate(date.getDate() + d);
+                    blockedDaysList.push(`${date.toLocaleDateString('tr-TR')} (müsait: ${availableCount}, gereken: ${cap})`);
+                }
+            }
+            if (blockedDaysList.length > 0) {
+                const sample = blockedDaysList.slice(0, 3);
+                const more = blockedDaysList.length > 3 ? ` ve ${blockedDaysList.length - 3} gün daha` : '';
+                validationErrors.push({
+                    type: 'error',
+                    message: `Şu günlerde yeterli müsait personel yok: ${sample.join(', ')}${more}. İstenmeyen günleri azaltın veya personel ekleyin.`
+                });
+            }
+
+            // Hata varsa modal aç ve işlemi durdur
+            if (validationErrors.length > 0) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                showErrorModal();
+                return;
             }
 
             const data = {
@@ -1977,7 +2029,7 @@ let persons = [];
                 for (let i = 1; i < rows.length; i++) {
                     const row = rows[i];
                     if (row[0]) {
-                        const name = row[0].replace(/"/g, '').trim().toUpperCase();
+                        const name = normalizeName(row[0].replace(/"/g, ''));
                         newPersons.push({
                             name: name,
                             weekdayDuties: row[1] ? parseInt(row[1]) : undefined,
@@ -2388,7 +2440,7 @@ let persons = [];
                 const cloudData = JSON.parse(doc.data().personnelList);
                 
                 if(cloudData.length > 0) {
-                    persons = cloudData;
+                    persons = cloudData.map(p => ({ ...p, name: normalizeName(p.name) }));
                     renderTable();
                     savePersonsToLocalStorage();
                     M.toast({html: 'Personel listeniz buluttan yüklendi!', classes: 'green'});
