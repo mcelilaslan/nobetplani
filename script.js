@@ -8,13 +8,11 @@ let persons = [];
             // 1. Önce eskisi gibi tarayıcıya kaydet
             localStorage.setItem('nobetPlaniPersonelListesi', JSON.stringify(persons));
             
-            // 2. EĞER kullanıcı giriş yapmışsa, buluta da kaydet
             if (auth.currentUser) {
                 saveToFirestore();
             }
         }
 
-        // İsmi Firebase için normalize et: büyük harf + Türkçe karakter dönüşümü
         function normalizeName(str) {
             return str.trim()
                 .toUpperCase()
@@ -32,8 +30,24 @@ let persons = [];
                 .replace(/ü/g, 'U');
         }
 
+
+        function getFormInputs() {
+            return {
+                startInput: document.getElementById('startDate').value,
+                endInput:   document.getElementById('endDate').value,
+                dutyPerDay: parseInt(document.getElementById('dutyPerDay').value) || 0,
+                holidays:   document.getElementById('holidays').value
+            };
+        }
+
+        function showLoading() {
+            showLoading();
+        }
+        function hideLoading() {
+            hideLoading();
+        }
+
         function loadPersonsFromLocalStorage() {
-            // Hafızadan daha önce kaydedilmiş listeyi okur.
             const savedPersons = localStorage.getItem('nobetPlaniPersonelListesi');
             if (savedPersons) {
                 persons = JSON.parse(savedPersons).map(p => ({ ...p, name: normalizeName(p.name) }));
@@ -113,7 +127,6 @@ let persons = [];
                             this.gotoDate(startDateInstance.date);
                         }
                 
-                        // Önceki seçimleri işaretle
                         setTimeout(() => {
                             const dayElements = this.el.parentElement.querySelectorAll('.datepicker-day-button');
                             dayElements.forEach(day => {
@@ -130,18 +143,15 @@ let persons = [];
                         const day = date.getDate();
                         const index = selectedDays.indexOf(day);
                 
-                        // Gün zaten seçiliyse çıkar, değilse ekle
                         if (index !== -1) {
                             selectedDays.splice(index, 1);
                         } else {
                             selectedDays.push(day);
                         }
                 
-                        // Günleri sıralı şekilde güncelle
                         selectedDays.sort((a, b) => a - b);
                         holidaysInput.value = selectedDays.join(',');
                 
-                        // Görsel geri bildirim için seçili günleri işaretle
                         const dayElements = this.el.parentElement.querySelectorAll('.datepicker-day-button');
                         dayElements.forEach(dayEl => {
                             const dayNum = parseInt(dayEl.textContent);
@@ -152,10 +162,8 @@ let persons = [];
                             }
                         });
                 
-                        // Doğrulamayı tetikle
                         M.updateTextFields();
                         holidaysInput.dispatchEvent(new Event('input')); // Materialize’a içeriğin değiştiğini bildir
-                        // Manuel doğrulama kontrolü
                         if (selectedDays.length > 0 && holidaysInput.value.match(/^(\d{1,2}(,\d{1,2})*)?$/)) {
                             holidaysInput.classList.remove('invalid');
                             holidaysInput.classList.add('valid');
@@ -165,11 +173,9 @@ let persons = [];
                         }
                     },
                     onClose: function() {
-                        // Kapanırken son durumu input’a yaz
                         holidaysInput.value = selectedDays.join(',');
                         M.updateTextFields();
                         holidaysInput.dispatchEvent(new Event('input')); // Materialize’a içeriğin değiştiğini bildir
-                        // Manuel doğrulama kontrolü
                         if (selectedDays.length > 0 && holidaysInput.value.match(/^(\d{1,2}(,\d{1,2})*)?$/)) {
                             holidaysInput.classList.remove('invalid');
                             holidaysInput.classList.add('valid');
@@ -180,7 +186,6 @@ let persons = [];
                     }
                 });
                 
-                // Özel stil için CSS ekleme (seçili günlerin görünümünü değiştirmek için)
                 const style = document.createElement('style');
                 style.innerHTML = `
                     .datepicker-day-button.selected-day {
@@ -205,7 +210,6 @@ let persons = [];
             });
             M.Modal.init(document.querySelectorAll('.modal'));
         
-            // Collapsible örneklerini tanımlama
             collapsiblePersonel = M.Collapsible.getInstance(document.querySelector('#personelCollapsible'));
             collapsibleCalendar = M.Collapsible.getInstance(document.querySelector('#calendarCollapsible'));
             statsCollapsible = M.Collapsible.getInstance(document.querySelector('#statsCollapsible'));
@@ -223,19 +227,16 @@ let persons = [];
                    
                     guideBody.style.transition = 'max-height 0.5s ease-in-out, padding 0.5s ease-in-out';
                     
-                    
                     setTimeout(() => {
                         guideBody.style.maxHeight = '100px';  
                         guideBody.style.paddingTop = '1rem'; 
                         guideBody.style.paddingBottom = '1rem';
                     }, 100);
 
-                    
                     setTimeout(() => {
                         guideBody.style.maxHeight = '0px';
                         guideBody.style.paddingTop = '0px';
                         guideBody.style.paddingBottom = '0px';
-                        
                         
                         setTimeout(() => {
                             guideBody.style.display = '';
@@ -249,7 +250,6 @@ let persons = [];
                 }
             }, 1000);
         
-           
             collapsibleCalendar.options.onOpenStart = function() {
                 document.getElementById('calendarContainer').classList.add('expanded');
             };
@@ -257,7 +257,6 @@ let persons = [];
                 document.getElementById('calendarContainer').classList.remove('expanded');
             };
         
-            
             if (isMobileDevice()) {
                 document.querySelectorAll('.btn-floating').forEach(btn => {
                     btn.style.width = '36px';
@@ -267,7 +266,6 @@ let persons = [];
                 M.toast({ html: 'Mobilde "yatay" modda daha iyi bir deneyim elde edebilirsiniz!(Masaüstü kullanım önerilir)' });
             }
         
-            // Tarih seçiciler için olay dinleyicileri
             const startDatePicker = document.getElementById('startDate');
             const endDatePicker = document.getElementById('endDate');
             startDatePicker.addEventListener('change', function() {
@@ -290,7 +288,6 @@ let persons = [];
                 }
             });
         
-            // Enter tuşu dinleyicisi
             const personNameInput = document.getElementById('personName');
             if (personNameInput) {
                 personNameInput.addEventListener('keydown', function(event) {
@@ -301,11 +298,9 @@ let persons = [];
                 });
             }
         
-            
             persons = [...defaultPersons];
             renderTable();
         
-            // CSV yükleme için olay dinleyicisi
             const csvUploadInput = document.getElementById('csvUpload');
             if (csvUploadInput) {
                 csvUploadInput.removeEventListener('change', uploadPersonnel);
@@ -314,7 +309,6 @@ let persons = [];
                 console.error('csvUpload input elementi bulunamadı!');
             }
         
-            // Checkbox'ı varsayılan olarak gizleme
             const groupingSwitch = document.getElementById('groupingSwitch');
             groupingSwitch.style.display = 'none';
 
@@ -330,7 +324,6 @@ let persons = [];
                 groupingSwitch.style.display = 'none';
                 document.getElementById('groupingCheckbox').checked = false;
             }
-            // dutyPerDay değişince özel kapasiteleri sıfırla
             customDailyCapacities = {};
         });
 
@@ -346,16 +339,11 @@ let persons = [];
         }
 
         function openCapacityModal() {
-            const startInput = document.getElementById('startDate').value;
-            const endInput = document.getElementById('endDate').value;
-            const dutyPerDayInput = document.getElementById('dutyPerDay').value;
-
-            if (!startInput || !endInput || !dutyPerDayInput) {
+            const { startInput, endInput, dutyPerDay } = getFormInputs();
+            if (!startInput || !endInput || !dutyPerDay) {
                 M.toast({ html: 'Önce tarih aralığı ve günlük nöbetçi sayısını seçin!', classes: 'orange' });
                 return;
             }
-
-            const dutyPerDay = parseInt(dutyPerDayInput);
             const [sd, sm, sy] = startInput.split('-').map(Number);
             const [ed, em, ey] = endInput.split('-').map(Number);
             const start = new Date(sy, sm - 1, sd);
@@ -367,7 +355,6 @@ let persons = [];
 
             const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
 
-            // Geçici kopyayı yükle
             tempCustomCapacities = Object.assign({}, customDailyCapacities);
 
             let html = `
@@ -444,7 +431,6 @@ let persons = [];
             valEl.textContent = next;
             minusBtn.disabled = (next <= 1);
 
-            // State güncelle
             if (next === defaultVal) {
                 delete tempCustomCapacities[dayIndex];
                 stepper.classList.remove('modified');
@@ -455,8 +441,6 @@ let persons = [];
         }
 
         function updateTempCapacity(dayIndex, value, defaultVal) {
-            // Stepper tabanlı yapıya geçildi; bu fonksiyon artık stepCapacity ile ele alınıyor.
-            // Geriye dönük uyumluluk için boş bırakıldı.
         }
 
         function saveCustomCapacities() {
@@ -470,17 +454,12 @@ let persons = [];
         }
 
         // ---- EKSİK GÜN KONTROL FONKSİYONU ----
-        // Eksik gün yoksa onConfirm() direkt çalışır.
-        // Eksik gün varsa uyarı modalı açılır; kullanıcı "Devam Et" derse onConfirm() çalışır.
         function checkIncompleteDays(onConfirm) {
-            const startInput = document.getElementById('startDate').value;
-            const endInput = document.getElementById('endDate').value;
+            const { startInput, endInput, dutyPerDay } = getFormInputs();
             if (!startInput || !endInput || Object.keys(selectedCells).length === 0) {
                 onConfirm();
                 return;
             }
-
-            const dutyPerDay = parseInt(document.getElementById('dutyPerDay').value) || 1;
             const customCapEnabled = document.getElementById('customCapacityEnabled').checked;
             const [sd, sm, sy] = startInput.split('-').map(Number);
             const [ed, em, ey] = endInput.split('-').map(Number);
@@ -513,32 +492,26 @@ let persons = [];
                 return;
             }
 
-            // Eksik günler var — modal içeriğini doldur
             const listHtml = incompleteDays.map(item =>
                 `<div>📅 <b>${item.label}</b> — Atanan: <b>${item.assigned}</b> / Gereken: <b>${item.target}</b></div>`
             ).join('');
             document.getElementById('incompleteDaysList').innerHTML = listHtml;
 
-            // Confirm butonuna callback bağla (önceki listener'ı temizle)
             const confirmBtn = document.getElementById('incompleteConfirmBtn');
             const newBtn = confirmBtn.cloneNode(true);
             confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
             newBtn.addEventListener('click', onConfirm);
 
-            // Modalı aç
             M.Modal.getInstance(document.getElementById('incompleteWarningModal')).open();
         }
 
-        // Modal açılırken içeriği doldur
         document.addEventListener('DOMContentLoaded', function() {
             const capModal = document.getElementById('capacityModal');
             if (capModal) {
                 capModal.addEventListener('modalopen', openCapacityModal);
-                // Materialize modal open event'i
                 capModal.addEventListener('click', function() {});
             }
         });
-
 
         function saveToHistory() {
             const currentState = {
@@ -705,7 +678,6 @@ let persons = [];
                 `;
         
                 const groupCount = Math.ceil(persons.length / 2);
-                console.log('Group Count:', groupCount);
         
                 persons.forEach((person, index) => {
                     let groupOptions = '<option value="0">Seç</option>';
@@ -803,16 +775,10 @@ let persons = [];
             savePersonsToLocalStorage(); // KAYDET
         }
 
-
-       
-                
-               
        function showCustomAlert() {
-            // Mevcut uyarıyı kaldır
             const existingAlert = document.querySelector('#calendarAlert');
             if (existingAlert) existingAlert.remove();
         
-            // Yeni alert div'i oluştur
             const alertDiv = document.createElement('div');
             alertDiv.id = 'calendarAlert';
             alertDiv.className = 'card';
@@ -829,7 +795,6 @@ let persons = [];
             alertDiv.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.3)';
             alertDiv.style.borderRadius = '8px';
         
-            // Mobil ve masaüstü için konumlandırma
             if (isMobileDevice()) {
                 alertDiv.style.top = '35%';
                 alertDiv.style.left = '50%';
@@ -843,7 +808,6 @@ let persons = [];
                 alertDiv.style.transform = 'translate(-50%, -50%)';
             }
         
-            // Alert içeriği
             alertDiv.innerHTML = `
                 <div class="card-content center-align" style="padding: 12px; color: #000000;">
                     <span style="font-weight: bold; font-size: 1rem; display: block; margin-bottom: 8px;" 
@@ -860,10 +824,8 @@ let persons = [];
                 </div>
             `;
         
-            // Alert'i sayfaya ekle
             document.body.appendChild(alertDiv);
         
-            // Bouncing buton etkileşimi
             const bounceButton = alertDiv.querySelector('.btn-floating.bounce');
             let timeoutId = setTimeout(() => {
                 if (alertDiv.parentNode) {
@@ -883,7 +845,6 @@ let persons = [];
                 alertDiv.remove();
             });
         
-            // Kutucuk dışında tıklama ile kapatma
             const closeOnOutsideClick = (event) => {
                 if (!alertDiv.contains(event.target)) {
                     clearTimeout(timeoutId);
@@ -897,7 +858,6 @@ let persons = [];
                 }
             };
         
-            // İlk tıklamayı yakalamak için kısa bir gecikme (alert’in yerleşmesi için)
             setTimeout(() => {
                 document.addEventListener('click', closeOnOutsideClick);
             }, 100);
@@ -915,7 +875,6 @@ let persons = [];
                 }, 8000);
             });
         }
-
 
         function generateCalendar() {
 
@@ -975,7 +934,6 @@ let persons = [];
 
             const customCapEnabled = document.getElementById('customCapacityEnabled').checked;
 
-            // --- Dinamik günlük kapasite hesabı ---
             let totalDuties = 0;
             let totalWeekendDuties = 0;
             let totalWeekdayDuties = 0;
@@ -1211,14 +1169,11 @@ let persons = [];
             const cellKey = `${pIndex}-${dIndex}`;
             const cell = document.querySelector(`td[data-pindex="${pIndex}"][data-dindex="${dIndex}"]`);
         
-            // Mobil cihaz ve dikey mod kontrolü
             if (isFirstClick && isMobileDevice() && window.innerWidth < window.innerHeight) {
-                // Telefonu titreştir
                 if (navigator.vibrate) {
                     navigator.vibrate(200); // 200ms titreşim
                 }
         
-                // Özel mToast uyarısı
                 M.Toast.dismissAll();
                 const toastHTML = '<span style="font-size: 1rem;">Takvim işaretlemeleri için yatay moda almanız önerilir</span>';
                 const toast = M.toast({
@@ -1227,7 +1182,6 @@ let persons = [];
                     classes: 'shake' // Sallanma animasyonu için sınıf
                 });
         
-                // Toast elementine shake sınıfını manuel olarak ekle
                 setTimeout(() => {
                     const toastElement = document.querySelector('.toast');
                     if (toastElement) {
@@ -1235,7 +1189,6 @@ let persons = [];
                     }
                 }, 0);
         
-                // İlk tıklamayı false yap
                 isFirstClick = false;
             }
         
@@ -1274,10 +1227,8 @@ let persons = [];
         }
 
        function updateStatistics() {
-            const startInput = document.getElementById('startDate').value;
-            const endInput = document.getElementById('endDate').value;
+            const { startInput, endInput } = getFormInputs();
             if (!startInput || !endInput) return;
-        
             const [startDay, startMonth, startYear] = startInput.split('-').map(Number);
             const [endDay, endMonth, endYear] = endInput.split('-').map(Number);
             const start = new Date(startYear, startMonth - 1, startDay);
@@ -1348,11 +1299,8 @@ let persons = [];
 
         function checkScheduleValidity() {
             validationErrors = [];
-            const startInput = document.getElementById('startDate').value;
-            const endInput = document.getElementById('endDate').value;
+            const { startInput, endInput, dutyPerDay } = getFormInputs();
             if (!startInput || !endInput) return;
-
-            const dutyPerDay = parseInt(document.getElementById('dutyPerDay').value) || 1;
             const customCapEnabled = document.getElementById('customCapacityEnabled').checked;
             const [startDay, startMonth, startYear] = startInput.split('-').map(Number);
             const [endDay, endMonth, endYear] = endInput.split('-').map(Number);
@@ -1360,10 +1308,8 @@ let persons = [];
             const end = new Date(endYear, endMonth - 1, endDay);
             start.setHours(0, 0, 0, 0);
             end.setHours(0, 0, 0, 0);
-
             const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
-            // Yardımcı: o günün hedef kapasitesini döndür
             function getDayTarget(d) {
                 return (customCapEnabled && customDailyCapacities[d] !== undefined)
                     ? customDailyCapacities[d]
@@ -1505,9 +1451,8 @@ let persons = [];
         }
 
        function performExport(callback) {
-            const startInput = document.getElementById('startDate').value;
-            const endInput = document.getElementById('endDate').value;
-            const dutyPerDay = parseInt(document.getElementById('dutyPerDay').value) || 1;
+            const { startInput, endInput, dutyPerDay: rawD } = getFormInputs();
+            const dutyPerDay = rawD || 1;
             if (!startInput || !endInput) {
                 M.toast({ html: 'Lütfen tarih seçin!' });
                 return;
@@ -1544,17 +1489,14 @@ let persons = [];
             }
             const columnCount = Math.max(dutyPerDay, maxAssignedPerDay);
         
-            
             const styledData = [];
         
-           
             const headers = [{ v: 'Tarih', t: 's', s: { font: { bold: true, sz: 16 } } }];
             for (let i = 1; i <= columnCount; i++) {
                 headers.push({ v: `Nöbetçi ${i}`, t: 's', s: { font: { bold: true, sz: 16 } } });
             }
             styledData.push(headers);
         
-            
             for (let d = 0; d < days; d++) {
                 const currentDate = new Date(start);
                 currentDate.setDate(currentDate.getDate() + d);
@@ -1562,7 +1504,6 @@ let persons = [];
                 const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6;
                 const isHoliday = holidays.includes(currentDate.getDate());
         
-                
                 let dateStyle = { font: { bold: true, sz: 16 } }; 
                 if (isWeekend && !isHoliday) {
                     dateStyle.fill = { fgColor: { rgb: "808080" } }; 
@@ -1588,10 +1529,8 @@ let persons = [];
                 styledData.push(row);
             }
         
-            
             const ws = XLSX.utils.aoa_to_sheet(styledData);
         
-            
             ws['!cols'] = [
                 { wch: 14 }, 
                 ...Array(columnCount).fill({ wch: 22 }) 
@@ -1600,7 +1539,6 @@ let persons = [];
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Nöbet Listesi");
         
-            
             const blob = new Blob([XLSX.write(wb, { bookType: 'xlsx', type: 'array' })], { type: 'application/octet-stream' });
             const fileName = `nobet_listesi_${new Date().toISOString().split('T')[0]}.xlsx`;
         
@@ -1712,14 +1650,12 @@ let persons = [];
                 }
             }
 
-            // Dinamik günlük kapasite yardımcısı
             function getDayCap(d) {
                 return (customCapEnabled && customDailyCapacities[d] !== undefined)
                     ? customDailyCapacities[d]
                     : dutyPerDay;
             }
 
-            // Dinamik toplam hesaplar
             let totalExpectedDuties = 0;
             let expectedWeekdayDuties = 0;
             let expectedWeekendDuties = 0;
@@ -1780,7 +1716,7 @@ let persons = [];
                 group: person.group || 0
             }));
 
-            document.getElementById('loadingOverlay').style.display = 'flex';
+            showLoading();
 
             const preAssignedDays = {};
             Object.keys(selectedCells).forEach(key => {
@@ -1802,10 +1738,8 @@ let persons = [];
             const balanceFridays = document.getElementById('balanceFridays').checked;
             const balanceThursdays = document.getElementById('balanceThursdays').checked;
 
-            // Grup kontrolü için ek validation
             const groupingEnabled = document.getElementById('groupingCheckbox').checked;
                         
-            // Kontrol 1: Grup büyüklüğü ile dutyPerDay uyumsuzluğu
             if (groupingEnabled) {
                 const groupSizes = {};
                 persons.forEach(person => {
@@ -1823,7 +1757,6 @@ let persons = [];
                     }
                 }
             
-                // Kontrol 2: Gruplama seçili ama hiç grup atanmamış
                 const hasAnyGroup = persons.some(person => person.group > 0);
                 if (!hasAnyGroup) {
                     validationErrors.push({
@@ -1833,7 +1766,6 @@ let persons = [];
                 }
             }
             
-            // dailyCapacities dizisini oluştur (her gün için hedef kapasite)
             const dailyCapacitiesArray = [];
             for (let d = 0; d < days; d++) {
                 dailyCapacitiesArray.push(
@@ -1843,7 +1775,6 @@ let persons = [];
                 );
             }
 
-            // Kontrol 3: Boşluk süresi matematiksel sınırı
             personnelDuties.forEach(person => {
                 const minDays = person.minDaysBetween || 0;
                 const totalDuties = (person.weekdayLeft || 0) + (person.weekendLeft || 0);
@@ -1858,7 +1789,6 @@ let persons = [];
                 }
             });
 
-            // Kontrol 4: Herhangi bir günde hiç müsait personel yok mu?
             const blockedDaysList = [];
             for (let d = 0; d < days; d++) {
                 const cap = dailyCapacitiesArray[d];
@@ -1878,9 +1808,8 @@ let persons = [];
                 });
             }
 
-            // Hata varsa modal aç ve işlemi durdur
             if (validationErrors.length > 0) {
-                document.getElementById('loadingOverlay').style.display = 'none';
+                hideLoading();
                 showErrorModal();
                 return;
             }
@@ -1915,10 +1844,9 @@ let persons = [];
                 return response.json().then(jsonData => ({ status: response.status, data: jsonData }));
             })
             .then(({ status, data }) => {
-                document.getElementById('loadingOverlay').style.display = 'none';
+                hideLoading();
                 
                 if (status === 200 && Array.isArray(data.assignments)) {
-                    // BAŞARILI DURUM
                     data.assignments.forEach(a => {
                         const cellKey = `${a.pIndex}-${a.dayIndex}`;
                         selectedCells[cellKey] = true;
@@ -1928,26 +1856,19 @@ let persons = [];
                     saveToHistory();
                     showToast('Tüm nöbetler başarıyla atandı! 💾 Çıkmadan önce listenizi "Kaydet" butonuyla hesabınıza saklamayı UNUTMAYIN.', 8000);
                 } else {
-                    // HATA DURUMU
                     let errorMessage = data.error || 'Bilinmeyen bir hata oluştu';
                     
                     // --- AI MESAJI KONTROLÜ ---
                     if (errorMessage.includes('⚠️')) {
-                        // 1. "⚠️ ÇÖZÜLEMEDİ:" kısmını temizle ve metni al
                         const rawMessage = errorMessage.replace('⚠️ ÇÖZÜLEMEDİ:', '').trim();
                         
-                        // 2. Metni HTML formatına çevir (Yeni satırları <br> yap, maddeleri belirginleştir)
-                        // Backend'den gelen madde işaretlerini ( - veya *) HTML listesine çevirebiliriz veya basitçe <br> ekleriz.
                         const formattedMessage = rawMessage.replace(/\n/g, '<br>').replace(/\*/g, '•');
 
-                        // 3. Modal içine yaz
                         document.getElementById('aiReportContent').innerHTML = formattedMessage;
 
-                        // 4. Modalı aç (Kullanıcı tıklayana kadar kapanmaz)
                         const modalElem = document.getElementById('aiModal');
                         const instance = M.Modal.getInstance(modalElem); // Materialize instance'ı al
                         
-                        // Eğer instance yoksa (sayfa yeni yüklendiyse) init et
                         if (!instance) {
                             M.Modal.init(modalElem).open();
                         } else {
@@ -1955,8 +1876,6 @@ let persons = [];
                         }
 
                     } else {
-                        // --- STANDART HATA ---
-                        // AI değilse, klasik toast mesajlarını göster
                         if (status === 400 && errorMessage.includes('Nöbet atamaları yapılamadı')) {
                             errorMessage = 'Hata: Nöbet ertesi boşluk sayısını azaltmayı deneyin!';
                         } else if (status === 400 && errorMessage.includes('Cuma veya Perşembe dengeleme başarısız')) {
@@ -1968,7 +1887,7 @@ let persons = [];
                 }
             })
             .catch(error => {
-                document.getElementById('loadingOverlay').style.display = 'none';
+                hideLoading();
                 showToast('Sunucuyla bağlantı kurulamadı: ' + error.message, 10000);
             });
         }
@@ -2009,8 +1928,7 @@ let persons = [];
             }
 
             isUploading = true;
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            loadingOverlay.style.display = 'flex';
+            showLoading();
 
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -2020,7 +1938,7 @@ let persons = [];
 
                 if (headers[0] !== 'İsim') {
                     M.toast({ html: 'Geçersiz CSV formatı! Başlık "İsim" olmalı.', classes: 'teal' });
-                    loadingOverlay.style.display = 'none';
+                    hideLoading();
                     isUploading = false;
                     return;
                 }
@@ -2043,7 +1961,7 @@ let persons = [];
                 renderTable();
                 savePersonsToLocalStorage(); // KAYDET
                 M.toast({ html: 'Personel listesi başarıyla yüklendi!', classes: 'teal' });
-                loadingOverlay.style.display = 'none';
+                hideLoading();
                 isUploading = false;
             };
             reader.readAsText(file);
@@ -2096,28 +2014,23 @@ let persons = [];
             M.toast({ html: 'Takvimdeki tüm işaretlemeler temizlendi!' });
         }
 
-        // GEÇMİŞİ DÜZENLEME MODUNA ALMA FONKSİYONU
         function loadHistoryForEditing() {
             const data = window.currentViewingHistory;
             if(!data) return;
 
-            // 1. Modalı kapat
             const modalElem = document.getElementById('historyModal');
             const instance = M.Modal.getInstance(modalElem);
             if(instance) instance.close();
 
-            // 2. Tarih ve Tatil Inputlarını doldur
             document.getElementById('startDate').value = data.startDate;
             document.getElementById('endDate').value = data.endDate;
             document.getElementById('holidays').value = data.holidays || '';
             M.updateTextFields();
 
-            // 3. Personel ve Hücre verilerini geri yükle
             persons = JSON.parse(data.personnelSnapshot || '[]');
             selectedCells = JSON.parse(data.assignments || '{}');
             unavailableCells = JSON.parse(data.unavailable || '{}');
             
-            // 4. Günlük Nöbetçi Sayısını (dutyPerDay) Tahmin Et (O gün maksimum kaç kişi nöbetçiyse)
             let maxDuty = 1;
             const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
             const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
@@ -2134,11 +2047,9 @@ let persons = [];
             }
             document.getElementById('dutyPerDay').value = maxDuty;
 
-            // 5. Arayüzü güncelle ve takvimi çiz
             renderTable();
             rebuildCalendarForEdit(data.startDate, data.endDate, data.holidays, daysCount, start);
 
-            // 6. Takvime kaydır ve kullanıcıya bilgi ver
             setTimeout(() => {
                 document.getElementById('calendarContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 300);
@@ -2171,7 +2082,6 @@ let persons = [];
                     const isWeekend = dateObj.isWeekend;
                     const cellKey = `${pIndex}-${dIndex}`;
                     
-                    // İstenmeyen gün ve atanan gün kontrolü burada garanti altına alınıyor
                     const isUnavailable = unavailableCells[cellKey] === true;
                     const isSelected = selectedCells[cellKey] === true;
 
@@ -2189,7 +2099,6 @@ let persons = [];
 
             document.getElementById('calendarTable').innerHTML = html;
 
-            // Event listener'ları tekrar bağla (Tıklama ve sürükleme çalışsın diye)
             const cells = document.querySelectorAll('.calendar-cell');
             const isMobile = isMobileDevice();
         
@@ -2219,7 +2128,6 @@ let persons = [];
                 }
             });
 
-            // Sekmeleri aç ve geçmişi sıfırla (Geri al/İleri al için başlangıç noktası)
             if (collapsiblePersonel) collapsiblePersonel.open(0);
             if (collapsibleCalendar) collapsibleCalendar.open(0);
             updateStatistics();
@@ -2227,30 +2135,25 @@ let persons = [];
             historyIndex = -1;
             saveToHistory(); 
         }
-        // Geri Bildirim Gönderme Fonksiyonu
         
         function sendFeedback() {
             const email = document.getElementById('feedbackEmail').value.trim();
             const name = document.getElementById('feedbackName').value.trim();
             const message = document.getElementById('feedbackMessage').value.trim();
         
-            // Temel alan kontrolü (Ad ve Mesaj zorunlu)
             if (!name || !message) {
                 M.toast({ html: 'Lütfen adınızı ve mesajınızı doldurun!' });
                 return;
             }
         
-            // E-posta boşsa uyarı modalını aç
             if (!email) {
                 const modalElem = document.getElementById('emailConfirmModal');
                 M.Modal.getInstance(modalElem).open();
             } else {
-                // E-posta varsa direkt gönder
                 executeFeedbackSend(false);
             }
         }
         
-        // 2. Asıl gönderim işlemini yapan fonksiyon
         function executeFeedbackSend(isAnonymous = false) {
             const nameInput = document.getElementById('feedbackName');
             const emailInput = document.getElementById('feedbackEmail');
@@ -2286,25 +2189,15 @@ let persons = [];
             });
         }
         
-        // Yardımcı fonksiyon: E-posta alanına odaklanma
         function focusEmailField() {
             setTimeout(() => {
                 document.getElementById('feedbackEmail').focus();
             }, 200);
         }
     
-        
-   
-    
-
-
 // ==========================================
-// GEÇMİŞ, PAYLAŞIM VE DİĞER FONKSİYONLAR
-// (index.html'den taşındı)
 // ==========================================
 
-
-    // Giriş Fonksiyonu
     function googleLogin() {
         const provider = new firebase.auth.GoogleAuthProvider();
         auth.signInWithPopup(provider)
@@ -2318,7 +2211,6 @@ let persons = [];
             });
     }
 
-    // Çıkış Fonksiyonu
     function googleLogout() {
         auth.signOut().then(() => {
             M.toast({html: 'Çıkış yapıldı'});
@@ -2326,14 +2218,11 @@ let persons = [];
         });
     }
 
-    // Oturum durumunu dinleyen fonksiyon
-    // Oturum durumunu dinleyen fonksiyon (GÜNCELLENMİŞ)
     auth.onAuthStateChanged((user) => {
         if (user) {
             updateLoginButton(user);
             loadFromFirestore(user); 
 
-            // 1. Yarım Kalan Kayıt İşlemi Varsa Tamamla
             const pendingSave = sessionStorage.getItem('pendingSaveRequest');
             if (pendingSave === 'true') {
                 sessionStorage.removeItem('pendingSaveRequest');
@@ -2341,7 +2230,6 @@ let persons = [];
                 setTimeout(() => { saveScheduleToHistory(); }, 1500);
             }
 
-            // 2. Geri Bildirim Formunu Otomatik Doldur
             const fbName = document.getElementById('feedbackName');
             const fbEmail = document.getElementById('feedbackEmail');
             if(fbName && fbEmail) {
@@ -2351,7 +2239,6 @@ let persons = [];
             }
 
         } else {
-            // Çıkış yapıldıysa formları temizle
             const fbName = document.getElementById('feedbackName');
             const fbEmail = document.getElementById('feedbackEmail');
             if(fbName && fbEmail) {
@@ -2363,10 +2250,8 @@ let persons = [];
     });
 
     function updateLoginButton(user) {
-        // İsimden sadece ilk kelimeyi al 
         const firstName = user.displayName ? user.displayName.split(' ')[0] : 'Kullanıcı';
 
-        // Masaüstü Görünümü
         const userHtmlDesktop = `
             <a href="#" onclick="googleLogout()" class="btn waves-effect waves-light white black-text tooltipped" data-position="bottom" data-tooltip="Çıkış Yap">
                 <img src="${user.photoURL}" style="vertical-align: middle; width: 24px; border-radius: 50%; margin-right: 5px;">
@@ -2374,7 +2259,6 @@ let persons = [];
             </a>
         `;
 
-        // Mobil Görünümü 
         const userHtmlMobile = `
             <a href="#" onclick="googleLogout()" style="display: flex; align-items: center; padding-left: 32px;">
                 <img src="${user.photoURL}" style="vertical-align: middle; width: 24px; border-radius: 50%; margin-right: 15px;">
@@ -2382,13 +2266,11 @@ let persons = [];
             </a>
         `;
 
-        // 1. Masaüstü butonunu güncelle
         const loginLiDesktop = document.getElementById('login-li-desktop');
         if(loginLiDesktop) {
             loginLiDesktop.innerHTML = userHtmlDesktop;
         }
 
-        // 2. Mobil butonunu güncelle
         const loginLiMobile = document.getElementById('login-li-mobile');
         if(loginLiMobile) {
             loginLiMobile.innerHTML = userHtmlMobile;
@@ -2397,19 +2279,15 @@ let persons = [];
         M.Tooltip.init(document.querySelectorAll('.tooltipped'));
     }
 
-    // --- FIRESTORE VERİTABANI İŞLEMLERİ ---
 
-    // 1. Veriyi Buluta Kaydetme Fonksiyonu
     function saveToFirestore() {
         const user = auth.currentUser;
         if (user) {
-            // Kullanıcı giriş yapmışsa veriyi buluta yaz
             db.collection("users").doc(user.uid).set({
                 personnelList: JSON.stringify(persons), 
                 lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
             })
             .then(() => {
-                console.log("Veri buluta yedeklendi.");
             })
             .catch((error) => {
                 console.error("Yedekleme hatası: ", error);
@@ -2417,11 +2295,9 @@ let persons = [];
         }
     }
 
-    // 2. Veriyi Buluttan Çekme Fonksiyonu
     function loadFromFirestore(user) {
         
         if (persons.length > 0) {
-            console.log("Yerel liste dolu, veri kaybını önlemek için buluttan çekme iptal edildi.");
             
             M.toast({
                 html: '<span>Mevcut listeniz korundu. (Buluttaki eski liste çekilmedi)</span><button class="btn-flat toast-action" onclick="forceLoadCloud()">Yine de Çek</button>', 
@@ -2434,7 +2310,6 @@ let persons = [];
             return; 
         }
 
-        // Yerel liste boşsa, normal çekme işlemini yap
         db.collection("users").doc(user.uid).get().then((doc) => {
             if (doc.exists && doc.data().personnelList) {
                 const cloudData = JSON.parse(doc.data().personnelList);
@@ -2446,16 +2321,13 @@ let persons = [];
                     M.toast({html: 'Personel listeniz buluttan yüklendi!', classes: 'green'});
                 }
             } else {
-                // Kullanıcı yeni ise veya bulutta verisi yoksa
                 if (persons.length > 0) {
                     saveToFirestore();
                 }
             }
         }).catch((error) => {
-            console.log("Veri çekme hatası:", error);
         });
     }
-
 
     function forceLoadCloud() {
         const user = auth.currentUser;
@@ -2466,13 +2338,11 @@ let persons = [];
         }
     }
 
-
     // --- GÜNCELLENMİŞ KAYDETME FONKSİYONU (KONTROLLÜ VE OTOMATİK UYUMLU) ---
     function saveScheduleToHistory() {
         // 1. KONTROL: Kullanıcı Giriş Yapmış mı?
         const user = auth.currentUser;
         if (!user) {
-            // HAFİZA NOTU: Kullanıcı kaydetmeye çalıştı, giriş yapınca hatırlat
             sessionStorage.setItem('pendingSaveRequest', 'true'); 
             
             M.toast({html: 'Kaydetmek için önce giriş yapmalısınız. Giriş ekranı açılıyor...', classes: 'orange darken-2'});
@@ -2480,9 +2350,7 @@ let persons = [];
             return;
         }
 
-        // Takvim verilerini kontrol et
-        const startInput = document.getElementById('startDate').value;
-        const endInput = document.getElementById('endDate').value;
+        const { startInput, endInput } = getFormInputs();
         
         if (!startInput || Object.keys(selectedCells).length === 0) {
             M.toast({html: 'Kaydedilecek bir nöbet tablosu yok! Önce takvimi oluşturun ve işaretleme yapın.', classes: 'red'});
@@ -2504,11 +2372,9 @@ let persons = [];
         const docId = `${year}-${month}`;
         
         // --- KRİTİK DÜZELTME BURADA ---
-        // Otomatik tetiklendiğinde 'event' olmayabilir, kontrol ediyoruz:
         let btn = null;
         let originalText = 'Kaydet'; // Varsayılan metin
 
-        // Eğer bu fonksiyon bir tıklama ile çağrıldıysa ve event varsa:
         if (typeof event !== 'undefined' && event && event.target) {
             btn = event.target.closest('button');
             if (btn) {
@@ -2518,7 +2384,6 @@ let persons = [];
             }
         }
 
-        // Veritabanı Referansı
         const docRef = db.collection("users").doc(user.uid).collection("history").doc(docId);
 
         // 3. KONTROL: Veri Var mı? (Çakışma Kontrolü)
@@ -2527,10 +2392,8 @@ let persons = [];
                 // Kayıt varsa butonu eski haline getir
                 if(btn) resetButton(btn, originalText);
                 
-                // Modalı tetikle
                 openOverwriteModal(docRef, startInput, endInput, btn, originalText, month, year);
             } else {
-                // KAYIT YOKSA -> Direkt Kaydet
                 performSave(docRef, startInput, endInput, btn, originalText);
             }
         }).catch((error) => {
@@ -2540,14 +2403,12 @@ let persons = [];
         });
     }
 
-    // --- ONAY PENCERESİNİ AÇAN YARDIMCI FONKSİYON ---
     function openOverwriteModal(docRef, startInput, endInput, btn, originalText, month, year) {
         const modalElem = document.getElementById('overwriteModal');
         const instance = M.Modal.getInstance(modalElem); 
         
         const monthName = getMonthName(parseInt(month)); 
         
-        // Mesajı hazırla
         document.getElementById('overwriteMessage').innerHTML = 
             `<b>${monthName} ${year}</b> dönemi için daha önce kaydedilmiş bir listeniz zaten var.<br><br>` +
             `Eski listeyi silip, şu an ekrandaki listeyi onun yerine kaydetmek istiyor musunuz?`;
@@ -2561,7 +2422,6 @@ let persons = [];
         instance.open(); // Pencereyi göster
     }
 
-    // Yardımcı Kayıt Fonksiyonu
     function performSave(docRef, startInput, endInput, btn, originalText) {
         if (btn) {
             btn.innerHTML = '<i class="material-icons left">cloud_upload</i>Yazılıyor...';
@@ -2604,7 +2464,6 @@ let persons = [];
         }
     }
 
-    // Modal açıldığında listeyi yükle
     document.addEventListener('DOMContentLoaded', function() {
         const historyModalElem = document.getElementById('historyModal');
         M.Modal.init(historyModalElem, {
@@ -2612,8 +2471,6 @@ let persons = [];
         });
     });
 
-    
-    // Global değişkenler(geçmiş)
     window.allHistoryDocs = []; 
     window.selectedYears = [];
 
@@ -2641,7 +2498,6 @@ let persons = [];
         return;
     }
 
-    // Ekranı sıfırla (Orijinal Kodun Başlangıcı)
     listContainer.innerHTML = '';
     detailPanel.style.display = 'none';
     placeholder.style.display = 'none'; 
@@ -2670,7 +2526,6 @@ let persons = [];
                 yearsMap[year].push(data);
             });
 
-            // --- KÜMÜLATİF İSTATİSTİKLER ---
             const cumItem = document.createElement('a');
             cumItem.className = 'collection-item waves-effect';
             cumItem.style.fontWeight = 'bold';
@@ -2685,7 +2540,6 @@ let persons = [];
             const currentYear = new Date().getFullYear().toString();
 
             sortedYears.forEach(year => {
-                // --- YIL BAŞLIĞI (Açılır/Kapanır Menü) ---
                 const yearHeader = document.createElement('div');
                 yearHeader.className = 'collection-item waves-effect grey lighten-4 black-text';
                 yearHeader.style.cursor = 'pointer';
@@ -2728,7 +2582,6 @@ let persons = [];
 
                 listContainer.appendChild(yearHeader);
 
-                // --- AYLARI LİSTELE ---
                 yearsMap[year].sort((a, b) => {
                     const monthA = parseInt(a.id.split('-')[1]);
                     const monthB = parseInt(b.id.split('-')[1]);
@@ -2773,13 +2626,11 @@ let persons = [];
             listContainer.innerHTML = '<a class="collection-item red-text">Hata oluştu.</a>';
         });
 }
-    // --- TEKİL AY DETAYI ---
     function showHistoryDetail(data) {
         highlightActiveItem(event.currentTarget);
         
         window.currentViewingHistory = data; // EKLENDİ: Düzenleme için veriyi hafızaya al
 
-        // Görünüm Ayarları
         document.getElementById('historyPlaceholder').style.display = 'none';
         document.getElementById('historyDetail').style.display = 'block';
         document.getElementById('yearFilterContainer').style.display = 'none'; // Yıl filtresini gizle
@@ -2788,8 +2639,6 @@ let persons = [];
         const title = `${getMonthName(parseInt(month))} ${year}`;
         
         document.getElementById('historyDetailTitle').innerText = title;
-        
-        
         
     document.getElementById('historyActions').innerHTML = `
         <div style="display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
@@ -2814,18 +2663,15 @@ let persons = [];
         </div>
     `;
 
-    // Dropdown'u manuel başlat (Dinamik eklendiği için gerekli)
     const shareBtn = document.querySelector('.dropdown-trigger[data-target="historyShareDropdown"]');
     if(shareBtn) M.Dropdown.init(shareBtn, { coverTrigger: false, constrainWidth: false });
 
-        // İstatistikleri Hesapla ve Tabloyu Bas
         const contentDiv = document.getElementById('historyStatsContent');
         const stats = calculateStatsForDoc(data); 
         
         contentDiv.innerHTML = generateStatsTableHTML(stats) + generateMiniCalendarHTML(data);
     }
 
-    // --- KÜMÜLATİF İSTATİSTİK GÖRÜNÜMÜ ---
     function showCumulativeView() {
         if(event && event.currentTarget) highlightActiveItem(event.currentTarget);
 
@@ -2836,7 +2682,6 @@ let persons = [];
         document.getElementById('historyDetailTitle').innerText = "Kümülatif Toplamlar";
         document.getElementById('historyActions').innerHTML = ""; 
 
-        // 1. Mevcut Yılları Bul
         const years = new Set();
         window.allHistoryDocs.forEach(d => {
             const y = d.id.split('-')[0];
@@ -2844,12 +2689,10 @@ let persons = [];
         });
         const sortedYears = Array.from(years).sort();
 
-        // 2. Yıl Butonlarını Oluştur
         const btnContainer = document.getElementById('yearButtons');
         btnContainer.innerHTML = "";
         
         const currentYear = new Date().getFullYear().toString();
-        // Varsayılan olarak mevcut yılı veya en son yılı seç
         window.selectedYears = sortedYears.includes(currentYear) ? [currentYear] : (sortedYears.length > 0 ? [sortedYears[sortedYears.length-1]] : []);
 
         sortedYears.forEach(y => {
@@ -2917,13 +2760,11 @@ let persons = [];
         contentDiv.innerHTML = generateStatsTableHTML(statsArray, true);
     }
 
-    // --- YARDIMCI HESAPLAMA FONKSİYONLARI ---
 
     function calculateStatsForDoc(data) {
     const assignments = JSON.parse(data.assignments || '{}');
     const personnel = JSON.parse(data.personnelSnapshot || '[]');
     const savedHolidays = (data.holidays || "").split(',').map(d => parseInt(d)).filter(n => !isNaN(n));
-    
     
     const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
     const startDate = new Date(startYear, startMonth - 1, startDay);
@@ -3010,7 +2851,6 @@ let persons = [];
     const personnel = JSON.parse(data.personnelSnapshot || '[]');
     const savedHolidays = (data.holidays || "").split(',').map(d => parseInt(d)).filter(n => !isNaN(n));
     
-    
     const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
     const startDate = new Date(startYear, startMonth - 1, startDay);
     const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
@@ -3056,14 +2896,12 @@ let persons = [];
 }
 
     function downloadHistoryTable(docId) {
-        // 1. İlgili belgenin verilerini geçmiş hafızasından bul
         const data = window.allHistoryDocs.find(d => d.id === docId);
         if (!data) {
             M.toast({html: 'Veri bulunamadı!', classes: 'red'});
             return;
         }
 
-        // 2. Veritabanından gelen verileri çözümle
         const assignments = JSON.parse(data.assignments || '{}');
         const personnel = JSON.parse(data.personnelSnapshot || '[]');
         const holidayInput = data.holidays || "";
@@ -3079,7 +2917,6 @@ let persons = [];
         const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
         const scheduleData = {};
 
-        // 3. Gün gün kimlerin nöbetçi olduğunu tespit et
         for (let d = 0; d < days; d++) {
             const currentDate = new Date(start);
             currentDate.setDate(currentDate.getDate() + d);
@@ -3093,13 +2930,11 @@ let persons = [];
             });
         }
 
-        // 4. En yoğun gündeki nöbetçi sayısını (Sütun miktarını) bul
         let columnCount = 1;
         for (const date in scheduleData) {
             columnCount = Math.max(columnCount, scheduleData[date].length);
         }
 
-        // 5. Excel için stilli veriyi hazırla (Ana sayfa formatının aynısı)
         const styledData = [];
         const headers = [{ v: 'Tarih', t: 's', s: { font: { bold: true, sz: 16 } } }];
         for (let i = 1; i <= columnCount; i++) {
@@ -3133,7 +2968,6 @@ let persons = [];
             styledData.push(row);
         }
 
-        // 6. Dosyayı oluştur, sütun genişliklerini ayarla ve indir
         const ws = XLSX.utils.aoa_to_sheet(styledData);
         ws['!cols'] = [
             { wch: 14 }, 
@@ -3172,7 +3006,6 @@ let persons = [];
                 i.style.backgroundColor = '#fff3e0'; 
                 i.style.color = '#d32f2f';
             } else if (i !== elem) {
-                // Diğer ayların seçimi kalktığında arka planı ve yazıyı koyu renge döndür
                 i.style.backgroundColor = '';
                 i.style.color = '#374151'; 
             }
@@ -3182,8 +3015,6 @@ let persons = [];
         elem.style.color = 'white';
     }
 
-    
-    // RESİM İNDİRME VE PAYLAŞMA
    
 function downloadAsImage() {
     const targetElement = document.getElementById('calendarTable');
@@ -3195,13 +3026,11 @@ function downloadAsImage() {
 
     M.toast({html: '📸 Fotoğraf hazırlanıyor, lütfen bekleyin...', classes: 'blue darken-1 rounded', displayLength: 2000});
 
-    // 1. KESİN ÇÖZÜM: Alt satır kaymasını önleyen dış boşluk (Margin)
     const originalMargin = targetElement.style.marginBottom;
     const originalBorder = targetElement.style.borderBottom;
     targetElement.style.marginBottom = "20px"; 
     targetElement.style.borderBottom = "1px solid #ccc";
 
-    // 2. İstenmeyen günleri (kırmızı çarpıları) fotoğrafta gizle
     const unavailableCellsList = targetElement.querySelectorAll('.unavailable');
     unavailableCellsList.forEach(cell => {
         cell.classList.remove('unavailable');
@@ -3218,14 +3047,12 @@ function downloadAsImage() {
         targetElement.style.marginBottom = originalMargin;
         targetElement.style.borderBottom = originalBorder;
 
-        // Çarpıları senin ekranına geri getir
         const tempCells = targetElement.querySelectorAll('.temp-unavailable');
         tempCells.forEach(cell => {
             cell.classList.remove('temp-unavailable');
             cell.classList.add('unavailable');
         });
 
-        // Resmi indir
         const imgData = canvas.toDataURL('image/png');
         const link = document.createElement('a');
         link.download = `Nobet_Listesi_${new Date().toISOString().split('T')[0]}.png`;
@@ -3233,7 +3060,6 @@ function downloadAsImage() {
         link.click();
         M.toast({html: '✅ Fotoğraf başarıyla cihazınıza indirildi!', classes: 'blue darken-1 rounded'});
     }).catch(err => {
-        // Hata olursa da ekranı bozuk bırakma
         targetElement.style.marginBottom = originalMargin;
         targetElement.style.borderBottom = originalBorder;
         const tempCells = targetElement.querySelectorAll('.temp-unavailable');
@@ -3288,13 +3114,10 @@ function _doCreateMagicLink(btn) {
 
     const docRef = db.collection("public_lists").doc(listId);
 
-    // Önce kontrol et: bu ay için zaten belge var mı?
     docRef.get().then((doc) => {
         if (doc.exists) {
-            // Var: veriyi güncelle (link aynı kalır)
             return docRef.update(scheduleData);
         } else {
-            // Yok: yeni oluştur
             return docRef.set({ ...scheduleData, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
         }
     })
@@ -3327,14 +3150,11 @@ function copyGeneratedLink() {
     });
 }
 
-// Asıl kullanıcının doğrudan takvimine eklemesini sağlayan köprü fonksiyon
 function openAdminCalendarModal() {
-    // 1. Önce paylaşım modalını kapat
     const shareModalElem = document.getElementById('shareLinkModal');
     const shareModal = M.Modal.getInstance(shareModalElem);
     if(shareModal) shareModal.close();
 
-    //Var olan link modalını eldeki verilerle aç
     if (window.lastGeneratedScheduleData) {
         window.magicListData = window.lastGeneratedScheduleData;
         renderMagicList(window.magicListData); 
@@ -3348,22 +3168,18 @@ function openAdminCalendarModal() {
 }
 
 // ==========================================
-// SİHİRLİ LİNK OKUMA VE KARŞILAMA EKRANI
 // ==========================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    // URL'de listeID var mı kontrol et
     const urlParams = new URLSearchParams(window.location.search);
     const listeID = urlParams.get('listeID');
 
     if (listeID) {
-        // Modalı tanımla ve dışarı tıklanarak kapanmasını engelle
         const magicModalElem = document.getElementById('magicLinkModal');
         const magicModal = M.Modal.init(magicModalElem, { dismissible: false });
         
         M.toast({html: 'Paylaşılan liste yükleniyor...', classes: 'blue rounded', displayLength: 2000});
         
-        // Firestore'dan veriyi çek
         db.collection("public_lists").doc(listeID).get().then((doc) => {
             if (doc.exists) {
                 const data = doc.data();
@@ -3394,21 +3210,18 @@ function renderMagicList(data) {
     const personnel = JSON.parse(data.personnelSnapshot || '[]');
     const savedHolidays = (data.holidays || "").split(',').map(d => parseInt(d)).filter(n => !isNaN(n));
     
-    // ZAMAN DİLİMİ HATASINI ÖNLEYEN HESAPLAMA (Tarih aralığı için)
     const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
     const startDateObj = new Date(startYear, startMonth - 1, startDay);
     const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
     const endDateObj = new Date(endYear, endMonth - 1, endDay);
     const daysDiff = Math.round((endDateObj - startDateObj) / (1000 * 60 * 60 * 24)) + 1;
 
-    // Seçim Kutusunu Doldur (Değişmedi)
     const selectBox = document.getElementById('magicPersonSelect');
     selectBox.innerHTML = '<option value="" disabled selected>Listeden isminizi bulun...</option>';
     personnel.forEach((p, index) => {
         selectBox.innerHTML += `<option value="${index}">${p.name}</option>`;
     });
 
-    // --- GOOGLE TAKVİM TARZI AYLIK GRID ÇİZİMİ ---
     const monthName = startDateObj.toLocaleString('tr-TR', { month: 'long' });
     const yearNum = startDateObj.getFullYear();
     const firstDayOfMonth = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), 1);
@@ -3416,7 +3229,6 @@ function renderMagicList(data) {
     const daysInMonth = lastDayOfMonth.getDate();
     const firstDayOfWeek = firstDayOfMonth.getDay(); // 0: Pazar, 1: Pzt, ...
 
-    // Haftanın Günleri Başlıkları (Days of Week)
     const dayNames = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
     let calendarHtml = `<h6 class="teal-text center-align" style="font-weight:bold; margin-top:20px; font-size:1.3rem;">${monthName} ${yearNum} Nöbetleri</h6>
                     <div style="overflow-x:auto;">
@@ -3428,7 +3240,6 @@ function renderMagicList(data) {
     });
     calendarHtml += `</tr></thead><tbody>`;
 
-    // Grid'i Oluşturma (4-5 hafta)
     let currentDay = 1;
     for (let i = 0; i < 6; i++) { // Max 6 hafta
         calendarHtml += `<tr>`;
@@ -3436,40 +3247,32 @@ function renderMagicList(data) {
             let cellStyle = "border: 1px solid #ddd; width: 14.28%; height: 95px; vertical-align: top; padding: 5px !important; position: relative;";
             let cellContent = "";
 
-            // Ayın ilk gününe kadar boşluk
             if (i === 0 && j < (firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1)) {
                 calendarHtml += `<td style="${cellStyle} background-color: #f9f9f9;"></td>`;
                 continue;
             }
 
-            // Ayın bittiği yer
             if (currentDay > daysInMonth) {
                 calendarHtml += `<td style="${cellStyle} background-color: #f9f9f9;"></td>`;
                 continue;
             }
 
-            // --- BUGÜNÜN HÜCRESİNİ DOLDUR ---
             const dObj = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), currentDay);
             
-            // Hafta sonu / Resmî Tatil Stili
             const isOfficial = savedHolidays.includes(currentDay);
             const isWknd = dObj.getDay() === 0 || dObj.getDay() === 6;
             if(isOfficial) cellStyle += "background-color: #ffebee;";
             else if(isWknd) cellStyle += "background-color: #eceff1;";
 
-            // Tarih Numarası (Sağ Üstte)
             let dateNumStyle = "position: absolute; top: 2px; right: 5px; font-weight: bold; font-size: 1rem; color: #757575;";
             if (currentDay === new Date().getDate() && dObj.getMonth() === new Date().getMonth() && dObj.getFullYear() === new Date().getFullYear()) {
                 dateNumStyle += "background-color: #26a69a; color: white; border-radius: 50%; width: 25px; height: 25px; display: flex; justify-content: center; align-items: center;";
             }
             cellContent += `<span style="${dateNumStyle}">${currentDay}</span>`;
 
-            // --- NÖBETÇİLERİ BUL VE LİSTELE ---
-            // Bu günün sihirli link tarih aralığı içinde olup olmadığını kontrol et
             const daysDiffFromStart = Math.round((dObj - startDateObj) / (1000 * 60 * 60 * 24));
             
             if (daysDiffFromStart >= 0 && daysDiffFromStart < daysDiff) {
-                // Nöbetçilerin isimlerini topla
                 let assignedPersons = personnel.filter((p, pIndex) => assignments[`${pIndex}-${daysDiffFromStart}`]);
                 
                 if (assignedPersons.length > 0) {
@@ -3493,7 +3296,6 @@ function renderMagicList(data) {
     document.getElementById('magicLinkCalendarContainer').innerHTML = calendarHtml;
 }
 
-// Takvime Ekle
 async function addToGoogleCalendar() {
     const selectBox = document.getElementById('magicPersonSelect');
     const selectedIndex = selectBox.value;
@@ -3529,7 +3331,6 @@ async function addToGoogleCalendar() {
         return;
     }
 
-    // YEREL TARİHİ KORUYAN YARDIMCI FONKSİYON (Timezone hatasını önler)
     const formatDateLocal = (date) => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -3589,7 +3390,6 @@ async function addToGoogleCalendar() {
     }
 }
 
-    // 1. Geçmişteki Listeyi Resim Olarak İndir 
 function downloadHistoryAsImage(docId) {
     const targetId = `historyCalendarTable_${docId}`;
     const targetElement = document.getElementById(targetId);
@@ -3601,7 +3401,6 @@ function downloadHistoryAsImage(docId) {
 
     M.toast({html: '📸 Geçmiş liste resim olarak hazırlanıyor...', classes: 'blue', displayLength: 2000});
 
-    // Kayma sorununu önleyen geçici görsel düzeltmeler
     const originalMargin = targetElement.style.marginBottom;
     const originalBorder = targetElement.style.borderBottom;
     targetElement.style.marginBottom = "20px"; 
@@ -3628,7 +3427,6 @@ function downloadHistoryAsImage(docId) {
     });
 }
 
-
 function shareHistoryAsLink() {
     const data = window.currentViewingHistory;
     if(!data) {
@@ -3638,7 +3436,6 @@ function shareHistoryAsLink() {
 
     M.toast({html: '🔗 Link oluşturuluyor...', classes: 'blue darken-1'});
 
-    // Deterministik ID: history doc ID zaten yıl-ay formatında (ör: 2025-06)
     const uid = auth.currentUser ? auth.currentUser.uid : 'anon';
     const listId = `liste_${uid}_${data.id}`;
 
