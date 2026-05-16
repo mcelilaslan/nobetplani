@@ -646,6 +646,18 @@ let persons = [];
             availabilityMode = !switchInput.checked;
         }
 
+        // Cumaları Dengele / Perşembeleri Dengele birbirini exclude eder
+        function onBalanceChange(changedId) {
+            const otherId = changedId === 'balanceFridays' ? 'balanceThursdays' : 'balanceFridays';
+            const changedEl = document.getElementById(changedId);
+            const otherEl = document.getElementById(otherId);
+            if (changedEl.checked && otherEl.checked) {
+                otherEl.checked = false;
+                const otherLabel = changedId === 'balanceFridays' ? 'Perşembeleri Dengele' : 'Cumaları Dengele';
+                M.toast({ html: `"${otherLabel}" kapatıldı — ikisi aynı anda kullanılamaz.`, classes: 'teal', displayLength: 3000 });
+            }
+        }
+
         function truncateName(name) {
             if (isMobileDevice() && name.length > 8) {
                 return name.substring(0, 5) + "...";
