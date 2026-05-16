@@ -36,7 +36,7 @@ let persons = [];
                 startInput: document.getElementById('startDate').value,
                 endInput:   document.getElementById('endDate').value,
                 dutyPerDay: parseInt(document.getElementById('dutyPerDay').value) || 0,
-                holidays:   document.getElementById('holidays').value
+                holidays:   getHolidays()
             };
         }
 
@@ -45,6 +45,28 @@ let persons = [];
         }
         function hideLoading() {
             hideLoading();
+        }
+
+
+        function parseDate(str) {
+            const [d, m, y] = str.split('-').map(Number);
+            const dt = new Date(y, m - 1, d);
+            dt.setHours(0, 0, 0, 0);
+            return dt;
+        }
+
+        function daysBetween(startStr, endStr) {
+            return Math.ceil((parseDate(endStr) - parseDate(startStr)) / (1000 * 60 * 60 * 24)) + 1;
+        }
+
+
+        function getHolidays(str) {
+            const val = str !== undefined ? str : document.getElementById('holidays').value;
+            return val ? val.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d)) : [];
+        }
+
+        function isWeekendDay(date, holidays) {
+            return date.getDay() === 0 || date.getDay() === 6 || (holidays && holidays.includes(date.getDate()));
         }
 
         function loadPersonsFromLocalStorage() {
@@ -344,14 +366,11 @@ let persons = [];
                 M.toast({ html: 'Önce tarih aralığı ve günlük nöbetçi sayısını seçin!', classes: 'orange' });
                 return;
             }
-            const [sd, sm, sy] = startInput.split('-').map(Number);
-            const [ed, em, ey] = endInput.split('-').map(Number);
-            const start = new Date(sy, sm - 1, sd);
-            const end = new Date(ey, em - 1, ed);
-            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+            const start = parseDate(startInput);
+            const end = parseDate(endInput);
+            const days = daysBetween(startInput, endInput);
 
-            const holidayInput = document.getElementById('holidays').value;
-            const holidays = holidayInput ? holidayInput.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d)) : [];
+            const holidays = getHolidays();
 
             const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
 
@@ -389,7 +408,7 @@ let persons = [];
             for (let i = 0; i < days; i++) {
                 const d = new Date(start);
                 d.setDate(d.getDate() + i);
-                const isWeekend = d.getDay() === 0 || d.getDay() === 6 || holidays.includes(d.getDate());
+                const isWeekend = isWeekendDay(d, holidays);
                 const dayLabel = dayNames[d.getDay()];
                 const dateStr = d.toLocaleDateString('tr-TR');
                 const currentVal = tempCustomCapacities[i] !== undefined ? tempCustomCapacities[i] : dutyPerDay;
@@ -634,6 +653,51 @@ let persons = [];
             return name;
         }
 
+        function makePersonRow(person, index, groupingEnabled, groupCount) {
+            const tdS = 'height:40px;min-height:40px;max-height:40px;overflow:hidden;vertical-align:middle;line-height:40px;padding:0 10px;box-sizing:border-box;';
+            const btnS = 'width:28px;height:28px;min-height:28px;max-height:28px;line-height:28px;font-size:12px;margin:0 4px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.1);transition:background-color 0.2s;overflow:hidden;';
+            const iconS = 'line-height:28px;font-size:14px;margin:0;padding:0;display:flex;align-items:center;justify-content:center;height:28px;width:28px;color:#ffffff;';
+            const inputS = 'height:28px;min-height:28px;max-height:28px;line-height:28px;font-size:13px;margin:0;padding:0 6px;box-sizing:border-box;border:1px solid #d1d5db;border-radius:4px;background-color:#ffffff;transition:border-color 0.2s;outline:none;overflow:hidden;';
+            let groupOptions = '<option value="0">Seç</option>';
+            for (let i = 1; i <= groupCount; i++) {
+                groupOptions += `<option value="${i}" ${person.group === i ? 'selected' : ''}>${i}</option>`;
+            }
+            const groupTd = groupingEnabled && groupCount > 0 ? `<td style="${tdS}"><select style="height:28px;font-size:13px;border:1px solid #d1d5db;border-radius:4px;padding:0 4px;min-width:${isMobileDevice() ? '50px' : '30px'};display:block;" onchange="updateGroup(${index}, this.value)">${groupOptions}</select></td>` : '';
+            return `<tr style="height:40px;min-height:40px;max-height:40px;overflow:hidden;background-color:#f9fafb;transition:background-color 0.2s;">
+                ${groupTd}
+                <td style="${tdS}font-family:'Arial',sans-serif;color:#374151;">${truncateName(person.name)}</td>
+                <td style="${tdS}"><input type="number" class="planning-input" min="0" value="${person.weekdayDuties === undefined ? '' : person.weekdayDuties}" onchange="updateDuty(${index}, 'weekdayDuties', this.value)" style="${inputS}"></td>
+                <td style="${tdS}"><input type="number" class="planning-input" min="0" value="${person.weekendDuties === undefined ? '' : person.weekendDuties}" onchange="updateDuty(${index}, 'weekendDuties', this.value)" style="${inputS}"></td>
+                <td class="duty-gap-cell" style="${tdS}">
+                    <span style="margin-right:8px;font-size:13px;line-height:28px;height:28px;display:inline-block;color:#4b5563;">${person.minDaysBetween}</span>
+                    <a class="btn-floating btn-small waves-effect waves-light" onclick="decrementDutyGap(${index})" style="${btnS}background-color:#10b981;"><i class="material-icons" style="${iconS}">arrow_downward</i></a>
+                    <a class="btn-floating btn-small waves-effect waves-light" onclick="incrementDutyGap(${index})" style="${btnS}background-color:#10b981;"><i class="material-icons" style="${iconS}">arrow_upward</i></a>
+                </td>
+                <td class="left-align" style="${tdS}">
+                    <a class="btn-floating btn-small" onclick="deletePerson(${index})" style="${btnS}background-color:#ef4444;"><i class="material-icons" style="${iconS}">delete</i></a>
+                </td>
+            </tr>`;
+        }
+
+        function buildCalendarHTML(dates, persons, start, days) {
+            let html = '<tr><th class="name-column">İsim</th>';
+            for (let i = 0; i < days; i++) {
+                const d = new Date(start);
+                d.setDate(d.getDate() + i);
+                html += `<th>${d.getDate()}</th>`;
+            }
+            html += '</tr>';
+            persons.forEach((person, pIndex) => {
+                html += `<tr><td class="name-column">${truncateName(person.name)}</td>`;
+                dates.forEach((dateObj, dIndex) => {
+                    const cellKey = `${pIndex}-${dIndex}`;
+                    html += `<td class="calendar-cell ${dateObj.isWeekend ? 'holiday' : ''} ${unavailableCells[cellKey] ? 'unavailable' : ''} ${selectedCells[cellKey] ? 'selected' : ''}" data-pindex="${pIndex}" data-dindex="${dIndex}"></td>`;
+                });
+                html += '</tr>';
+            });
+            return html;
+        }
+
        function renderTable() {
             const tableContainer = document.getElementById('personnelTableContainer');
             const noPersonnelMessage = document.getElementById('noPersonnelMessage');
@@ -680,54 +744,7 @@ let persons = [];
                 const groupCount = Math.ceil(persons.length / 2);
         
                 persons.forEach((person, index) => {
-                    let groupOptions = '<option value="0">Seç</option>';
-                    for (let i = 1; i <= groupCount; i++) {
-                        groupOptions += `<option value="${i}" ${person.group === i ? 'selected' : ''}>${i}</option>`;
-                    }
-                    
-                    html += `
-                        <tr style="height: 40px; min-height: 40px; max-height: 40px; overflow: hidden; background-color: #f9fafb; transition: background-color 0.2s;">
-                            ${groupingEnabled && groupCount > 0 ? `
-                            <td style="height: 40px; min-height: 40px; max-height: 40px; overflow: hidden; vertical-align: middle; line-height: 40px; padding: 0 10px; box-sizing: border-box;">
-                                <select style="height: 28px; font-size: 13px; border: 1px solid #d1d5db; border-radius: 4px; padding: 0 4px; min-width: ${isMobileDevice() ? '50px' : '30px'}; display: block;" onchange="updateGroup(${index}, this.value)">
-                                    ${groupOptions}
-                                </select>
-                            </td>
-                        ` : ''}
-                            <td style="height: 40px; min-height: 40px; max-height: 40px; overflow: hidden; vertical-align: middle; line-height: 40px; padding: 0 10px; box-sizing: border-box; font-family: 'Arial', sans-serif; color: #374151;">
-                                ${truncateName(person.name)}
-                            </td>
-                            <td style="height: 40px; min-height: 40px; max-height: 40px; overflow: hidden; vertical-align: middle; line-height: 40px; padding: 0 10px; box-sizing: border-box;">
-                                <input type="number" class="planning-input" min="0" 
-                                    value="${person.weekdayDuties === undefined ? '' : person.weekdayDuties}" 
-                                    onchange="updateDuty(${index}, 'weekdayDuties', this.value)"
-                                    style="height: 28px; min-height: 28px; max-height: 28px; line-height: 28px; font-size: 13px; margin: 0; padding: 0 6px; box-sizing: border-box; border: 1px solid #d1d5db; border-radius: 4px; background-color: #ffffff; transition: border-color 0.2s; outline: none; overflow: hidden;">
-                            </td>
-                            <td style="height: 40px; min-height: 40px; max-height: 40px; overflow: hidden; vertical-align: middle; line-height: 40px; padding: 0 10px; box-sizing: border-box;">
-                                <input type="number" class="planning-input" min="0" 
-                                    value="${person.weekendDuties === undefined ? '' : person.weekendDuties}" 
-                                    onchange="updateDuty(${index}, 'weekendDuties', this.value)"
-                                    style="height: 28px; min-height: 28px; max-height: 28px; line-height: 28px; font-size: 13px; margin: 0; padding: 0 6px; box-sizing: border-box; border: 1px solid #d1d5db; border-radius: 4px; background-color: #ffffff; transition: border-color 0.2s; outline: none; overflow: hidden;">
-                            </td>
-                            <td class="duty-gap-cell" style="height: 40px; min-height: 40px; max-height: 40px; overflow: hidden; vertical-align: middle; line-height: 40px; padding: 0 10px; box-sizing: border-box;">
-                                <span style="margin-right: 8px; font-size: 13px; line-height: 28px; height: 28px; display: inline-block; color: #4b5563;">${person.minDaysBetween}</span>
-                                <a class="btn-floating btn-small waves-effect waves-light" onclick="decrementDutyGap(${index})"
-                                   style="width: 28px; height: 28px; min-height: 28px; max-height: 28px; line-height: 28px; font-size: 12px; margin: 0 4px; padding: 0; display: flex; align-items: center; justify-content: center; background-color: #10b981; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: background-color 0.2s; overflow: hidden;">
-                                    <i class="material-icons" style="line-height: 28px; font-size: 14px; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; height: 28px; width: 28px; color: #ffffff;">arrow_downward</i>
-                                </a>
-                                <a class="btn-floating btn-small waves-effect waves-light" onclick="incrementDutyGap(${index})"
-                                   style="width: 28px; height: 28px; min-height: 28px; max-height: 28px; line-height: 28px; font-size: 12px; margin: 0 4px; padding: 0; display: flex; align-items: center; justify-content: center; background-color: #10b981; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: background-color 0.2s; overflow: hidden;">
-                                    <i class="material-icons" style="line-height: 28px; font-size: 14px; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; height: 28px; width: 28px; color: #ffffff;">arrow_upward</i>
-                                </a>
-                            </td>
-                            <td class="left-align" style="height: 40px; min-height: 40px; max-height: 40px; overflow: hidden; vertical-align: middle; line-height: 40px; padding: 0 10px; box-sizing: border-box;">
-                                <a class="btn-floating btn-small" onclick="deletePerson(${index})"
-                                   style="width: 28px; height: 28px; min-height: 28px; max-height: 28px; line-height: 28px; font-size: 12px; margin: 0 4px; padding: 0; display: flex; align-items: center; justify-content: center; background-color: #ef4444; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: background-color 0.2s; overflow: hidden;">
-                                    <i class="material-icons" style="line-height: 28px; font-size: 14px; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; height: 28px; width: 28px; color: #ffffff;">delete</i>
-                                </a>
-                            </td>
-                        </tr>
-                    `;
+                    html += makePersonRow(person, index, groupingEnabled, groupCount);
                 });
         
                 html += `</tbody>`;
@@ -903,15 +920,10 @@ let persons = [];
                 return;
             }
 
-            const [startDay, startMonth, startYear] = startInput.split('-').map(Number);
-            const [endDay, endMonth, endYear] = endInput.split('-').map(Number);
-            const start = new Date(startYear, startMonth - 1, startDay);
-            const end = new Date(endYear, endMonth - 1, endDay);
-            start.setHours(0, 0, 0, 0);
-            end.setHours(0, 0, 0, 0);
+            const start = parseDate(startInput);
+            const end = parseDate(endInput);
 
-            const holidayInput = document.getElementById('holidays').value;
-            const holidays = holidayInput ? holidayInput.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d)) : [];
+            const holidays = getHolidays();
 
             selectedCells = {};
             history = [];
@@ -926,7 +938,7 @@ let persons = [];
             for (let i = 0; i < days; i++) {
                 const date = new Date(start);
                 date.setDate(date.getDate() + i);
-                const isWeekend = date.getDay() === 0 || date.getDay() === 6 || holidays.includes(date.getDate());
+                const isWeekend = isWeekendDay(date, holidays);
                 dates.push({ date: date.toISOString(), isWeekend });
                 if (isWeekend) weekendDays++;
                 else weekdayDays++;
@@ -1002,34 +1014,7 @@ let persons = [];
             renderTable();
 
             let html = '<tr><th class="name-column">İsim</th>';
-            const displayDates = [];
-            for (let i = 0; i < days; i++) {
-                const date = new Date(start);
-                date.setDate(date.getDate() + i);
-                displayDates.push(date);
-                html += `<th>${date.getDate()}</th>`;
-            }
-            html += '</tr>';
-
-            persons.forEach((person, pIndex) => {
-                html += `<tr><td class="name-column">${truncateName(person.name)}</td>`;
-                dates.forEach((dateObj, dIndex) => {
-                    const isWeekend = dateObj.isWeekend;
-                    const cellKey = `${pIndex}-${dIndex}`;
-                    const isUnavailable = unavailableCells[cellKey];
-                    const isSelected = selectedCells[cellKey];
-
-                    html += `
-                        <td class="calendar-cell 
-                            ${isWeekend ? 'holiday' : ''} 
-                            ${isUnavailable ? 'unavailable' : ''} 
-                            ${isSelected ? 'selected' : ''}"
-                            data-pindex="${pIndex}" 
-                            data-dindex="${dIndex}">
-                        </td>`;
-                });
-                html += '</tr>';
-            });
+            html += buildCalendarHTML(dates, persons, start, days);
 
             document.getElementById('calendarTable').innerHTML = html;
 
@@ -1229,15 +1214,10 @@ let persons = [];
        function updateStatistics() {
             const { startInput, endInput } = getFormInputs();
             if (!startInput || !endInput) return;
-            const [startDay, startMonth, startYear] = startInput.split('-').map(Number);
-            const [endDay, endMonth, endYear] = endInput.split('-').map(Number);
-            const start = new Date(startYear, startMonth - 1, startDay);
-            const end = new Date(endYear, endMonth - 1, endDay);
-            start.setHours(0, 0, 0, 0);
-            end.setHours(0, 0, 0, 0);
+            const start = parseDate(startInput);
+            const end = parseDate(endInput);
         
-            const holidayInput = document.getElementById('holidays').value;
-            const holidays = holidayInput ? holidayInput.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d)) : [];
+            const holidays = getHolidays();
             const leaveChecked = document.getElementById('leaveCheckbox').checked;
         
             const stats = persons.map(p => ({name: p.name, weekday: 0, weekend: 0, thursday: 0, friday: 0, overtime: 0}));
@@ -1246,7 +1226,7 @@ let persons = [];
             for (let d = 0; d < days; d++) {
                 const date = new Date(start);
                 date.setDate(date.getDate() + d);
-                const isWeekend = date.getDay() === 0 || date.getDay() === 6 || holidays.includes(date.getDate());
+                const isWeekend = isWeekendDay(date, holidays);
                 const isSaturday = date.getDay() === 6;
                 const isSunday = date.getDay() === 0;
                 const isThursday = date.getDay() === 4;
@@ -1302,13 +1282,9 @@ let persons = [];
             const { startInput, endInput, dutyPerDay } = getFormInputs();
             if (!startInput || !endInput) return;
             const customCapEnabled = document.getElementById('customCapacityEnabled').checked;
-            const [startDay, startMonth, startYear] = startInput.split('-').map(Number);
-            const [endDay, endMonth, endYear] = endInput.split('-').map(Number);
-            const start = new Date(startYear, startMonth - 1, startDay);
-            const end = new Date(endYear, endMonth - 1, endDay);
-            start.setHours(0, 0, 0, 0);
-            end.setHours(0, 0, 0, 0);
-            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+            const start = parseDate(startInput);
+            const end = parseDate(endInput);
+            const days = daysBetween(startInput, endInput);
 
             function getDayTarget(d) {
                 return (customCapEnabled && customDailyCapacities[d] !== undefined)
@@ -1404,8 +1380,7 @@ let persons = [];
             const start = new Date(startYear, startMonth - 1, startDay);
             start.setHours(0, 0, 0, 0);
 
-            const holidayInput = document.getElementById('holidays').value;
-            const holidays = holidayInput ? holidayInput.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d)) : [];
+            const holidays = getHolidays();
 
             const days = Math.ceil((new Date(document.getElementById('endDate').value.split('-').reverse().join('-')) - start) / (1000 * 60 * 60 * 24)) + 1;
             let weekday = 0, weekend = 0;
@@ -1413,7 +1388,7 @@ let persons = [];
             for (let d = 0; d < days; d++) {
                 const date = new Date(start);
                 date.setDate(date.getDate() + d);
-                const isWeekend = date.getDay() === 0 || date.getDay() === 6 || holidays.includes(date.getDate());
+                const isWeekend = isWeekendDay(date, holidays);
                 if (selectedCells[`${pIndex}-${d}`]) {
                     if (isWeekend) weekend++;
                     else weekday++;
@@ -1458,15 +1433,10 @@ let persons = [];
                 return;
             }
         
-            const [startDay, startMonth, startYear] = startInput.split('-').map(Number);
-            const [endDay, endMonth, endYear] = endInput.split('-').map(Number);
-            const start = new Date(startYear, startMonth - 1, startDay);
-            const end = new Date(endYear, endMonth - 1, endDay);
-            start.setHours(0, 0, 0, 0);
-            end.setHours(0, 0, 0, 0);
+            const start = parseDate(startInput);
+            const end = parseDate(endInput);
         
-            const holidayInput = document.getElementById('holidays').value;
-            const holidays = holidayInput ? holidayInput.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d)) : [];
+            const holidays = getHolidays();
         
             const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
             const scheduleData = {};
@@ -1501,7 +1471,7 @@ let persons = [];
                 const currentDate = new Date(start);
                 currentDate.setDate(currentDate.getDate() + d);
                 const dateStr = currentDate.toLocaleDateString('tr-TR');
-                const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6;
+                const isWeekend = isWeekendDay(currentDate, null);
                 const isHoliday = holidays.includes(currentDate.getDate());
         
                 let dateStyle = { font: { bold: true, sz: 16 } }; 
@@ -1599,14 +1569,13 @@ let persons = [];
             const start = new Date(startYear, startMonth - 1, startDay);
             const end = new Date(endYear, endMonth - 1, endDay);
             const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-            const holidayInput = document.getElementById('holidays').value;
-            const holidays = holidayInput ? holidayInput.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d)) : [];
+            const holidays = getHolidays();
 
             const dates = [];
             for (let i = 0; i < days; i++) {
                 const date = new Date(start);
                 date.setDate(date.getDate() + i);
-                const isWeekend = date.getDay() === 0 || date.getDay() === 6 || holidays.includes(date.getDate());
+                const isWeekend = isWeekendDay(date, holidays);
                 const isFriday = date.getDay() === 5;
                 const isThursday = date.getDay() === 4;
                 dates.push({ index: i, isWeekend, isFriday, isThursday });
@@ -2032,11 +2001,9 @@ let persons = [];
             unavailableCells = JSON.parse(data.unavailable || '{}');
             
             let maxDuty = 1;
-            const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
-            const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
-            const start = new Date(startYear, startMonth - 1, startDay);
-            const end = new Date(endYear, endMonth - 1, endDay);
-            const daysCount = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+            const start = parseDate(data.startDate);
+            const end = parseDate(data.endDate);
+            const daysCount = daysBetween(data.startDate, data.endDate);
             
             for (let d = 0; d < daysCount; d++) {
                 let count = 0;
@@ -2058,44 +2025,17 @@ let persons = [];
 
         // GEÇMİŞ VERİSİ İLE TAKVİMİ SIFIRLAMADAN YENİDEN OLUŞTURMA FONKSİYONU
         function rebuildCalendarForEdit(startInput, endInput, holidayInput, days, start) {
-            const holidays = holidayInput ? holidayInput.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d)) : [];
+            const holidays = getHolidays(holidayInput);
 
             const dates = [];
             for (let i = 0; i < days; i++) {
                 const date = new Date(start);
                 date.setDate(date.getDate() + i);
-                const isWeekend = date.getDay() === 0 || date.getDay() === 6 || holidays.includes(date.getDate());
+                const isWeekend = isWeekendDay(date, holidays);
                 dates.push({ date: date.toISOString(), isWeekend });
             }
 
-            let html = '<tr><th class="name-column">İsim</th>';
-            for (let i = 0; i < days; i++) {
-                const date = new Date(start);
-                date.setDate(date.getDate() + i);
-                html += `<th>${date.getDate()}</th>`;
-            }
-            html += '</tr>';
-
-            persons.forEach((person, pIndex) => {
-                html += `<tr><td class="name-column">${truncateName(person.name)}</td>`;
-                dates.forEach((dateObj, dIndex) => {
-                    const isWeekend = dateObj.isWeekend;
-                    const cellKey = `${pIndex}-${dIndex}`;
-                    
-                    const isUnavailable = unavailableCells[cellKey] === true;
-                    const isSelected = selectedCells[cellKey] === true;
-
-                    html += `
-                        <td class="calendar-cell 
-                            ${isWeekend ? 'holiday' : ''} 
-                            ${isUnavailable ? 'unavailable' : ''} 
-                            ${isSelected ? 'selected' : ''}"
-                            data-pindex="${pIndex}" 
-                            data-dindex="${dIndex}">
-                        </td>`;
-                });
-                html += '</tr>';
-            });
+            let html = buildCalendarHTML(dates, persons, start, days);
 
             document.getElementById('calendarTable').innerHTML = html;
 
@@ -2764,13 +2704,11 @@ let persons = [];
     function calculateStatsForDoc(data) {
     const assignments = JSON.parse(data.assignments || '{}');
     const personnel = JSON.parse(data.personnelSnapshot || '[]');
-    const savedHolidays = (data.holidays || "").split(',').map(d => parseInt(d)).filter(n => !isNaN(n));
+    const savedHolidays = getHolidays(data.holidays || "");
     
-    const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
-    const startDate = new Date(startYear, startMonth - 1, startDay);
-    const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
-    const endDateObj = new Date(endYear, endMonth - 1, endDay);
-    const daysDiff = Math.round((endDateObj - startDate) / (1000 * 60 * 60 * 24)) + 1;
+    const startDate = parseDate(data.startDate);
+    const endDateObj = parseDate(data.endDate);
+    const daysDiff = daysBetween(data.startDate, data.endDate);
 
     const stats = personnel.map(p => ({
         name: p.name, weekday: 0, weekend: 0, thursday: 0, friday: 0, officialHoliday: 0, totalHours: 0
@@ -2849,13 +2787,11 @@ let persons = [];
     const [year, month] = data.id.split('-');
     const assignments = JSON.parse(data.assignments || '{}');
     const personnel = JSON.parse(data.personnelSnapshot || '[]');
-    const savedHolidays = (data.holidays || "").split(',').map(d => parseInt(d)).filter(n => !isNaN(n));
+    const savedHolidays = getHolidays(data.holidays || "");
     
-    const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
-    const startDate = new Date(startYear, startMonth - 1, startDay);
-    const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
-    const endDateObj = new Date(endYear, endMonth - 1, endDay);
-    const daysDiff = Math.round((endDateObj - startDate) / (1000 * 60 * 60 * 24)) + 1;
+    const startDate = parseDate(data.startDate);
+    const endDateObj = parseDate(data.endDate);
+    const daysDiff = daysBetween(data.startDate, data.endDate);
 
     let contentHtml = `<h6 class="teal-text" style="margin-top: 30px;">Nöbet Çizelgesi</h6>
                     <div style="overflow-x:auto;">
@@ -2904,17 +2840,11 @@ let persons = [];
 
         const assignments = JSON.parse(data.assignments || '{}');
         const personnel = JSON.parse(data.personnelSnapshot || '[]');
-        const holidayInput = data.holidays || "";
-        const holidays = holidayInput ? holidayInput.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d)) : [];
+        const holidays = getHolidays(data.holidays || '');
 
-        const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
-        const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
-        const start = new Date(startYear, startMonth - 1, startDay);
-        const end = new Date(endYear, endMonth - 1, endDay);
-        start.setHours(0, 0, 0, 0);
-        end.setHours(0, 0, 0, 0);
-
-        const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+        const start = parseDate(data.startDate);
+        const end = parseDate(data.endDate);
+        const days = daysBetween(data.startDate, data.endDate);
         const scheduleData = {};
 
         for (let d = 0; d < days; d++) {
@@ -2946,7 +2876,7 @@ let persons = [];
             const currentDate = new Date(start);
             currentDate.setDate(currentDate.getDate() + d);
             const dateStr = currentDate.toLocaleDateString('tr-TR');
-            const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6;
+            const isWeekend = isWeekendDay(currentDate, null);
             const isHoliday = holidays.includes(currentDate.getDate());
 
             let dateStyle = { font: { bold: true, sz: 16 } }; 
@@ -3208,13 +3138,11 @@ function getAbbreviatedName(fullName) {
 function renderMagicList(data) {
     const assignments = JSON.parse(data.assignments || '{}');
     const personnel = JSON.parse(data.personnelSnapshot || '[]');
-    const savedHolidays = (data.holidays || "").split(',').map(d => parseInt(d)).filter(n => !isNaN(n));
+    const savedHolidays = getHolidays(data.holidays || "");
     
-    const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
-    const startDateObj = new Date(startYear, startMonth - 1, startDay);
-    const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
-    const endDateObj = new Date(endYear, endMonth - 1, endDay);
-    const daysDiff = Math.round((endDateObj - startDateObj) / (1000 * 60 * 60 * 24)) + 1;
+    const startDateObj = parseDate(data.startDate);
+    const endDateObj = parseDate(data.endDate);
+    const daysDiff = daysBetween(data.startDate, data.endDate);
 
     const selectBox = document.getElementById('magicPersonSelect');
     selectBox.innerHTML = '<option value="" disabled selected>Listeden isminizi bulun...</option>';
@@ -3311,11 +3239,9 @@ async function addToGoogleCalendar() {
     const assignments = JSON.parse(data.assignments || '{}');
 
     // ZAMAN DİLİMİ HATASINI ÖNLEYEN YENİ HESAPLAMA
-    const [startDay, startMonth, startYear] = data.startDate.split('-').map(Number);
-    const startDate = new Date(startYear, startMonth - 1, startDay);
-    const [endDay, endMonth, endYear] = data.endDate.split('-').map(Number);
-    const endDateObj = new Date(endYear, endMonth - 1, endDay);
-    const daysDiff = Math.round((endDateObj - startDate) / (1000 * 60 * 60 * 24)) + 1;
+    const startDate = parseDate(data.startDate);
+    const endDateObj = parseDate(data.endDate);
+    const daysDiff = daysBetween(data.startDate, data.endDate);
 
     const dutyDates = [];
     for (let d = 0; d < daysDiff; d++) {
