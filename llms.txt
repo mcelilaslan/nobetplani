@@ -1,0 +1,19 @@
+# nobetplani.com
+
+> Nobetplani.com is an automated duty scheduling tool for healthcare and other shift-based teams. It uses constraint-based optimization (CP-SAT) to generate fair, conflict-free duty rosters.
+
+## Features
+- Automatic duty assignment using CP-SAT optimization
+- Customizable daily staff capacity per day
+- Weekend and weekday duty balancing
+- Per-person unavailability and preference settings
+- Minimum rest days between duties
+- Group scheduling (team members assigned together)
+- Cloud save, export (Excel/PDF), and shareable links
+- Infeasibility diagnostics with actionable suggestions
+
+## Target Users
+Healthcare staff schedulers, hospital administrators, clinic managers, and any team requiring fair rotation-based shift planning.
+
+## Links
+- App: https://nobetplani.com
