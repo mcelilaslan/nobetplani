@@ -41,10 +41,10 @@ let persons = [];
         }
 
         function showLoading() {
-            showLoading();
+            document.getElementById('loadingOverlay').style.display = 'flex';
         }
         function hideLoading() {
-            hideLoading();
+            document.getElementById('loadingOverlay').style.display = 'none';
         }
 
 
