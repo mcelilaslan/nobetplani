@@ -1594,17 +1594,17 @@ html, body, input, select, textarea, button {
 .btn-otomatik-ata::before {
     content: '';
     position: absolute;
-    inset: -4px;
+    inset: -6px;
     border-radius: 4px;
-    border: 2px solid rgba(156, 39, 176, 0.6);
+    border: 2px solid rgba(156, 39, 176, 0.7);
     animation: pulse-ring 2.5s ease-out infinite;
     pointer-events: none;
 }
 
 @keyframes pulse-ring {
-    0%   { inset: -2px; opacity: 0.8; }
-    70%  { inset: -10px; opacity: 0; }
-    100% { inset: -10px; opacity: 0; }
+    0%   { transform: scale(1);    opacity: 0.8; }
+    70%  { transform: scale(1.12); opacity: 0; }
+    100% { transform: scale(1.12); opacity: 0; }
 }
 
 .btn-otomatik-ata:hover {
