@@ -1563,7 +1563,7 @@ html, body, input, select, textarea, button {
 /* ── Otomatik Ata butonu efektleri ── */
 .btn-otomatik-ata {
     position: relative;
-    overflow: visible !important;
+    overflow: hidden !important;
     transition: transform 0.15s ease, box-shadow 0.15s ease !important;
 }
 
@@ -1589,9 +1589,11 @@ html, body, input, select, textarea, button {
     100% { transform: translateX(350%) skewX(-20deg); }
 }
 
-.btn-otomatik-ata:hover {
-    transform: translateY(-2px) scale(1.03) !important;
-    box-shadow: 0 6px 20px rgba(156, 39, 176, 0.45) !important;
+@media (hover: hover) {    
+    .btn-otomatik-ata:hover {
+        transform: translateY(-2px) scale(1.03) !important;
+        box-shadow: 0 6px 20px rgba(156, 39, 176, 0.45) !important;
+    }
 }
 
 .btn-otomatik-ata:active {
