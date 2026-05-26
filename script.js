@@ -2182,7 +2182,8 @@ let persons = [];
                             body: JSON.stringify({
                                 email: user.email,
                                 name: user.displayName,
-                                token: idToken
+                                token: idToken,
+                                role: "creator"
                             }),
                         })
                         .then(res => console.log("İlk kayıt"))
@@ -3320,6 +3321,22 @@ async function addToGoogleCalendar() {
         M.toast({html: 'Bağlantı kuruluyor...', classes: 'blue'});
         const result = await firebase.auth().signInWithPopup(provider);
         const token = result.credential.accessToken;
+
+        if (result.additionalUserInfo && result.additionalUserInfo.isNewUser) {
+            try {
+                const idToken = await result.user.getIdToken();
+                fetch("https://api.nobetplani.com", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: result.user.email,
+                        name: result.user.displayName,
+                        token: idToken,
+                        role: "viewer" // <--- PERSONEL
+                    })
+                }).catch(e => console.error(e));
+            } catch(e) {}
+        }
 
         M.toast({html: `${dutyDates.length} nöbet işleniyor...`, classes: 'orange'});
 
