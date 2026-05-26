@@ -2160,13 +2160,40 @@ let persons = [];
 // ==========================================
 // ==========================================
 
-    function googleLogin() {
+   function googleLogin() {
         const provider = new firebase.auth.GoogleAuthProvider();
         auth.signInWithPopup(provider)
-            .then((result) => {
+            .then(async (result) => { 
                 const user = result.user;
                 M.toast({html: 'Hoş geldin ' + user.displayName});
                 updateLoginButton(user);
+
+                if (result.additionalUserInfo && result.additionalUserInfo.isNewUser) {
+                    try {
+                        
+                        const idToken = await user.getIdToken();
+                        
+                        
+                        fetch("https://api.nobetplani.com", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                email: user.email,
+                                name: user.displayName,
+                                token: idToken
+                            }),
+                        })
+                        .then(res => console.log("İlk kayıt"))
+                        .catch(err => console.error("Mail gönderme hatası:", err));
+
+                    } catch (tokenError) {
+                        console.error("Token alınamadı:", tokenError);
+                    }
+                }
+               
+
             }).catch((error) => {
                 console.error(error);
                 M.toast({html: 'Giriş hatası: ' + error.message});
