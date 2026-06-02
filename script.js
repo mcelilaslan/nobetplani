@@ -3354,7 +3354,7 @@ async function addToGoogleCalendar() {
                 'reminders': {
                     'useDefault': false,
                     'overrides': [
-                        {'method': 'popup', 'minutes': 1440}
+                        {'method': 'popup', 'minutes': 600}
                     ]
                 }
             };
