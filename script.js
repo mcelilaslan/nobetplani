@@ -3089,7 +3089,8 @@ function _doCreateMagicLink(btn) {
         unavailable: JSON.stringify(unavailableCells),
         personnelSnapshot: JSON.stringify(persons),
         holidays: document.getElementById('holidays').value || "",
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        ownerId: uid
     };
 
     const docRef = db.collection("public_lists").doc(listId);
@@ -3439,7 +3440,8 @@ function shareHistoryAsLink() {
         personnelSnapshot: data.personnelSnapshot,
         holidays: data.holidays || "",
         isHistoryLink: true,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        ownerId: uid
     };
 
     const docRef = db.collection("public_lists").doc(listId);
