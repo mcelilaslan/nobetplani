@@ -1035,8 +1035,7 @@ let persons = [];
 
             renderTable();
 
-            let html = '<tr><th class="name-column">İsim</th>';
-            html += buildCalendarHTML(dates, persons, start, days);
+            let html = buildCalendarHTML(dates, persons, start, days);
 
             document.getElementById('calendarTable').innerHTML = html;
 
@@ -2729,7 +2728,7 @@ let persons = [];
                 const docStats = calculateStatsForDoc(doc);
                 
                 docStats.forEach(personStat => {
-                    const name = personStat.name; 
+                    const name = normalizeName(personStat.name);
                     if (!grandTotals[name]) {
                         grandTotals[name] = { 
                             name: name, weekday: 0, weekend: 0, 
