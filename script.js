@@ -675,6 +675,11 @@ let persons = [];
             return name;
         }
 
+        function isWeekdaySplitEnabled() {
+            const el = document.getElementById('weekdaySplitCheckbox');
+            return el ? el.checked : true;
+        }
+
         function makePersonRow(person, index, groupingEnabled, groupCount) {
             const tdS = 'height:40px;min-height:40px;max-height:40px;overflow:hidden;vertical-align:middle;line-height:40px;padding:0 10px;box-sizing:border-box;';
             const btnS = 'width:28px;height:28px;min-height:28px;max-height:28px;line-height:28px;font-size:12px;margin:0 4px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.1);transition:background-color 0.2s;overflow:hidden;';
@@ -685,11 +690,15 @@ let persons = [];
                 groupOptions += `<option value="${i}" ${person.group === i ? 'selected' : ''}>${i}</option>`;
             }
             const groupTd = groupingEnabled && groupCount > 0 ? `<td style="${tdS}"><select style="height:28px;font-size:13px;border:1px solid #d1d5db;border-radius:4px;padding:0 4px;min-width:${isMobileDevice() ? '50px' : '30px'};display:block;" onchange="updateGroup(${index}, this.value)">${groupOptions}</select></td>` : '';
+            const splitEnabled = isWeekdaySplitEnabled();
+            const dutyTds = splitEnabled
+                ? `<td style="${tdS}"><input type="number" class="planning-input" min="0" value="${person.weekdayDuties === undefined ? '' : person.weekdayDuties}" onchange="updateDuty(${index}, 'weekdayDuties', this.value)" style="${inputS}"></td>
+                <td style="${tdS}"><input type="number" class="planning-input" min="0" value="${person.weekendDuties === undefined ? '' : person.weekendDuties}" onchange="updateDuty(${index}, 'weekendDuties', this.value)" style="${inputS}"></td>`
+                : `<td style="${tdS}"><input type="number" class="planning-input" min="0" value="${person.weekdayDuties === undefined ? '' : person.weekdayDuties}" onchange="updateDuty(${index}, 'weekdayDuties', this.value)" style="${inputS}"></td>`;
             return `<tr style="height:40px;min-height:40px;max-height:40px;overflow:hidden;background-color:#f9fafb;transition:background-color 0.2s;">
                 ${groupTd}
                 <td style="${tdS}font-family:'Arial',sans-serif;color:#374151;">${truncateName(person.name)}</td>
-                <td style="${tdS}"><input type="number" class="planning-input" min="0" value="${person.weekdayDuties === undefined ? '' : person.weekdayDuties}" onchange="updateDuty(${index}, 'weekdayDuties', this.value)" style="${inputS}"></td>
-                <td style="${tdS}"><input type="number" class="planning-input" min="0" value="${person.weekendDuties === undefined ? '' : person.weekendDuties}" onchange="updateDuty(${index}, 'weekendDuties', this.value)" style="${inputS}"></td>
+                ${dutyTds}
                 <td class="duty-gap-cell" style="${tdS}">
                     <span style="margin-right:8px;font-size:13px;line-height:28px;height:28px;display:inline-block;color:#4b5563;">${person.minDaysBetween}</span>
                     <a class="btn-floating btn-small waves-effect waves-light" onclick="decrementDutyGap(${index})" style="${btnS}background-color:#10b981;"><i class="material-icons" style="${iconS}">arrow_downward</i></a>
@@ -741,13 +750,17 @@ let persons = [];
                 tableContainer.style.display = 'table';
                 noPersonnelMessage.style.display = 'none';
         
+                const splitEnabled = isWeekdaySplitEnabled();
+                const dutyHeaderHtml = splitEnabled
+                    ? `<th style="background-color: #f2f2f2;">Hafta İçi</th>
+                            <th style="background-color: #f2f2f2;">Hf Sonu</th>`
+                    : `<th style="background-color: #f2f2f2;">Toplam Nöbet</th>`;
                 let html = `
                     <thead>
                         <tr>
                             ${groupingEnabled ? '<th style="background-color: #f2f2f2;">Grup</th>' : ''}
                             <th style="background-color: #f2f2f2;">İsim</th>
-                            <th style="background-color: #f2f2f2;">Hafta İçi</th>
-                            <th style="background-color: #f2f2f2;">Hf Sonu</th>
+                            ${dutyHeaderHtml}
                             <th class="duty-gap-header" style="background-color: #f2f2f2;">
                                 ${isMobileDevice() ? '2 Nöbet<br>Arası Boşluk(gün)' : '2 Nöbet Arası Boşluk(gün)'}
                                 <a class="btn-floating btn-small waves-effect waves-light teal decrement-btn" onclick="decrementAllDutyGaps()">
@@ -785,6 +798,24 @@ let persons = [];
 
         function toggleGrouping() {
             renderTable();
+        }
+
+        function toggleWeekdaySplit() {
+            const splitEnabled = isWeekdaySplitEnabled();
+            if (!splitEnabled) {
+                // Hafta içi/hafta sonu ayrımı kapatılıyor: mevcut girilmiş değerler varsa
+                // toplamlarını tek alanda (weekdayDuties) birleştirip kaybolmasını önle.
+                persons.forEach(person => {
+                    const wd = person.weekdayDuties || 0;
+                    const we = person.weekendDuties || 0;
+                    if (person.weekdayDuties !== undefined || person.weekendDuties !== undefined) {
+                        person.weekdayDuties = wd + we;
+                    }
+                    person.weekendDuties = undefined;
+                });
+            }
+            renderTable();
+            savePersonsToLocalStorage(); // KAYDET
         }
 
         function updateGroup(index, value) {
@@ -980,58 +1011,86 @@ let persons = [];
                 else totalWeekdayDuties += cap;
             }
 
-            let preplannedWeekendDuties = 0;
-            let preplannedWeekdayDuties = 0;
-            persons.forEach(person => {
-                if (person.weekendDuties !== undefined) preplannedWeekendDuties += person.weekendDuties;
-                if (person.weekdayDuties !== undefined) preplannedWeekdayDuties += person.weekdayDuties;
-            });
+            const splitEnabled = isWeekdaySplitEnabled();
 
-            const adjustedTotalDuties = totalDuties - (preplannedWeekendDuties + preplannedWeekdayDuties);
-            const adjustedWeekendDuties = totalWeekendDuties - preplannedWeekendDuties;
-            const adjustedWeekdayDuties = totalWeekdayDuties - preplannedWeekdayDuties;
-
-            const unplannedPersons = persons.filter(p => p.weekdayDuties === undefined && p.weekendDuties === undefined);
-            const shuffledUnplanned = shuffleArray([...unplannedPersons]);
-            const unplannedCount = unplannedPersons.length;
-
-            const avgDutiesPerPerson = unplannedCount ? Math.floor(adjustedTotalDuties / unplannedCount) : 0;
-            const extraTotalDuties = unplannedCount ? adjustedTotalDuties % unplannedCount : 0;
-            const avgWeekendPerPerson = unplannedCount ? Math.floor(adjustedWeekendDuties / unplannedCount) : 0;
-            const extraWeekendDuties = unplannedCount ? adjustedWeekendDuties % unplannedCount : 0;
-
-            let personDutyAssignments = persons.map(person => {
-                if (person.weekdayDuties !== undefined || person.weekendDuties !== undefined) {
-                    return {
-                        person,
-                        totalDuties: (person.weekdayDuties || 0) + (person.weekendDuties || 0),
-                        weekendDuties: person.weekendDuties || 0,
-                        weekdayDuties: person.weekdayDuties || 0
-                    };
-                }
-                return null;
-            }).filter(p => p !== null);
-
-            shuffledUnplanned.forEach((person, index) => {
-                personDutyAssignments.push({
-                    person,
-                    totalDuties: avgDutiesPerPerson + (index < extraTotalDuties ? 1 : 0),
-                    weekendDuties: avgWeekendPerPerson + (index < extraWeekendDuties ? 1 : 0),
-                    weekdayDuties: 0
+            if (splitEnabled) {
+                let preplannedWeekendDuties = 0;
+                let preplannedWeekdayDuties = 0;
+                persons.forEach(person => {
+                    if (person.weekendDuties !== undefined) preplannedWeekendDuties += person.weekendDuties;
+                    if (person.weekdayDuties !== undefined) preplannedWeekdayDuties += person.weekdayDuties;
                 });
-            });
 
-            personDutyAssignments.forEach(assignment => {
-                if (assignment.person.weekdayDuties === undefined) {
-                    assignment.weekdayDuties = assignment.totalDuties - assignment.weekendDuties;
-                }
-            });
+                const adjustedTotalDuties = totalDuties - (preplannedWeekendDuties + preplannedWeekdayDuties);
+                const adjustedWeekendDuties = totalWeekendDuties - preplannedWeekendDuties;
+                const adjustedWeekdayDuties = totalWeekdayDuties - preplannedWeekdayDuties;
 
-            personDutyAssignments.forEach(assignment => {
-                const originalPerson = persons.find(p => p.name === assignment.person.name);
-                originalPerson.weekdayDuties = assignment.weekdayDuties;
-                originalPerson.weekendDuties = assignment.weekendDuties;
-            });
+                const unplannedPersons = persons.filter(p => p.weekdayDuties === undefined && p.weekendDuties === undefined);
+                const shuffledUnplanned = shuffleArray([...unplannedPersons]);
+                const unplannedCount = unplannedPersons.length;
+
+                const avgDutiesPerPerson = unplannedCount ? Math.floor(adjustedTotalDuties / unplannedCount) : 0;
+                const extraTotalDuties = unplannedCount ? adjustedTotalDuties % unplannedCount : 0;
+                const avgWeekendPerPerson = unplannedCount ? Math.floor(adjustedWeekendDuties / unplannedCount) : 0;
+                const extraWeekendDuties = unplannedCount ? adjustedWeekendDuties % unplannedCount : 0;
+
+                let personDutyAssignments = persons.map(person => {
+                    if (person.weekdayDuties !== undefined || person.weekendDuties !== undefined) {
+                        return {
+                            person,
+                            totalDuties: (person.weekdayDuties || 0) + (person.weekendDuties || 0),
+                            weekendDuties: person.weekendDuties || 0,
+                            weekdayDuties: person.weekdayDuties || 0
+                        };
+                    }
+                    return null;
+                }).filter(p => p !== null);
+
+                shuffledUnplanned.forEach((person, index) => {
+                    personDutyAssignments.push({
+                        person,
+                        totalDuties: avgDutiesPerPerson + (index < extraTotalDuties ? 1 : 0),
+                        weekendDuties: avgWeekendPerPerson + (index < extraWeekendDuties ? 1 : 0),
+                        weekdayDuties: 0
+                    });
+                });
+
+                personDutyAssignments.forEach(assignment => {
+                    if (assignment.person.weekdayDuties === undefined) {
+                        assignment.weekdayDuties = assignment.totalDuties - assignment.weekendDuties;
+                    }
+                });
+
+                personDutyAssignments.forEach(assignment => {
+                    const originalPerson = persons.find(p => p.name === assignment.person.name);
+                    originalPerson.weekdayDuties = assignment.weekdayDuties;
+                    originalPerson.weekendDuties = assignment.weekendDuties;
+                });
+            } else {
+                // Hafta içi/hafta sonu ayrımı kapalı: tek "Toplam Nöbet" hedefi (weekdayDuties alanında tutulur, weekendDuties her zaman 0)
+                let preplannedTotalDuties = 0;
+                persons.forEach(person => {
+                    if (person.weekdayDuties !== undefined) preplannedTotalDuties += person.weekdayDuties;
+                });
+
+                const adjustedTotalDuties = totalDuties - preplannedTotalDuties;
+
+                const unplannedPersons = persons.filter(p => p.weekdayDuties === undefined);
+                const shuffledUnplanned = shuffleArray([...unplannedPersons]);
+                const unplannedCount = unplannedPersons.length;
+
+                const avgDutiesPerPerson = unplannedCount ? Math.floor(adjustedTotalDuties / unplannedCount) : 0;
+                const extraTotalDuties = unplannedCount ? adjustedTotalDuties % unplannedCount : 0;
+
+                shuffledUnplanned.forEach((person, index) => {
+                    const originalPerson = persons.find(p => p.name === person.name);
+                    originalPerson.weekdayDuties = avgDutiesPerPerson + (index < extraTotalDuties ? 1 : 0);
+                });
+
+                persons.forEach(person => {
+                    person.weekendDuties = 0;
+                });
+            }
 
             renderTable();
 
@@ -1374,12 +1433,24 @@ let persons = [];
                 }
             });
 
+            const splitEnabledForCheck = isWeekdaySplitEnabled();
             persons.forEach((person, index) => {
                 const plannedWeekday = person.weekdayDuties;
                 const plannedWeekend = person.weekendDuties;
                 const stats = updateStatsForPerson(index);
                 const actualWeekday = stats.weekday;
                 const actualWeekend = stats.weekend;
+                if (!splitEnabledForCheck) {
+                    const plannedTotal = plannedWeekday;
+                    const actualTotal = actualWeekday + actualWeekend;
+                    if (plannedTotal !== undefined && plannedTotal > 0 && actualTotal !== plannedTotal) {
+                        validationErrors.push({
+                            type: 'warning',
+                            message: `${person.name}: Planlanan toplam nöbet (${plannedTotal}), atanan nöbet (${actualTotal})`
+                        });
+                    }
+                    return;
+                }
                 if (plannedWeekday !== undefined && plannedWeekday > 0 && actualWeekday !== plannedWeekday) {
                     validationErrors.push({
                         type: 'warning',
@@ -1656,6 +1727,8 @@ let persons = [];
                 else expectedWeekdayDuties += cap;
             }
 
+            const splitEnabled = isWeekdaySplitEnabled();
+
             let totalPlannedDuties = 0;
             let plannedWeekdayDuties = 0;
             let plannedWeekendDuties = 0;
@@ -1666,7 +1739,16 @@ let persons = [];
                 totalPlannedDuties += (person.weekdayDuties || 0) + (person.weekendDuties || 0);
             });
 
-            if (totalPlannedDuties !== totalExpectedDuties || 
+            if (!splitEnabled) {
+                if (totalPlannedDuties !== totalExpectedDuties) {
+                    const totalDiff = totalPlannedDuties - totalExpectedDuties;
+                    const customMessage = totalDiff > 0
+                        ? `Fazla nöbet yazdınız! ${totalDiff} miktar toplam nöbeti azaltın.`
+                        : `Az nöbet yazdınız! ${Math.abs(totalDiff)} miktar toplam nöbeti artırın.`;
+                    M.toast({ html: customMessage, displayLength: 8000 });
+                    return;
+                }
+            } else if (totalPlannedDuties !== totalExpectedDuties || 
                 plannedWeekdayDuties !== expectedWeekdayDuties || 
                 plannedWeekendDuties !== expectedWeekendDuties) {
                 const weekdayDiff = plannedWeekdayDuties - expectedWeekdayDuties;
@@ -1715,7 +1797,7 @@ let persons = [];
                     const person = personnelDuties.find(p => p.originalIndex === pIndex);
                     if (person && dIndex >= 0 && dIndex < dates.length) {
                         preAssignedDays[key] = true;
-                        if (dates[dIndex].isWeekend) {
+                        if (splitEnabled && dates[dIndex].isWeekend) {
                             person.weekendLeft = Math.max(0, person.weekendLeft - 1);
                         } else {
                             person.weekdayLeft = Math.max(0, person.weekdayLeft - 1);
@@ -1816,7 +1898,8 @@ let persons = [];
                dutyPerDay: dutyPerDay,
                dailyCapacities: dailyCapacitiesArray,
                balanceFridays: balanceFridays,
-               balanceThursdays: balanceThursdays
+               balanceThursdays: balanceThursdays,
+               weekdaySplitEnabled: splitEnabled
             };
 
             saveToHistory();
