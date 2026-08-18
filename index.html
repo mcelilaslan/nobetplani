@@ -257,6 +257,13 @@
                                 <input type="file" id="csvUpload" accept=".csv" style="display: none;" onchange="uploadPersonnel(event)">
                             </div>
                         </div>
+                        <!-- Hafta İçi/Hafta Sonu Ayrımı Checkbox -->
+                        <div id="weekdaySplitSwitch" class="grouping-container" style="margin-bottom: 15px;">
+                            <label class="grouping-label tooltipped" data-position="top" data-tooltip="Tik kaldırılırsa kişiler için sadece tek bir 'Toplam Nöbet' sayısı girilir, hafta içi/hafta sonu ayrımı yapılmaz">
+                                <input id="weekdaySplitCheckbox" type="checkbox" checked onchange="toggleWeekdaySplit()" />
+                                <span>Hafta içi ayrı hesaplansın</span>
+                            </label>
+                        </div>
                         <!-- Grup Checkbox -->
                         <div id="groupingSwitch" class="grouping-container" style="margin-bottom: 15px;">
                             <label class="grouping-label tooltipped" data-position="top" data-tooltip="Birlikte nöbetçi olması gereken kişileri sol taraftan aynı gruba eklemeniz yeterli">
