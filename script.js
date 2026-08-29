@@ -2244,6 +2244,7 @@ let persons = [];
 
    function googleLogin() {
         const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });   
         auth.signInWithPopup(provider)
             .then(async (result) => { 
                 const user = result.user;
@@ -3400,6 +3401,7 @@ async function addToGoogleCalendar() {
     try {
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.addScope('https://www.googleapis.com/auth/calendar.events');
+        provider.setCustomParameters({ prompt: 'select_account' });      
         
         M.toast({html: 'Bağlantı kuruluyor...', classes: 'blue'});
         const result = await firebase.auth().signInWithPopup(provider);
