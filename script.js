@@ -102,6 +102,17 @@ let persons = [];
 
         document.addEventListener('DOMContentLoaded', function() {
 
+            // YENİ: Gelişmiş Mod 5 Kişi Sınırı Kontrolü
+            const advancedFairnessCb = document.getElementById('advancedFairness');
+            if (advancedFairnessCb) {
+                advancedFairnessCb.addEventListener('change', function(e) {
+                    if (persons.length > 5 && e.target.checked) {
+                        alert("Gelişmiş adalet modu hesaplama yoğunluğu sebebiyle yalnızca 5 kişi ve altındaki ekiplerde kullanılabilir.");
+                        e.target.checked = false;
+                    }
+                });
+            }
+
             loadPersonsFromLocalStorage(); // Kayıtlı personel listesini yükle
             
             const elems = document.querySelectorAll('.collapsible, .datepicker, .dropdown-trigger, .modal');
@@ -1899,7 +1910,8 @@ let persons = [];
                dailyCapacities: dailyCapacitiesArray,
                balanceFridays: balanceFridays,
                balanceThursdays: balanceThursdays,
-               weekdaySplitEnabled: splitEnabled
+               weekdaySplitEnabled: splitEnabled,
+               advancedFairness: (persons.length <= 5) ? (document.getElementById('advancedFairness') ? document.getElementById('advancedFairness').checked : false) : false
             };
 
             saveToHistory();
