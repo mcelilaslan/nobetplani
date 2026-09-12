@@ -102,16 +102,41 @@ let persons = [];
 
         document.addEventListener('DOMContentLoaded', function() {
 
-            // YENİ: Gelişmiş Mod 5 Kişi Sınırı Kontrolü
+            // YENİ: Gelişmiş Mod Modal Kontrolü (Senin yazdığın şık modal ile entegre)
             const advancedFairnessCb = document.getElementById('advancedFairness');
             if (advancedFairnessCb) {
                 advancedFairnessCb.addEventListener('change', function(e) {
-                    if (persons.length > 5 && e.target.checked) {
-                        alert("Gelişmiş adalet modu hesaplama yoğunluğu sebebiyle yalnızca 5 kişi ve altındaki ekiplerde kullanılabilir.");
-                        e.target.checked = false;
+                    if (e.target.checked) {
+                        // 1. Güvenlik: Kullanıcı butona basar basmaz tiki geçici olarak kaldır.
+                        e.target.checked = false; 
+
+                        // 2. Kişi Sayısı Kontrolü
+                        if (persons.length > 5) {
+                            M.toast({html: 'Gelişmiş mod yalnızca 5 kişi ve altındaki ekiplerde kullanılabilir.', classes: 'red rounded', displayLength: 4000});
+                            return; // Modal açılmaz, işlem biter.
+                        }
+                        
+                        // 3. Her şey uygunsa kullanıcının yazdığı uyarı modalını aç
+                        const modalElem = document.getElementById('advancedModeConfirmModal');
+                        if (modalElem) {
+                            const instance = M.Modal.getInstance(modalElem);
+                            if(instance) instance.open();
+                        }
                     }
                 });
             }
+
+            // Eğer "Kabul Et" derse tiki gerçek anlamda koy
+            const confirmAdvancedBtn = document.getElementById('confirmAdvancedModeBtn');
+            if (confirmAdvancedBtn) {
+                confirmAdvancedBtn.addEventListener('click', function() {
+                    if (advancedFairnessCb) {
+                        advancedFairnessCb.checked = true;
+                        M.toast({html: 'Gelişmiş Mod Aktif: Sistem en adil sonucu bulmak için daha detaylı çalışacak.', classes: 'teal rounded', displayLength: 4000});
+                    }
+                });
+            }
+
 
             loadPersonsFromLocalStorage(); // Kayıtlı personel listesini yükle
             
