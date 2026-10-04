@@ -76,6 +76,7 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
   <link rel="stylesheet" href="style.css">  
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
     <div class="container-wrapper">
@@ -379,6 +380,17 @@
                                             <i class="material-icons">image</i>Liste Fotoğrafını İndir
                                         </a>
                                     </li>
+                                    <li>
+                                        <a href="#!" onclick="downloadPdfForCurrent()" style="color: #c62828; font-weight: 500;">
+                                            <i class="material-icons">picture_as_pdf</i>PDF Olarak İndir
+                                        </a>
+                                    </li>
+                                    <li class="divider"></li>
+                                    <li>
+                                        <a href="#!" onclick="openIcsModalForCurrent()" style="color: #6a1b9a; font-weight: 500;">
+                                            <i class="material-icons">event</i>Takvim Dosyası (.ics)
+                                        </a>
+                                    </li>
                                 </ul>
                             
                                 <button class="waves-effect waves-light btn orange darken-3 tooltipped" onclick="saveScheduleToHistory()" data-position="bottom" data-tooltip="Buluta Yedekle">
@@ -399,14 +411,19 @@
                 <p>Aşağıdaki listeden isminizi seçerek nöbetlerinizi kendi cihazınıza/takviminize işleyebilirsiniz.</p>
 
                 <div class="row" style="margin-bottom: 20px; background: #f1f8e9; padding: 15px; border-radius: 8px; display: flex; align-items: center; flex-wrap: wrap;">
-                    <div class="col s12 m8" style="padding-bottom: 10px;">
+                    <div class="col s12 m6" style="padding-bottom: 10px;">
                         <select class="browser-default" id="magicPersonSelect" style="border: 2px solid #26a69a; border-radius: 4px; height: 45px; width: 100%;">
                             <option value="" disabled selected>Listeden isminizi bulun...</option>
                         </select>
                     </div>
-                    <div class="col s12 m4" style="padding-bottom: 10px;">
+                    <div class="col s6 m3" style="padding-bottom: 10px;">
                         <button class="btn waves-effect waves-light blue darken-1" onclick="addToGoogleCalendar()" style="width: 100%; height: 45px; display: flex; justify-content: center; align-items: center; padding: 0;">
                             <i class="material-icons" style="margin-right: 8px;">insert_invitation</i>Takvime İşle
+                        </button>
+                    </div>
+                    <div class="col s6 m3" style="padding-bottom: 10px;">
+                        <button class="btn waves-effect waves-light purple darken-2" onclick="downloadIcsForMagicSelection()" style="width: 100%; height: 45px; display: flex; justify-content: center; align-items: center; padding: 0;">
+                            <i class="material-icons" style="margin-right: 8px;">file_download</i>.ics İndir
                         </button>
                     </div>
                 </div>
@@ -659,6 +676,24 @@
             </div>
             <div class="modal-footer">
                 <a href="#!" class="modal-close waves-effect waves-green btn-flat">Kapat</a>
+            </div>
+        </div>
+
+        <div id="icsModal" class="modal" style="max-width: 460px; border-radius: 12px;">
+            <div class="modal-content">
+                <h5 style="margin-top: 0; color: #6a1b9a; display: flex; align-items: center;">
+                    <i class="material-icons" style="margin-right: 10px;">event</i>Takvim Dosyası (.ics)
+                </h5>
+                <p class="grey-text text-darken-1" style="font-size: 0.9rem;">
+                    Outlook, Apple Takvim ve Google Takvim'e aktarılabilir. İndirdiğiniz dosyayı açmanız yeterli.
+                </p>
+                <select class="browser-default" id="icsPersonSelect" style="border: 2px solid #6a1b9a; border-radius: 4px; height: 45px; width: 100%;"></select>
+            </div>
+            <div class="modal-footer">
+                <a href="#!" class="modal-close waves-effect waves-green btn-flat"><b>İptal</b></a>
+                <a href="#!" class="waves-effect waves-light btn purple darken-2" style="margin-left: 10px;" onclick="downloadIcsFromModal()">
+                    <i class="material-icons left">file_download</i>İndir
+                </a>
             </div>
         </div>
 

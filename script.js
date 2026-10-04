@@ -2761,6 +2761,9 @@ let persons = [];
                 <li><a href="#!" onclick="shareHistoryAsLink()"><i class="material-icons">link</i>WhatsApp Linki Oluştur</a></li>
                 <li class="divider"></li>
                 <li><a href="#!" onclick="downloadHistoryAsImage('${data.id}')"><i class="material-icons">image</i>Liste Fotoğrafını İndir</a></li>
+                <li><a href="#!" onclick="downloadPdfForHistory()"><i class="material-icons">picture_as_pdf</i>PDF Olarak İndir</a></li>
+                <li class="divider"></li>
+                <li><a href="#!" onclick="openIcsModalForHistory()"><i class="material-icons">event</i>Takvim Dosyası (.ics)</a></li>
             </ul>
 
             <button class="btn waves-effect waves-light orange darken-3" onclick="loadHistoryForEditing()">
@@ -3877,4 +3880,355 @@ function refreshHistoryViewAfterRename() {
         document.getElementById('historyStatsContent').innerHTML =
             generateStatsTableHTML(calculateStatsForDoc(cur)) + generateMiniCalendarHTML(cur);
     }
+}
+
+var TR_MONTHS_ASCII = ['OCAK', 'SUBAT', 'MART', 'NISAN', 'MAYIS', 'HAZIRAN', 'TEMMUZ', 'AGUSTOS', 'EYLUL', 'EKIM', 'KASIM', 'ARALIK'];
+var TR_WEEKDAYS_ASCII = ['PAZAR', 'PAZARTESI', 'SALI', 'CARSAMBA', 'PERSEMBE', 'CUMA', 'CUMARTESI'];
+
+function parseScheduleSnapshot(data) {
+    let assignments = {};
+    let personnel = [];
+    try { assignments = JSON.parse(data.assignments || '{}'); } catch (e) {}
+    try { personnel = JSON.parse(data.personnelSnapshot || '[]'); } catch (e) {}
+    const start = parseDate(data.startDate);
+    const total = daysBetween(data.startDate, data.endDate);
+    const holidays = getHolidays(data.holidays || '');
+    const days = [];
+    for (let d = 0; d < total; d++) {
+        const date = new Date(start);
+        date.setDate(start.getDate() + d);
+        const names = [];
+        personnel.forEach((p, i) => {
+            if (assignments[`${i}-${d}`]) names.push(p.name);
+        });
+        days.push({ date: date, names: names, holiday: holidays.includes(date.getDate()) });
+    }
+    return { personnel: personnel, assignments: assignments, start: start, days: days };
+}
+
+function currentScheduleSnapshot() {
+    return {
+        startDate: document.getElementById('startDate').value,
+        endDate: document.getElementById('endDate').value,
+        assignments: JSON.stringify(selectedCells),
+        personnelSnapshot: JSON.stringify(persons),
+        holidays: document.getElementById('holidays').value || ''
+    };
+}
+
+function currentScheduleReady() {
+    const startInput = document.getElementById('startDate').value;
+    if (!startInput || Object.keys(selectedCells).length === 0) {
+        M.toast({ html: 'Önce takvimi oluşturup nöbetleri atayın.', classes: 'red' });
+        return null;
+    }
+    return currentScheduleSnapshot();
+}
+
+function downloadBlobFile(blob, fileName) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function scheduleFileMonth(schedule) {
+    return schedule.start.getFullYear() + '-' + String(schedule.start.getMonth() + 1).padStart(2, '0');
+}
+
+function slugName(name) {
+    return foldTurkish(name).replace(/[^A-Z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'KISI';
+}
+
+function icsEscape(text) {
+    return String(text)
+        .replace(/\\/g, '\\\\')
+        .replace(/;/g, '\;')
+        .replace(/,/g, '\\,')
+        .replace(/\r?\n/g, '\\n');
+}
+
+function icsFoldLine(line) {
+    const encoder = new TextEncoder();
+    const parts = [];
+    let current = '';
+    let bytes = 0;
+    for (const ch of line) {
+        const size = encoder.encode(ch).length;
+        if (bytes + size > 75) {
+            parts.push(current);
+            current = ' ';
+            bytes = 1;
+        }
+        current += ch;
+        bytes += size;
+    }
+    parts.push(current);
+    return parts.join('\r\n');
+}
+
+function icsDateString(date) {
+    return date.getFullYear() + String(date.getMonth() + 1).padStart(2, '0') + String(date.getDate()).padStart(2, '0');
+}
+
+function icsTimestamp(now) {
+    const p = n => String(n).padStart(2, '0');
+    return now.getUTCFullYear() + p(now.getUTCMonth() + 1) + p(now.getUTCDate()) + 'T' +
+        p(now.getUTCHours()) + p(now.getUTCMinutes()) + p(now.getUTCSeconds()) + 'Z';
+}
+
+function buildIcsContent(data, personIndex, now) {
+    const schedule = parseScheduleSnapshot(data);
+    const single = personIndex !== null && personIndex !== undefined;
+    const stamp = icsTimestamp(now || new Date());
+    const calName = single && schedule.personnel[personIndex]
+        ? 'Nöbet - ' + schedule.personnel[personIndex].name
+        : 'Nöbet Listesi';
+    const lines = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//nobetplani.com//Nobet Listesi//TR',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'X-WR-CALNAME:' + icsEscape(calName)
+    ];
+    let count = 0;
+    schedule.days.forEach((day, d) => {
+        const next = new Date(day.date);
+        next.setDate(next.getDate() + 1);
+        schedule.personnel.forEach((p, i) => {
+            if (single && i !== personIndex) return;
+            if (!schedule.assignments[`${i}-${d}`]) return;
+            count++;
+            lines.push(
+                'BEGIN:VEVENT',
+                'UID:' + icsDateString(day.date) + '-' + slugName(p.name) + '@nobetplani.com',
+                'DTSTAMP:' + stamp,
+                'DTSTART;VALUE=DATE:' + icsDateString(day.date),
+                'DTEND;VALUE=DATE:' + icsDateString(next),
+                'SUMMARY:' + icsEscape(single ? 'Nöbet' : 'Nöbet: ' + p.name),
+                'DESCRIPTION:' + icsEscape('nobetplani.com üzerinden oluşturuldu.')
+            );
+            if (single) {
+                lines.push('BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsEscape('Nöbet'), 'TRIGGER:-PT10H', 'END:VALARM');
+            }
+            lines.push('END:VEVENT');
+        });
+    });
+    lines.push('END:VCALENDAR');
+    return { text: lines.map(icsFoldLine).join('\r\n') + '\r\n', count: count };
+}
+
+function exportIcs(data, personIndex) {
+    const schedule = parseScheduleSnapshot(data);
+    const result = buildIcsContent(data, personIndex);
+    if (result.count === 0) {
+        M.toast({ html: 'Seçilen kişi için bu listede nöbet bulunamadı.', classes: 'orange darken-2' });
+        return false;
+    }
+    const who = personIndex === null ? 'Tum_Personel' : slugName(schedule.personnel[personIndex].name);
+    downloadBlobFile(
+        new Blob([result.text], { type: 'text/calendar;charset=utf-8' }),
+        'Nobet_' + who + '_' + scheduleFileMonth(schedule) + '.ics'
+    );
+    M.toast({ html: '✅ Takvim dosyası indirildi. Dosyayı açarak takviminize ekleyebilirsiniz.', classes: 'teal', displayLength: 6000 });
+    return true;
+}
+
+function openIcsModal(data) {
+    const people = parseScheduleSnapshot(data).personnel;
+    const select = document.getElementById('icsPersonSelect');
+    select.textContent = '';
+    const all = document.createElement('option');
+    all.value = '';
+    all.textContent = 'Tüm personel (tek dosya)';
+    select.appendChild(all);
+    people.forEach((p, i) => {
+        const option = document.createElement('option');
+        option.value = String(i);
+        option.textContent = p.name;
+        select.appendChild(option);
+    });
+    window.icsSourceData = data;
+    M.Modal.getInstance(document.getElementById('icsModal')).open();
+}
+
+function openIcsModalForCurrent() {
+    const data = currentScheduleReady();
+    if (data) openIcsModal(data);
+}
+
+function openIcsModalForHistory() {
+    if (window.currentViewingHistory) openIcsModal(window.currentViewingHistory);
+}
+
+function downloadIcsFromModal() {
+    const data = window.icsSourceData;
+    if (!data) return;
+    const value = document.getElementById('icsPersonSelect').value;
+    const ok = exportIcs(data, value === '' ? null : parseInt(value, 10));
+    if (ok) M.Modal.getInstance(document.getElementById('icsModal')).close();
+}
+
+function downloadIcsForMagicSelection() {
+    const select = document.getElementById('magicPersonSelect');
+    if (!select.value) {
+        M.toast({ html: 'Lütfen önce listeden isminizi seçin!', classes: 'red rounded' });
+        return;
+    }
+    exportIcs(window.magicListData, parseInt(select.value, 10));
+}
+
+function pdfSafeText(text) {
+    return foldTurkish(text)
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/[^\x20-\x7E]/g, '?');
+}
+
+function pdfDateLabel(date) {
+    return String(date.getDate()).padStart(2, '0') + '.' + String(date.getMonth() + 1).padStart(2, '0') + '.' + date.getFullYear();
+}
+
+function pdfPeriodLabel(schedule) {
+    const first = schedule.days[0].date;
+    const last = schedule.days[schedule.days.length - 1].date;
+    if (first.getFullYear() === last.getFullYear() && first.getMonth() === last.getMonth()) {
+        return TR_MONTHS_ASCII[first.getMonth()] + ' ' + first.getFullYear();
+    }
+    return pdfDateLabel(first) + ' - ' + pdfDateLabel(last);
+}
+
+function buildSchedulePdf(data) {
+    const jsPDF = window.jspdf && window.jspdf.jsPDF;
+    if (!jsPDF) return null;
+    const schedule = parseScheduleSnapshot(data);
+    if (schedule.days.length === 0) return null;
+
+    const columns = Math.max(1, ...schedule.days.map(d => d.names.length));
+    const doc = new jsPDF({ orientation: columns > 3 ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const margin = 14;
+    const firstTop = 34;
+    const nextTop = 16;
+    const bottom = 14;
+    const dateW = 28;
+    const dayW = 26;
+    const nameW = (pageW - margin * 2 - dateW - dayW) / columns;
+    const widths = [dateW, dayW].concat(Array(columns).fill(nameW));
+    const rowH = Math.min(9, Math.max(5, (pageH - firstTop - bottom) / (schedule.days.length + 1)));
+    const baseSize = rowH >= 7 ? 10 : (rowH >= 6 ? 9 : 8);
+
+    let y = 0;
+    let page = 0;
+
+    const fitText = (text, width, size, bold) => {
+        doc.setFont('helvetica', bold ? 'bold' : 'normal');
+        let s = size;
+        doc.setFontSize(s);
+        while (s > 6 && doc.getTextWidth(text) > width) {
+            s -= 0.5;
+            doc.setFontSize(s);
+        }
+        let out = text;
+        while (out.length > 1 && doc.getTextWidth(out) > width) {
+            out = out.slice(0, -2) + '.';
+        }
+        return out;
+    };
+
+    const drawRow = (cells, fill, textColor, bold) => {
+        let x = margin;
+        cells.forEach((cell, i) => {
+            doc.setFillColor(fill[0], fill[1], fill[2]);
+            doc.setDrawColor(190, 190, 190);
+            doc.setLineWidth(0.2);
+            doc.rect(x, y, widths[i], rowH, 'FD');
+            if (cell) {
+                const color = textColor.lead ? (i < 2 ? textColor.lead : textColor.rest) : textColor;
+                doc.setTextColor(color[0], color[1], color[2]);
+                const text = fitText(cell, widths[i] - 3, baseSize, bold);
+                doc.text(text, x + 1.5, y + rowH / 2, { baseline: 'middle' });
+            }
+            x += widths[i];
+        });
+        y += rowH;
+    };
+
+    const drawHeader = () => {
+        const cells = ['TARIH', 'GUN'];
+        for (let i = 1; i <= columns; i++) cells.push('NOBETCI ' + i);
+        drawRow(cells, [0, 121, 107], [255, 255, 255], true);
+    };
+
+    const startPage = () => {
+        if (page > 0) doc.addPage();
+        page++;
+        if (page === 1) {
+            doc.setTextColor(33, 33, 33);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(18);
+            doc.text('NOBET LISTESI', margin, 18);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(12);
+            doc.text(pdfPeriodLabel(schedule), margin, 26);
+            y = firstTop;
+        } else {
+            y = nextTop;
+        }
+        drawHeader();
+    };
+
+    startPage();
+    schedule.days.forEach(day => {
+        if (y + rowH > pageH - bottom + 0.01) startPage();
+        const weekday = day.date.getDay();
+        const weekend = weekday === 0 || weekday === 6;
+        let fill = [255, 255, 255];
+        let color = [33, 33, 33];
+        if (day.holiday) {
+            fill = [208, 208, 208];
+            color = [198, 40, 40];
+        } else if (weekend) {
+            fill = [232, 232, 232];
+        }
+        const cells = [pdfDateLabel(day.date), TR_WEEKDAYS_ASCII[weekday]];
+        for (let i = 0; i < columns; i++) cells.push(day.names[i] ? pdfSafeText(day.names[i]) : '');
+        drawRow(cells, fill, { lead: color, rest: [33, 33, 33] }, day.holiday);
+    });
+
+    const pages = doc.getNumberOfPages();
+    for (let i = 1; i <= pages; i++) {
+        doc.setPage(i);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(130, 130, 130);
+        doc.text('nobetplani.com', margin, pageH - 7);
+        doc.text(i + '/' + pages, pageW - margin, pageH - 7, { align: 'right' });
+    }
+    return { doc: doc, schedule: schedule };
+}
+
+function downloadSchedulePdf(data) {
+    const built = buildSchedulePdf(data);
+    if (!built) {
+        M.toast({ html: 'PDF oluşturulamadı. Sayfayı yenileyip tekrar deneyin.', classes: 'red' });
+        return;
+    }
+    downloadBlobFile(built.doc.output('blob'), 'Nobet_Listesi_' + scheduleFileMonth(built.schedule) + '.pdf');
+    M.toast({ html: '✅ PDF cihazınıza indirildi.', classes: 'teal', displayLength: 5000 });
+}
+
+function downloadPdfForCurrent() {
+    const data = currentScheduleReady();
+    if (data) downloadSchedulePdf(data);
+}
+
+function downloadPdfForHistory() {
+    if (window.currentViewingHistory) downloadSchedulePdf(window.currentViewingHistory);
 }
