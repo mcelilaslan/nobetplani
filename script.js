@@ -649,7 +649,7 @@ let persons = [];
             document.getElementById('personName').value = '';
             renderTable();
             if (collapsiblePersonel) collapsiblePersonel.open(0);
-            M.toast({html: `${name} eklendi!`, classes: 'teal'});
+            M.toast({html: `${escapeHtml(name)} eklendi!`, classes: 'teal'});
             savePersonsToLocalStorage(); // KAYDET
         }
 
@@ -657,7 +657,7 @@ let persons = [];
             const name = persons[index].name;
             persons.splice(index, 1);
             renderTable();
-            M.toast({html: `${name} silindi!`, classes: 'teal'});
+            M.toast({html: `${escapeHtml(name)} silindi!`, classes: 'teal'});
             savePersonsToLocalStorage(); // KAYDET
         }
 
@@ -733,7 +733,7 @@ let persons = [];
                 : `<td style="${tdS}"><input type="number" class="planning-input" min="0" value="${person.weekdayDuties === undefined ? '' : person.weekdayDuties}" onchange="updateDuty(${index}, 'weekdayDuties', this.value)" style="${inputS}"></td>`;
             return `<tr style="height:40px;min-height:40px;max-height:40px;overflow:hidden;background-color:#f9fafb;transition:background-color 0.2s;">
                 ${groupTd}
-                <td style="${tdS}font-family:'Arial',sans-serif;color:#374151;">${truncateName(person.name)}</td>
+                <td style="${tdS}font-family:'Arial',sans-serif;color:#374151;">${escapeHtml(truncateName(person.name))}</td>
                 ${dutyTds}
                 <td class="duty-gap-cell" style="${tdS}">
                     <span style="margin-right:8px;font-size:13px;line-height:28px;height:28px;display:inline-block;color:#4b5563;">${person.minDaysBetween}</span>
@@ -755,7 +755,7 @@ let persons = [];
             }
             html += '</tr>';
             persons.forEach((person, pIndex) => {
-                html += `<tr><td class="name-column">${truncateName(person.name)}</td>`;
+                html += `<tr><td class="name-column">${escapeHtml(truncateName(person.name))}</td>`;
                 dates.forEach((dateObj, dIndex) => {
                     const cellKey = `${pIndex}-${dIndex}`;
                     html += `<td class="calendar-cell ${dateObj.isWeekend ? 'holiday' : ''} ${unavailableCells[cellKey] ? 'unavailable' : ''} ${selectedCells[cellKey] ? 'selected' : ''}" data-pindex="${pIndex}" data-dindex="${dIndex}"></td>`;
@@ -1315,7 +1315,7 @@ let persons = [];
                         const totalDays = document.querySelectorAll('th').length - 1;
         
                         if ((prevDay >= 0 && selectedCells[prevCellKey]) || (nextDay < totalDays && selectedCells[nextCellKey])) {
-                            M.toast({ html: `${persons[pIndex].name} için üst üste nöbet ataması tespit edildi!` });
+                            M.toast({ html: `${escapeHtml(persons[pIndex].name)} için üst üste nöbet ataması tespit edildi!` });
                         }
         
                         selectedCells[cellKey] = true;
@@ -1379,7 +1379,7 @@ let persons = [];
         
             const html = stats.map(stat => `
                 <tr>
-                    <td>${stat.name}</td>
+                    <td>${escapeHtml(stat.name)}</td>
                     <td>${stat.weekday}</td>
                     <td>${stat.weekend}</td>
                     <td>${stat.thursday}</td>
@@ -1532,7 +1532,7 @@ let persons = [];
                     <span class="${error.type === 'error' ? 'error-type' : 'warning-type'}">
                         ${error.type === 'error' ? 'HATA' : 'UYARI'}:
                     </span>
-                    ${error.message}
+                    ${escapeHtml(error.message)}
                 </div>
             `).join('');
             const modal = M.Modal.init(document.getElementById('errorModal'));
@@ -1972,7 +1972,7 @@ let persons = [];
                     if (errorMessage.includes('⚠️')) {
                         const rawMessage = errorMessage.replace('⚠️ ÇÖZÜLEMEDİ:', '').trim();
                         
-                        const formattedMessage = rawMessage.replace(/\n/g, '<br>').replace(/\*/g, '•');
+                        const formattedMessage = escapeHtml(rawMessage).replace(/\n/g, '<br>').replace(/\*/g, '•');
 
                         document.getElementById('aiReportContent').innerHTML = formattedMessage;
 
@@ -2364,15 +2364,15 @@ let persons = [];
 
         const userHtmlDesktop = `
             <a href="#" onclick="googleLogout()" class="btn waves-effect waves-light white black-text tooltipped" data-position="bottom" data-tooltip="Çıkış Yap">
-                <img src="${user.photoURL}" style="vertical-align: middle; width: 24px; border-radius: 50%; margin-right: 5px;">
-                ${firstName}
+                <img src="${escapeHtml(user.photoURL || '')}" style="vertical-align: middle; width: 24px; border-radius: 50%; margin-right: 5px;">
+                ${escapeHtml(firstName)}
             </a>
         `;
 
         const userHtmlMobile = `
             <a href="#" onclick="googleLogout()" style="display: flex; align-items: center; padding-left: 32px;">
-                <img src="${user.photoURL}" style="vertical-align: middle; width: 24px; border-radius: 50%; margin-right: 15px;">
-                ${firstName} (Çıkış)
+                <img src="${escapeHtml(user.photoURL || '')}" style="vertical-align: middle; width: 24px; border-radius: 50%; margin-right: 15px;">
+                ${escapeHtml(firstName)} (Çıkış)
             </a>
         `;
 
@@ -2940,7 +2940,7 @@ let persons = [];
             const total = s.weekday + s.weekend + s.officialHoliday;
             html += `
                 <tr>
-                    <td style="font-weight:bold; text-align: left; padding-left: 15px;">${s.name}</td>
+                    <td style="font-weight:bold; text-align: left; padding-left: 15px;">${escapeHtml(s.name)}</td>
                     <td>${s.weekday}</td>
                     <td>${s.weekend}</td>
                     <td style="color: #d32f2f; font-weight: bold;">${s.officialHoliday}</td>
@@ -2985,7 +2985,7 @@ let persons = [];
     contentHtml += `</tr></thead><tbody>`;
 
     personnel.forEach((p, pIndex) => {
-        contentHtml += `<tr><td style="text-align:left; font-weight:bold; padding: 5px;">${p.name}</td>`;
+        contentHtml += `<tr><td style="text-align:left; font-weight:bold; padding: 5px;">${escapeHtml(p.name)}</td>`;
         for(let d=0; d<daysDiff; d++){
             const isAssigned = assignments[`${pIndex}-${d}`];
             const current = new Date(startDate);
@@ -3321,7 +3321,7 @@ function renderMagicList(data) {
     const selectBox = document.getElementById('magicPersonSelect');
     selectBox.innerHTML = '<option value="" disabled selected>Listeden isminizi bulun...</option>';
     personnel.forEach((p, index) => {
-        selectBox.innerHTML += `<option value="${index}">${p.name}</option>`;
+        selectBox.innerHTML += `<option value="${index}">${escapeHtml(p.name)}</option>`;
     });
 
     const monthName = startDateObj.toLocaleString('tr-TR', { month: 'long' });
@@ -3381,7 +3381,7 @@ function renderMagicList(data) {
                     cellContent += `<ul style="list-style-type: none; margin: 25px 0 0 0; padding: 0; font-size: 0.85rem; text-align: left;">`;
                     assignedPersons.forEach(p => {
                         const abbreviated = getAbbreviatedName(p.name);
-                        cellContent += `<li style="background-color: #f1f8e9; border: 1px solid #c5e1a5; color: #33691e; border-radius: 4px; padding: 2px 5px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${p.name}">${abbreviated}</li>`;
+                        cellContent += `<li style="background-color: #f1f8e9; border: 1px solid #c5e1a5; color: #33691e; border-radius: 4px; padding: 2px 5px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(p.name)}">${escapeHtml(abbreviated)}</li>`;
                     });
                     cellContent += `</ul>`;
                 }
@@ -4231,4 +4231,13 @@ function downloadPdfForCurrent() {
 
 function downloadPdfForHistory() {
     if (window.currentViewingHistory) downloadSchedulePdf(window.currentViewingHistory);
+}
+
+function escapeHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
