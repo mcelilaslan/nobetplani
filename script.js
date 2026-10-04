@@ -3585,3 +3585,317 @@ function shareHistoryAsLink() {
         M.toast({html: 'Hata: ' + err.message, classes: 'blue darken-1'});
     });
 }
+
+// ======================================================================
+// GEÇMİŞ: TOPLU İSİM DÜZENLEME
+// Tüm geçmiş kayıtlardaki isimler tek ekrandan, tek seferde (batch) güncellenir.
+// Kayıtlar zaten bellekte (window.allHistoryDocs) olduğu için ek okuma yapılmaz;
+// sadece ismi değişen kayıtlar yazılır. Nöbetler isimle değil indeksle
+// ("pIndex-dayIndex") tutulduğundan yalnızca personnelSnapshot içindeki isimler değişir.
+// ======================================================================
+
+var pendingRenameState = null; // { mapping, plan } — onay adımı için
+
+// normalizeName ile birebir aynı sonucu verir; yazarken (trim yapmadan) canlı uygulanır.
+function foldTurkish(str) {
+    return String(str).toUpperCase()
+        .replace(/Ç/g, 'C').replace(/Ğ/g, 'G').replace(/İ/g, 'I')
+        .replace(/Ö/g, 'O').replace(/Ş/g, 'S').replace(/Ü/g, 'U');
+}
+
+// HTML'e dönüşebilecek / kontrol karakterlerini atar, büyük harf + Türkçe karaktersiz yapar.
+function sanitizeNameInput(str) {
+    const cleaned = String(str == null ? '' : str)
+        .replace(/[<>&"'`\\\u0000-\u001F\u007F]/g, ' ');
+    return foldTurkish(cleaned).replace(/\s+/g, ' ').trim();
+}
+
+function duplicateNames(list) {
+    const seen = new Set();
+    const dup = new Set();
+    list.forEach(p => {
+        if (!p || typeof p.name !== 'string') return;
+        if (seen.has(p.name)) dup.add(p.name); else seen.add(p.name);
+    });
+    return dup;
+}
+
+// Geçmiş kayıtlardaki benzersiz isimler ve kaç kayıtta geçtikleri.
+function collectHistoryNames(docs) {
+    const counts = new Map();
+    (docs || []).forEach(doc => {
+        let list;
+        try { list = JSON.parse(doc.personnelSnapshot || '[]'); } catch (e) { return; }
+        if (!Array.isArray(list)) return;
+        const seenInDoc = new Set();
+        list.forEach(p => {
+            if (!p || typeof p.name !== 'string' || seenInDoc.has(p.name)) return;
+            seenInDoc.add(p.name);
+            counts.set(p.name, (counts.get(p.name) || 0) + 1);
+        });
+    });
+    return counts;
+}
+
+// Saf mantık: hangi kayıtlar değişecek, aynı kayıtta yeni çakışma oluşuyor mu?
+// mapping: { ESKI_ISIM: 'YENI_ISIM' } — eşleme orijinal isimlere aynı anda uygulanır (yer değiştirme de çalışır).
+function buildRenamePlan(docs, mapping) {
+    const changes = [];
+    const conflicts = [];
+    const touched = new Set();
+    (docs || []).forEach(doc => {
+        let list;
+        try { list = JSON.parse(doc.personnelSnapshot || '[]'); } catch (e) { return; }
+        if (!Array.isArray(list)) return;
+        let changed = false;
+        const next = list.map(p => {
+            if (p && typeof p.name === 'string' &&
+                Object.prototype.hasOwnProperty.call(mapping, p.name) &&
+                mapping[p.name] !== p.name) {
+                changed = true;
+                touched.add(p.name);
+                return Object.assign({}, p, { name: mapping[p.name] });
+            }
+            return p;
+        });
+        if (!changed) return;
+        const dupBefore = duplicateNames(list);
+        duplicateNames(next).forEach(n => {
+            if (!dupBefore.has(n)) conflicts.push({ id: doc.id, name: n });
+        });
+        changes.push({ doc: doc, snapshot: JSON.stringify(next) });
+    });
+    return { changes: changes, conflicts: conflicts, renamedNames: touched.size };
+}
+
+function resetRenameConfirmStep() {
+    pendingRenameState = null;
+    const summary = document.getElementById('renameSummary');
+    if (summary) { summary.style.display = 'none'; summary.textContent = ''; }
+    const btn = document.getElementById('renameApplyBtn');
+    if (btn) btn.innerHTML = '<i class="material-icons left">save</i>Değişiklikleri Gör';
+}
+
+function onRenameInput(e) {
+    const el = e.target;
+    const strip = /[<>&"'`\\]/g;
+    const pos = el.selectionStart;
+    const caret = foldTurkish(el.value.slice(0, pos)).replace(strip, '').length;
+    el.value = foldTurkish(el.value).replace(strip, '');
+    try { el.setSelectionRange(caret, caret); } catch (err) { /* önemsiz */ }
+    el.classList.remove('invalid');
+    resetRenameConfirmStep();
+}
+
+function openRenameModal() {
+    if (!auth.currentUser) {
+        M.toast({ html: 'İsimleri düzenlemek için giriş yapmalısınız.', classes: 'red' });
+        return;
+    }
+    const counts = collectHistoryNames(window.allHistoryDocs);
+    if (counts.size === 0) {
+        M.toast({ html: 'Düzenlenecek isim bulunamadı. Geçmiş kayıtlar yüklendikten sonra tekrar deneyin.', classes: 'orange darken-2' });
+        return;
+    }
+
+    const wrap = document.getElementById('renameRows');
+    wrap.textContent = '';
+    Array.from(counts.entries())
+        .sort((a, b) => a[0].localeCompare(b[0], 'tr'))
+        .forEach(([name, count]) => {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex; align-items:center; gap:12px; margin-bottom:6px;';
+
+            const left = document.createElement('div');
+            left.style.cssText = 'flex:1; min-width:0;';
+            const title = document.createElement('div');
+            title.style.fontWeight = '600';
+            title.textContent = name;           // textContent: isim HTML olarak yorumlanmaz
+            const sub = document.createElement('div');
+            sub.className = 'grey-text';
+            sub.style.fontSize = '0.75rem';
+            sub.textContent = count + ' kayıtta';
+            left.appendChild(title);
+            left.appendChild(sub);
+
+            const arrow = document.createElement('i');
+            arrow.className = 'material-icons grey-text';
+            arrow.textContent = 'arrow_forward';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = name;
+            input.dataset.original = name;
+            input.maxLength = 60;
+            input.setAttribute('autocomplete', 'off');
+            input.style.cssText = 'flex:1; margin:0;';
+            input.addEventListener('input', onRenameInput);
+            input.addEventListener('blur', () => { input.value = sanitizeNameInput(input.value) || input.value; });
+
+            row.appendChild(left);
+            row.appendChild(arrow);
+            row.appendChild(input);
+            wrap.appendChild(row);
+        });
+
+    resetRenameConfirmStep();
+    M.Modal.getInstance(document.getElementById('renameModal')).open();
+}
+
+function applyBulkRename() {
+    // 2. adım: özet gösterildi, kullanıcı onayladı → yaz
+    if (pendingRenameState) {
+        commitRenamePlan(pendingRenameState);
+        return;
+    }
+
+    // 1. adım: değişiklikleri topla, doğrula, özet göster
+    const mapping = {};
+    let invalid = false;
+    document.querySelectorAll('#renameRows input').forEach(input => {
+        const original = input.dataset.original;
+        const next = sanitizeNameInput(input.value);
+        if (!next) { input.classList.add('invalid'); invalid = true; return; }
+        input.value = next;
+        if (next !== original) mapping[original] = next;
+    });
+    if (invalid) {
+        M.toast({ html: 'İsim boş bırakılamaz.', classes: 'red' });
+        return;
+    }
+    if (Object.keys(mapping).length === 0) {
+        M.toast({ html: 'Herhangi bir isim değiştirmediniz.', classes: 'orange darken-2' });
+        return;
+    }
+
+    const plan = buildRenamePlan(window.allHistoryDocs, mapping);
+    const summary = document.getElementById('renameSummary');
+    summary.textContent = '';
+
+    if (plan.conflicts.length > 0) {
+        summary.className = 'card-panel red lighten-5';
+        const msg = document.createElement('div');
+        const months = Array.from(new Set(plan.conflicts.map(c => c.id))).join(', ');
+        const names = Array.from(new Set(plan.conflicts.map(c => c.name))).join(', ');
+        msg.textContent = 'Aynı kayıtta iki personel aynı isme dönüşüyor (' + names + '; kayıtlar: ' + months +
+            '). Lütfen farklı isimler verin.';
+        summary.appendChild(msg);
+        summary.style.display = 'block';
+        return;
+    }
+
+    summary.className = 'card-panel orange lighten-5';
+    const head = document.createElement('div');
+    head.style.fontWeight = '600';
+    head.textContent = plan.renamedNames + ' isim, ' + plan.changes.length + ' kayıtta güncellenecek:';
+    summary.appendChild(head);
+    Object.keys(mapping).forEach(oldName => {
+        const line = document.createElement('div');
+        line.textContent = oldName + '  →  ' + mapping[oldName];
+        summary.appendChild(line);
+    });
+    summary.style.display = 'block';
+
+    pendingRenameState = { mapping: mapping, plan: plan };
+    document.getElementById('renameApplyBtn').innerHTML = '<i class="material-icons left">check</i>Onayla ve Kaydet';
+}
+
+async function commitRenamePlan(state) {
+    const user = auth.currentUser;
+    if (!user) {
+        M.toast({ html: 'Oturum bulunamadı, lütfen tekrar giriş yapın.', classes: 'red' });
+        return;
+    }
+    const btn = document.getElementById('renameApplyBtn');
+    btn.classList.add('disabled');
+    btn.innerHTML = '<i class="material-icons left">cloud_upload</i>Yazılıyor...';
+
+    const mapping = state.mapping;
+    const alsoMain = document.getElementById('renameAlsoMainList').checked;
+
+    try {
+        const histCol = db.collection('users').doc(user.uid).collection('history');
+        // updatedAt'e dokunulmaz: geçmiş listesi bu alana göre sıralanıyor.
+        const ops = state.plan.changes.map(c => ({
+            ref: histCol.doc(c.doc.id),
+            data: { personnelSnapshot: c.snapshot }
+        }));
+
+        // Ana personel listesi bellekte boşsa buluttaki listeyi güncelle (tek okuma).
+        // Bellekte doluysa mevcut savePersonsToLocalStorage zaten tek yazma ile buluta gönderir.
+        if (alsoMain && persons.length === 0) {
+            const userRef = db.collection('users').doc(user.uid);
+            const snap = await userRef.get();
+            if (snap.exists && snap.data().personnelList) {
+                const cloudList = JSON.parse(snap.data().personnelList);
+                const renamed = cloudList.map(p => (p && Object.prototype.hasOwnProperty.call(mapping, p.name))
+                    ? Object.assign({}, p, { name: mapping[p.name] }) : p);
+                const before = duplicateNames(cloudList);
+                const clash = Array.from(duplicateNames(renamed)).some(n => !before.has(n));
+                if (!clash) {
+                    ops.push({
+                        ref: userRef,
+                        data: {
+                            personnelList: JSON.stringify(renamed),
+                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                        }
+                    });
+                }
+            }
+        }
+
+        // Tek istek: batch (limit 500; güvenli tarafta kalmak için 400'lük parçalar)
+        for (let i = 0; i < ops.length; i += 400) {
+            const batch = db.batch();
+            ops.slice(i, i + 400).forEach(o => batch.update(o.ref, o.data));
+            await batch.commit();
+        }
+
+        // Bellekteki kayıtları güncelle: ek okuma gerekmez.
+        state.plan.changes.forEach(c => { c.doc.personnelSnapshot = c.snapshot; });
+
+        // Ekrandaki ana personel listesi
+        let mainNote = '';
+        if (alsoMain && persons.length > 0) {
+            const renamed = persons.map(p => Object.prototype.hasOwnProperty.call(mapping, p.name)
+                ? Object.assign({}, p, { name: mapping[p.name] }) : p);
+            const before = duplicateNames(persons);
+            const clash = Array.from(duplicateNames(renamed)).some(n => !before.has(n));
+            if (clash) {
+                mainNote = ' (Ana listede isim çakışması olacağı için ana liste değiştirilmedi.)';
+            } else {
+                persons = renamed;
+                renderTable();
+                savePersonsToLocalStorage();
+            }
+        }
+
+        refreshHistoryViewAfterRename();
+        M.Modal.getInstance(document.getElementById('renameModal')).close();
+        M.toast({
+            html: '✅ ' + state.plan.renamedNames + ' isim ' + state.plan.changes.length + ' kayıtta güncellendi.' + mainNote,
+            classes: 'teal', displayLength: 6000
+        });
+    } catch (error) {
+        console.error('Toplu isim güncelleme hatası:', error);
+        M.toast({ html: 'Hata: ' + error.message, classes: 'red', displayLength: 8000 });
+    } finally {
+        btn.classList.remove('disabled');
+        resetRenameConfirmStep();
+    }
+}
+
+// Ekranda açık olan geçmiş görünümünü (kümülatif ya da aylık) yeni isimlerle yeniler.
+function refreshHistoryViewAfterRename() {
+    const detail = document.getElementById('historyDetail');
+    if (!detail || detail.style.display === 'none') return;
+    if (document.getElementById('yearFilterContainer').style.display === 'block') {
+        recalcCumulative();
+        return;
+    }
+    const cur = window.currentViewingHistory;
+    if (cur) {
+        document.getElementById('historyStatsContent').innerHTML =
+            generateStatsTableHTML(calculateStatsForDoc(cur)) + generateMiniCalendarHTML(cur);
+    }
+}

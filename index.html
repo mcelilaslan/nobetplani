@@ -611,6 +611,11 @@
                                 <i class="material-icons" style="margin-right: 10px;">history</i>Kayıtlar
                             </h5>
                         </div>
+                        <div style="padding: 10px 15px; border-bottom: 1px solid #e0e0e0; background: #fff;">
+                            <button type="button" class="btn-small waves-effect waves-light teal" style="width: 100%;" onclick="openRenameModal()">
+                                <i class="material-icons left">edit</i>İsimleri Düzenle
+                            </button>
+                        </div>
                         <div class="collection" id="historyList" style="border: none; margin: 0;">
                             </div>
                     </div>
@@ -654,6 +659,37 @@
             </div>
             <div class="modal-footer">
                 <a href="#!" class="modal-close waves-effect waves-green btn-flat">Kapat</a>
+            </div>
+        </div>
+
+        <!-- Geçmiş: Toplu İsim Düzenleme Modalı -->
+        <div id="renameModal" class="modal modal-fixed-footer" style="width: 90% !important; max-width: 640px !important; height: 80% !important; max-height: 80% !important; border-radius: 12px; top: 8% !important;">
+            <div class="modal-content">
+                <h5 style="margin-top: 0; color: #00796b; display: flex; align-items: center;">
+                    <i class="material-icons" style="margin-right: 10px;">edit</i>Geçmişteki İsimleri Düzenle
+                </h5>
+                <p class="grey-text text-darken-1" style="font-size: 0.9rem; margin-top: 0;">
+                    Değiştirmek istediğiniz isimleri yazın. Tüm geçmiş kayıtlarda tek seferde güncellenir.
+                    İsimler otomatik olarak <b>BÜYÜK HARF</b> ve <b>Türkçe karaktersiz</b> kaydedilir.
+                </p>
+                <div id="renameRows"></div>
+                <div id="renameSummary" class="card-panel orange lighten-5" style="display: none; margin-top: 15px; font-size: 0.95rem;"></div>
+                <p style="margin-top: 15px;">
+                    <label>
+                        <input type="checkbox" id="renameAlsoMainList" checked="checked" />
+                        <span>Ana personel listemi de güncelle</span>
+                    </label>
+                </p>
+                <p class="grey-text" style="font-size: 0.8rem;">
+                    <i class="material-icons tiny" style="vertical-align: middle;">info</i>
+                    Daha önce paylaştığınız linkler, yeniden paylaşılana kadar eski isimlerle görünür.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <a href="#!" class="modal-close waves-effect waves-green btn-flat"><b>İptal</b></a>
+                <a href="#!" id="renameApplyBtn" class="waves-effect waves-light btn teal" style="margin-left: 10px;" onclick="applyBulkRename()">
+                    <i class="material-icons left">save</i>Değişiklikleri Gör
+                </a>
             </div>
         </div>
 
