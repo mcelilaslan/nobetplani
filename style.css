@@ -148,6 +148,17 @@ body {
     background-color: rgba(255,255,255,0.15);
 }
 
+.nav-wrapper ul.right li a.lang-toggle {
+    height: 34px;
+    margin-left: 6px;
+    border: 1px solid rgba(255,255,255,0.55);
+}
+
+.nav-wrapper ul.right li a.lang-toggle i {
+    font-size: 18px;
+    margin-right: 6px;
+}
+
 .nav-wrapper ul.center {
     display: flex;
     justify-content: center;

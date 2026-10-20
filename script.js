@@ -146,13 +146,7 @@ let persons = [];
                 format: 'dd-mm-yyyy',
                 autoClose: true,
                 firstDay: 1,
-                i18n: {
-                    months: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'],
-                    monthsShort: ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'],
-                    weekdays: ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'],
-                    weekdaysShort: ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'],
-                    weekdaysAbbrev: ['P', 'P', 'S', 'Ç', 'P', 'C', 'C']
-                },
+                i18n: I18N.picker(),
                 onOpen: function() {
                     const instance = this;
                     setTimeout(() => {
@@ -171,13 +165,7 @@ let persons = [];
                     format: 'dd-mm-yyyy',
                     autoClose: false, // Kullanıcı seçim yapana kadar kapanmasın
                     firstDay: 1,
-                    i18n: {
-                        months: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'],
-                        monthsShort: ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'],
-                        weekdays: ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'],
-                        weekdaysShort: ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'],
-                        weekdaysAbbrev: ['P', 'P', 'S', 'Ç', 'P', 'C', 'C']
-                    },
+                    i18n: I18N.picker(),
                     onOpen: function() {
                         const startDatePicker = document.getElementById('startDate');
                         const startDateInstance = M.Datepicker.getInstance(startDatePicker);
@@ -408,7 +396,7 @@ let persons = [];
 
             const holidays = getHolidays();
 
-            const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+            const dayNames = I18N.weekdaysShort();
 
             tempCustomCapacities = Object.assign({}, customDailyCapacities);
 
@@ -456,7 +444,7 @@ let persons = [];
                 d.setDate(d.getDate() + i);
                 const isWeekend = isWeekendDay(d, holidays);
                 const dayLabel = dayNames[d.getDay()];
-                const dateStr = d.toLocaleDateString('tr-TR');
+                const dateStr = d.toLocaleDateString(I18N.locale);
                 const currentVal = tempCustomCapacities[i] !== undefined ? tempCustomCapacities[i] : dutyPerDay;
                 const isModified = currentVal !== dutyPerDay;
                 const rowClass = isWeekend ? 'cap-weekend' : 'cap-weekday';
@@ -512,7 +500,7 @@ let persons = [];
             customDailyCapacities = Object.assign({}, tempCustomCapacities);
             const count = Object.keys(customDailyCapacities).length;
             if (count > 0) {
-                M.toast({ html: `✅ ${count} gün için özel kapasite kaydedildi.`, classes: 'teal' });
+                M.toast({ html: t('✅ {0} gün için özel kapasite kaydedildi.', count), classes: 'teal' });
             } else {
                 M.toast({ html: 'Tüm günler varsayılan sayıyı kullanıyor.', classes: 'grey' });
             }
@@ -534,7 +522,7 @@ let persons = [];
             end.setHours(0, 0, 0, 0);
             const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
-            const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+            const dayNames = I18N.weekdaysShort();
             const incompleteDays = [];
 
             for (let d = 0; d < days; d++) {
@@ -545,7 +533,7 @@ let persons = [];
                     const date = new Date(start);
                     date.setDate(date.getDate() + d);
                     incompleteDays.push({
-                        label: `${dayNames[date.getDay()]} ${date.toLocaleDateString('tr-TR')}`,
+                        label: `${dayNames[date.getDay()]} ${date.toLocaleDateString(I18N.locale)}`,
                         assigned,
                         target
                     });
@@ -649,7 +637,7 @@ let persons = [];
             document.getElementById('personName').value = '';
             renderTable();
             if (collapsiblePersonel) collapsiblePersonel.open(0);
-            M.toast({html: `${escapeHtml(name)} eklendi!`, classes: 'teal'});
+            M.toast({html: t('{0} eklendi!', escapeHtml(name)), classes: 'teal'});
             savePersonsToLocalStorage(); // KAYDET
         }
 
@@ -657,7 +645,7 @@ let persons = [];
             const name = persons[index].name;
             persons.splice(index, 1);
             renderTable();
-            M.toast({html: `${escapeHtml(name)} silindi!`, classes: 'teal'});
+            M.toast({html: t('{0} silindi!', escapeHtml(name)), classes: 'teal'});
             savePersonsToLocalStorage(); // KAYDET
         }
 
@@ -699,8 +687,8 @@ let persons = [];
             const otherEl = document.getElementById(otherId);
             if (changedEl.checked && otherEl.checked) {
                 otherEl.checked = false;
-                const otherLabel = changedId === 'balanceFridays' ? 'Perşembeleri Dengele' : 'Cumaları Dengele';
-                M.toast({ html: `"${otherLabel}" kapatıldı — ikisi aynı anda kullanılamaz.`, classes: 'teal', displayLength: 3000 });
+                const otherLabel = changedId === 'balanceFridays' ? t('Perşembeleri Dengele') : t('Cumaları Dengele');
+                M.toast({ html: t('"{0}" kapatıldı — ikisi aynı anda kullanılamaz.', otherLabel), classes: 'teal', displayLength: 3000 });
             }
         }
 
@@ -1276,7 +1264,7 @@ let persons = [];
                 }
         
                 M.Toast.dismissAll();
-                const toastHTML = '<span style="font-size: 1rem;">Takvim işaretlemeleri için yatay moda almanız önerilir</span>';
+                const toastHTML = '<span style="font-size: 1rem;">' + t('Takvim işaretlemeleri için yatay moda almanız önerilir') + '</span>';
                 const toast = M.toast({
                     html: toastHTML,
                     displayLength: 6000,
@@ -1315,7 +1303,7 @@ let persons = [];
                         const totalDays = document.querySelectorAll('th').length - 1;
         
                         if ((prevDay >= 0 && selectedCells[prevCellKey]) || (nextDay < totalDays && selectedCells[nextCellKey])) {
-                            M.toast({ html: `${escapeHtml(persons[pIndex].name)} için üst üste nöbet ataması tespit edildi!` });
+                            M.toast({ html: t('{0} için üst üste nöbet ataması tespit edildi!', escapeHtml(persons[pIndex].name)) });
                         }
         
                         selectedCells[cellKey] = true;
@@ -1416,7 +1404,7 @@ let persons = [];
                     date.setDate(date.getDate() + d);
                     validationErrors.push({
                         type: 'error',
-                        message: `${date.toLocaleDateString('tr-TR')} tarihine ${target} nöbetçi atanmamış, atanan: ${assigned}`
+                        message: t('{0} tarihine {1} nöbetçi atanmamış, atanan: {2}', date.toLocaleDateString(I18N.locale), target, assigned)
                     });
                 }
             }
@@ -1432,7 +1420,7 @@ let persons = [];
                     date.setDate(date.getDate() + d);
                     validationErrors.push({
                         type: 'warning',
-                        message: `${date.toLocaleDateString('tr-TR')} tarihinde fazla atama: ${assigned.join(', ')} (${assigned.length} > ${target})`
+                        message: t('{0} tarihinde fazla atama: {1} ({2} > {3})', date.toLocaleDateString(I18N.locale), assigned.join(', '), assigned.length, target)
                     });
                 }
             }
@@ -1450,7 +1438,7 @@ let persons = [];
                         date2.setDate(date2.getDate() + duties[i]);
                         validationErrors.push({
                             type: 'warning',
-                            message: `${person.name} üst üste nöbet: ${date1.toLocaleDateString('tr-TR')} - ${date2.toLocaleDateString('tr-TR')}`
+                            message: t('{0} üst üste nöbet: {1} - {2}', person.name, date1.toLocaleDateString(I18N.locale), date2.toLocaleDateString(I18N.locale))
                         });
                     }
                 }
@@ -1464,7 +1452,7 @@ let persons = [];
                     date.setDate(date.getDate() + parseInt(dIndex));
                     validationErrors.push({
                         type: 'error',
-                        message: `${person} istenmeyen günde nöbet: ${date.toLocaleDateString('tr-TR')}`
+                        message: t('{0} istenmeyen günde nöbet: {1}', person, date.toLocaleDateString(I18N.locale))
                     });
                 }
             });
@@ -1482,7 +1470,7 @@ let persons = [];
                     if (plannedTotal !== undefined && plannedTotal > 0 && actualTotal !== plannedTotal) {
                         validationErrors.push({
                             type: 'warning',
-                            message: `${person.name}: Planlanan toplam nöbet (${plannedTotal}), atanan nöbet (${actualTotal})`
+                            message: t('{0}: Planlanan toplam nöbet ({1}), atanan nöbet ({2})', person.name, plannedTotal, actualTotal)
                         });
                     }
                     return;
@@ -1490,13 +1478,13 @@ let persons = [];
                 if (plannedWeekday !== undefined && plannedWeekday > 0 && actualWeekday !== plannedWeekday) {
                     validationErrors.push({
                         type: 'warning',
-                        message: `${person.name}: Planlanan hafta içi nöbet (${plannedWeekday}), atanan nöbet (${actualWeekday})`
+                        message: t('{0}: Planlanan hafta içi nöbet ({1}), atanan nöbet ({2})', person.name, plannedWeekday, actualWeekday)
                     });
                 }
                 if (plannedWeekend !== undefined && plannedWeekend > 0 && actualWeekend !== plannedWeekend) {
                     validationErrors.push({
                         type: 'warning',
-                        message: `${person.name}: Planlanan hafta sonu nöbet (${plannedWeekend}), atanan nöbet (${actualWeekend})`
+                        message: t('{0}: Planlanan hafta sonu nöbet ({1}), atanan nöbet ({2})', person.name, plannedWeekend, actualWeekend)
                     });
                 }
             });
@@ -1572,7 +1560,7 @@ let persons = [];
             for (let d = 0; d < days; d++) {
                 const currentDate = new Date(start);
                 currentDate.setDate(currentDate.getDate() + d);
-                const dateStr = currentDate.toLocaleDateString('tr-TR');
+                const dateStr = currentDate.toLocaleDateString(I18N.locale);
                 scheduleData[dateStr] = [];
                 document.querySelectorAll(`td[data-dindex="${d}"].selected`).forEach(td => {
                     const person = td.closest('tr').querySelector('td:first-child').innerText;
@@ -1589,16 +1577,16 @@ let persons = [];
         
             const styledData = [];
         
-            const headers = [{ v: 'Tarih', t: 's', s: { font: { bold: true, sz: 16 } } }];
+            const headers = [{ v: t('Tarih'), t: 's', s: { font: { bold: true, sz: 16 } } }];
             for (let i = 1; i <= columnCount; i++) {
-                headers.push({ v: `Nöbetçi ${i}`, t: 's', s: { font: { bold: true, sz: 16 } } });
+                headers.push({ v: t('Nöbetçi {0}', i), t: 's', s: { font: { bold: true, sz: 16 } } });
             }
             styledData.push(headers);
         
             for (let d = 0; d < days; d++) {
                 const currentDate = new Date(start);
                 currentDate.setDate(currentDate.getDate() + d);
-                const dateStr = currentDate.toLocaleDateString('tr-TR');
+                const dateStr = currentDate.toLocaleDateString(I18N.locale);
                 const isWeekend = isWeekendDay(currentDate, null);
                 const isHoliday = holidays.includes(currentDate.getDate());
         
@@ -1635,10 +1623,10 @@ let persons = [];
             ];
         
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Nöbet Listesi");
+            XLSX.utils.book_append_sheet(wb, ws, t("Nöbet Listesi"));
         
             const blob = new Blob([XLSX.write(wb, { bookType: 'xlsx', type: 'array' })], { type: 'application/octet-stream' });
-            const fileName = `nobet_listesi_${new Date().toISOString().split('T')[0]}.xlsx`;
+            const fileName = `${t('nobet_listesi_')}${new Date().toISOString().split('T')[0]}.xlsx`;
         
             if (callback) callback(blob, fileName);
         }
@@ -1720,8 +1708,8 @@ let persons = [];
                 if (unavailableCount === persons.length) {
                     const date = new Date(start);
                     date.setDate(date.getDate() + d);
-                    const dateStr = date.toLocaleDateString('tr-TR');
-                    M.toast({ html: `${dateStr} gününe müsait personel bırakmalısınız!`, displayLength: 8000 });
+                    const dateStr = date.toLocaleDateString(I18N.locale);
+                    M.toast({ html: t('{0} gününe müsait personel bırakmalısınız!', dateStr), displayLength: 8000 });
                     return;
                 }
             }
@@ -1741,8 +1729,8 @@ let persons = [];
                 if (selectedCount > dayCapCheck) {
                     const date = new Date(start);
                     date.setDate(date.getDate() + d);
-                    const dateStr = date.toLocaleDateString('tr-TR');
-                    M.toast({ html: `${dateStr} gününe fazla nöbetçi yazdınız! Beklenen: ${dayCapCheck}, Atanan: ${selectedCount}`, displayLength: 8000 });
+                    const dateStr = date.toLocaleDateString(I18N.locale);
+                    M.toast({ html: t('{0} gününe fazla nöbetçi yazdınız! Beklenen: {1}, Atanan: {2}', dateStr, dayCapCheck, selectedCount), displayLength: 8000 });
                     return;
                 }
             }
@@ -1779,8 +1767,8 @@ let persons = [];
                 if (totalPlannedDuties !== totalExpectedDuties) {
                     const totalDiff = totalPlannedDuties - totalExpectedDuties;
                     const customMessage = totalDiff > 0
-                        ? `Fazla nöbet yazdınız! ${totalDiff} miktar toplam nöbeti azaltın.`
-                        : `Az nöbet yazdınız! ${Math.abs(totalDiff)} miktar toplam nöbeti artırın.`;
+                        ? t('Fazla nöbet yazdınız! {0} miktar toplam nöbeti azaltın.', totalDiff)
+                        : t('Az nöbet yazdınız! {0} miktar toplam nöbeti artırın.', Math.abs(totalDiff));
                     M.toast({ html: customMessage, displayLength: 8000 });
                     return;
                 }
@@ -1792,21 +1780,21 @@ let persons = [];
                 let customMessage = "";
 
                 if (totalPlannedDuties > totalExpectedDuties) {
-                    customMessage = "Fazla nöbet yazdınız! ";
-                    if (weekdayDiff > 0) customMessage += `${weekdayDiff} miktar hafta içini azaltın`;
-                    if (weekendDiff > 0) customMessage += `${weekdayDiff > 0 && weekendDiff > 0 ? ' ve ' : ''}${weekendDiff} miktar hafta sonunu azaltın`;
+                    customMessage = t("Fazla nöbet yazdınız! ");
+                    if (weekdayDiff > 0) customMessage += `${t('{0} miktar hafta içini azaltın', weekdayDiff)}`;
+                    if (weekendDiff > 0) customMessage += `${weekdayDiff > 0 && weekendDiff > 0 ? t(' ve ') : ''}${t('{0} miktar hafta sonunu azaltın', weekendDiff)}`;
                     customMessage += ".";
                 } else if (totalPlannedDuties < totalExpectedDuties) {
-                    customMessage = "Az nöbet yazdınız! ";
-                    if (weekdayDiff < 0) customMessage += `${Math.abs(weekdayDiff)} miktar hafta içini artırın`;
-                    if (weekendDiff < 0) customMessage += `${weekdayDiff < 0 && weekendDiff < 0 ? ' ve ' : ''}${Math.abs(weekendDiff)} miktar hafta sonunu artırın`;
+                    customMessage = t("Az nöbet yazdınız! ");
+                    if (weekdayDiff < 0) customMessage += `${t('{0} miktar hafta içini artırın', Math.abs(weekdayDiff))}`;
+                    if (weekendDiff < 0) customMessage += `${weekdayDiff < 0 && weekendDiff < 0 ? t(' ve ') : ''}${t('{0} miktar hafta sonunu artırın', Math.abs(weekendDiff))}`;
                     customMessage += ".";
                 } else {
-                    customMessage = "Nöbet dağılımı uyumsuz! ";
-                    if (weekdayDiff > 0) customMessage += `${weekdayDiff} miktar hafta içini azaltın`;
-                    if (weekendDiff < 0) customMessage += `${weekdayDiff > 0 ? ' ve ' : ''}${Math.abs(weekendDiff)} miktar hafta sonunu artırın`;
-                    if (weekendDiff > 0) customMessage += `${weekdayDiff > 0 || weekendDiff < 0 ? ' ve ' : ''}${weekendDiff} miktar hafta sonunu azaltın`;
-                    if (weekdayDiff < 0) customMessage += `${weekendDiff > 0 || weekdayDiff > 0 ? ' ve ' : ''}${Math.abs(weekdayDiff)} miktar hafta içini artırın`;
+                    customMessage = t("Nöbet dağılımı uyumsuz! ");
+                    if (weekdayDiff > 0) customMessage += `${t('{0} miktar hafta içini azaltın', weekdayDiff)}`;
+                    if (weekendDiff < 0) customMessage += `${weekdayDiff > 0 ? t(' ve ') : ''}${t('{0} miktar hafta sonunu artırın', Math.abs(weekendDiff))}`;
+                    if (weekendDiff > 0) customMessage += `${weekdayDiff > 0 || weekendDiff < 0 ? t(' ve ') : ''}${t('{0} miktar hafta sonunu azaltın', weekendDiff)}`;
+                    if (weekdayDiff < 0) customMessage += `${weekendDiff > 0 || weekdayDiff > 0 ? t(' ve ') : ''}${t('{0} miktar hafta içini artırın', Math.abs(weekdayDiff))}`;
                     customMessage += ".";
                 }
 
@@ -1860,7 +1848,7 @@ let persons = [];
                     if (groupSizes[group] > dutyPerDay) {
                         validationErrors.push({
                             type: 'error',
-                            message: `${group}. grupta ${groupSizes[group]} kişi var, ancak nöbetçi sayısını ${dutyPerDay} seçtiniz!`
+                            message: t('{0}. grupta {1} kişi var, ancak nöbetçi sayısını {2} seçtiniz!', group, groupSizes[group], dutyPerDay)
                         });
                     }
                 }
@@ -1869,7 +1857,7 @@ let persons = [];
                 if (!hasAnyGroup) {
                     validationErrors.push({
                         type: 'error',
-                        message: '"Birlikte nöbet tutması gerekenler var mı?" seçili, ancak hiç grup atanmamış!'
+                        message: t('"Birlikte nöbet tutması gerekenler var mı?" seçili, ancak hiç grup atanmamış!')
                     });
                 }
             }
@@ -1891,7 +1879,7 @@ let persons = [];
                     if (totalDuties > maxPossible) {
                         validationErrors.push({
                             type: 'error',
-                            message: `${person.name}: ${minDays} gün boşluk kuralıyla ${days} günde en fazla ${maxPossible} nöbet mümkün, ancak ${totalDuties} nöbet yazılmış. Boşluk süresini azaltın veya nöbet sayısını düşürün.`
+                            message: t('{0}: {1} gün boşluk kuralıyla {2} günde en fazla {3} nöbet mümkün, ancak {4} nöbet yazılmış. Boşluk süresini azaltın veya nöbet sayısını düşürün.', person.name, minDays, days, maxPossible, totalDuties)
                         });
                     }
                 }
@@ -1904,15 +1892,15 @@ let persons = [];
                 if (availableCount < cap) {
                     const date = new Date(start);
                     date.setDate(date.getDate() + d);
-                    blockedDaysList.push(`${date.toLocaleDateString('tr-TR')} (müsait: ${availableCount}, gereken: ${cap})`);
+                    blockedDaysList.push(t('{0} (müsait: {1}, gereken: {2})', date.toLocaleDateString(I18N.locale), availableCount, cap));
                 }
             }
             if (blockedDaysList.length > 0) {
                 const sample = blockedDaysList.slice(0, 3);
-                const more = blockedDaysList.length > 3 ? ` ve ${blockedDaysList.length - 3} gün daha` : '';
+                const more = blockedDaysList.length > 3 ? t(' ve {0} gün daha', blockedDaysList.length - 3) : '';
                 validationErrors.push({
                     type: 'error',
-                    message: `Şu günlerde yeterli müsait personel yok: ${sample.join(', ')}${more}. İstenmeyen günleri azaltın veya personel ekleyin.`
+                    message: t('Şu günlerde yeterli müsait personel yok: {0}{1}. İstenmeyen günleri azaltın veya personel ekleyin.', sample.join(', '), more)
                 });
             }
 
@@ -1966,7 +1954,7 @@ let persons = [];
                     saveToHistory();
                     showToast('Tüm nöbetler başarıyla atandı! 💾 Çıkmadan önce listenizi "Kaydet" butonuyla hesabınıza saklamayı UNUTMAYIN.', 8000);
                 } else {
-                    let errorMessage = data.error || 'Bilinmeyen bir hata oluştu';
+                    let errorMessage = data.error || t('Bilinmeyen bir hata oluştu');
                     
                     // --- AI MESAJI KONTROLÜ ---
                     if (errorMessage.includes('⚠️')) {
@@ -1987,9 +1975,9 @@ let persons = [];
 
                     } else {
                         if (status === 400 && errorMessage.includes('Nöbet atamaları yapılamadı')) {
-                            errorMessage = 'Hata: Nöbet ertesi boşluk sayısını azaltmayı deneyin!';
+                            errorMessage = t('Hata: Nöbet ertesi boşluk sayısını azaltmayı deneyin!');
                         } else if (status === 400 && errorMessage.includes('Cuma veya Perşembe dengeleme başarısız')) {
-                            errorMessage = 'Hata: Cuma veya Perşembe dengeleme başarısız, bu seçenekleri kapatın veya nöbet ertesi boşlukları azaltıp tekrar deneyin!';
+                            errorMessage = t('Hata: Cuma veya Perşembe dengeleme başarısız, bu seçenekleri kapatın veya nöbet ertesi boşlukları azaltıp tekrar deneyin!');
                         }
                         
                         showToast(errorMessage, 10000); // Standart toast
@@ -1998,7 +1986,7 @@ let persons = [];
             })
             .catch(error => {
                 hideLoading();
-                showToast('Sunucuyla bağlantı kurulamadı: ' + error.message, 10000);
+                showToast(t('Sunucuyla bağlantı kurulamadı: {0}', error.message), 10000);
             });
         }
 
@@ -2046,7 +2034,7 @@ let persons = [];
                 const rows = text.split('\n').map(row => row.split(',').map(cell => cell.trim()));
                 const headers = rows[0];
 
-                if (headers[0] !== 'İsim') {
+                if (headers[0] !== 'İsim' && headers[0] !== 'Name') {
                     M.toast({ html: 'Geçersiz CSV formatı! Başlık "İsim" olmalı.', classes: 'teal' });
                     hideLoading();
                     isUploading = false;
@@ -2090,7 +2078,7 @@ let persons = [];
 
         function downloadPersonnel() {
             const csvRows = [];
-            const headers = ['İsim', 'Hafta İçi', 'Hafta Sonu', 'Nöbet Ertesi Boşluk'];
+            const headers = [t('İsim'), t('Hafta İçi'), t('Hafta Sonu'), t('Nöbet Ertesi Boşluk')];
             csvRows.push(headers.join(','));
 
             persons.forEach(person => {
@@ -2108,7 +2096,7 @@ let persons = [];
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
-            link.setAttribute('download', `personel_listesi_${new Date().toISOString().split('T')[0]}.csv`);
+            link.setAttribute('download', `${t('personel_listesi_')}${new Date().toISOString().split('T')[0]}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -2262,7 +2250,7 @@ let persons = [];
             })
             .catch((error) => {
                 console.error('EmailJS Hatası:', error);
-                M.toast({ html: 'Hata oluştu: ' + error.text });
+                M.toast({ html: t('Hata oluştu: {0}', error.text) });
             })
             .finally(() => {
                 submitButton.classList.remove('disabled');
@@ -2285,7 +2273,7 @@ let persons = [];
         auth.signInWithPopup(provider)
             .then(async (result) => { 
                 const user = result.user;
-                M.toast({html: 'Hoş geldin ' + user.displayName});
+                M.toast({html: t('Hoş geldin {0}', user.displayName)});
                 updateLoginButton(user);
 
                 if (result.additionalUserInfo && result.additionalUserInfo.isNewUser) {
@@ -2317,7 +2305,7 @@ let persons = [];
 
             }).catch((error) => {
                 console.error(error);
-                M.toast({html: 'Giriş hatası: ' + error.message});
+                M.toast({html: t('Giriş hatası: {0}', error.message)});
             });
     }
 
@@ -2360,7 +2348,7 @@ let persons = [];
     });
 
     function updateLoginButton(user) {
-        const firstName = user.displayName ? user.displayName.split(' ')[0] : 'Kullanıcı';
+        const firstName = user.displayName ? user.displayName.split(' ')[0] : t('Kullanıcı');
 
         const userHtmlDesktop = `
             <a href="#" onclick="googleLogout()" class="btn waves-effect waves-light white black-text tooltipped" data-position="bottom" data-tooltip="Çıkış Yap">
@@ -2372,7 +2360,7 @@ let persons = [];
         const userHtmlMobile = `
             <a href="#" onclick="googleLogout()" style="display: flex; align-items: center; padding-left: 32px;">
                 <img src="${escapeHtml(user.photoURL || '')}" style="vertical-align: middle; width: 24px; border-radius: 50%; margin-right: 15px;">
-                ${escapeHtml(firstName)} (Çıkış)
+                ${escapeHtml(firstName)} <span>(Çıkış)</span>
             </a>
         `;
 
@@ -2410,7 +2398,7 @@ let persons = [];
         if (persons.length > 0) {
             
             M.toast({
-                html: '<span>Mevcut listeniz korundu. (Buluttaki eski liste çekilmedi)</span><button class="btn-flat toast-action" onclick="forceLoadCloud()">Yine de Çek</button>', 
+                html: '<span>' + t('Mevcut listeniz korundu. (Buluttaki eski liste çekilmedi)') + '</span><button class="btn-flat toast-action" onclick="forceLoadCloud()">' + t('Yine de Çek') + '</button>', 
                 classes: 'blue darken-3',
                 displayLength: 6000
             });
@@ -2508,7 +2496,7 @@ let persons = [];
             }
         }).catch((error) => {
             console.error("Kontrol hatası:", error);
-            M.toast({html: 'Veritabanı kontrol edilemedi: ' + error.message, classes: 'red'});
+            M.toast({html: t('Veritabanı kontrol edilemedi: {0}', error.message), classes: 'red'});
             if(btn) resetButton(btn, originalText);
         });
     }
@@ -2520,8 +2508,7 @@ let persons = [];
         const monthName = getMonthName(parseInt(month)); 
         
         document.getElementById('overwriteMessage').innerHTML = 
-            `<b>${monthName} ${year}</b> dönemi için daha önce kaydedilmiş bir listeniz zaten var.<br><br>` +
-            `Eski listeyi silip, şu an ekrandaki listeyi onun yerine kaydetmek istiyor musunuz?`;
+            t('<b>{0} {1}</b> dönemi için daha önce kaydedilmiş bir listeniz zaten var.<br><br>Eski listeyi silip, şu an ekrandaki listeyi onun yerine kaydetmek istiyor musunuz?', monthName, year);
         
         const confirmBtn = document.getElementById('confirmOverwriteBtn');
         confirmBtn.onclick = function() {
@@ -2559,7 +2546,7 @@ let persons = [];
             })
             .catch((error) => {
                 console.error("Kaydetme hatası: ", error);
-                M.toast({html: 'Hata: ' + error.message, classes: 'orange darken-3'});
+                M.toast({html: t('Hata: {0}', error.message), classes: 'orange darken-3'});
                 
                 if (btn) {
                     resetButton(btn, originalText);
@@ -2638,6 +2625,7 @@ let persons = [];
 
             const cumItem = document.createElement('a');
             cumItem.className = 'collection-item waves-effect';
+            cumItem.dataset.cumulative = '1';
             cumItem.style.fontWeight = 'bold';
             cumItem.style.color = '#d32f2f';
             cumItem.style.backgroundColor = '#fff3e0';
@@ -2659,7 +2647,7 @@ let persons = [];
                 yearHeader.style.alignItems = 'center';
                 yearHeader.style.borderTop = '1px solid #e0e0e0';
                 yearHeader.innerHTML = `
-                    <span><i class="material-icons left" style="font-size: 1.2rem; margin-top:2px;">calendar_today</i>${year} Kayıtları</span>
+                    <span><i class="material-icons left" style="font-size: 1.2rem; margin-top:2px;">calendar_today</i>${year} <span>Kayıtları</span></span>
                     <i class="material-icons grey-text" id="icon_${year}">expand_more</i>
                 `;
                 
@@ -2711,7 +2699,7 @@ let persons = [];
                         <span class="title" style="font-weight: 500; font-size: 1rem;">${monthName}</span>
                         <br><span class="grey-text" style="font-size: 0.75rem;">
                             <i class="material-icons tiny" style="vertical-align: middle;">update</i> 
-                            ${data.updatedAt ? new Date(data.updatedAt.seconds * 1000).toLocaleDateString('tr-TR') : '-'}
+                            ${data.updatedAt ? new Date(data.updatedAt.seconds * 1000).toLocaleDateString(I18N.locale) : '-'}
                         </span>
                     `;
                     
@@ -3023,7 +3011,7 @@ let persons = [];
         for (let d = 0; d < days; d++) {
             const currentDate = new Date(start);
             currentDate.setDate(currentDate.getDate() + d);
-            const dateStr = currentDate.toLocaleDateString('tr-TR');
+            const dateStr = currentDate.toLocaleDateString(I18N.locale);
             scheduleData[dateStr] = [];
 
             personnel.forEach((p, pIndex) => {
@@ -3039,16 +3027,16 @@ let persons = [];
         }
 
         const styledData = [];
-        const headers = [{ v: 'Tarih', t: 's', s: { font: { bold: true, sz: 16 } } }];
+        const headers = [{ v: t('Tarih'), t: 's', s: { font: { bold: true, sz: 16 } } }];
         for (let i = 1; i <= columnCount; i++) {
-            headers.push({ v: `Nöbetçi ${i}`, t: 's', s: { font: { bold: true, sz: 16 } } });
+            headers.push({ v: t('Nöbetçi {0}', i), t: 's', s: { font: { bold: true, sz: 16 } } });
         }
         styledData.push(headers);
 
         for (let d = 0; d < days; d++) {
             const currentDate = new Date(start);
             currentDate.setDate(currentDate.getDate() + d);
-            const dateStr = currentDate.toLocaleDateString('tr-TR');
+            const dateStr = currentDate.toLocaleDateString(I18N.locale);
             const isWeekend = isWeekendDay(currentDate, null);
             const isHoliday = holidays.includes(currentDate.getDate());
 
@@ -3078,10 +3066,10 @@ let persons = [];
         ];
 
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Geçmiş Nöbet Listesi");
+        XLSX.utils.book_append_sheet(wb, ws, t("Geçmiş Nöbet Listesi"));
 
         const blob = new Blob([XLSX.write(wb, { bookType: 'xlsx', type: 'array' })], { type: 'application/octet-stream' });
-        const fileName = `Gecmis_Nobet_Listesi_${docId}.xlsx`;
+        const fileName = `${t('Gecmis_Nobet_Listesi_')}${docId}.xlsx`;
 
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -3096,8 +3084,8 @@ let persons = [];
     }
 
     function getMonthName(monthIndex) {
-        const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-        return months[monthIndex - 1] || 'Bilinmiyor';
+        const months = I18N.months();
+        return months[monthIndex - 1] || t('Bilinmiyor');
     }
 
     function highlightActiveItem(elem) {
@@ -3105,7 +3093,7 @@ let persons = [];
         items.forEach(i => {
             i.classList.remove('active');
             i.classList.remove('teal');
-            if(i !== elem && i.innerText.includes('Kümülatif')) {
+            if(i !== elem && i.dataset.cumulative === '1') {
                 i.style.backgroundColor = '#fff3e0'; 
                 i.style.color = '#d32f2f';
             } else if (i !== elem) {
@@ -3158,7 +3146,7 @@ function downloadAsImage() {
 
         const imgData = canvas.toDataURL('image/png');
         const link = document.createElement('a');
-        link.download = `Nobet_Listesi_${new Date().toISOString().split('T')[0]}.png`;
+        link.download = `${t('Nobet_Listesi_')}${new Date().toISOString().split('T')[0]}.png`;
         link.href = imgData;
         link.click();
         M.toast({html: '✅ Fotoğraf başarıyla cihazınıza indirildi!', classes: 'blue darken-1 rounded'});
@@ -3234,7 +3222,7 @@ function _doCreateMagicLink(btn) {
         })
         .catch((error) => {
             console.error("Paylaşım hatası: ", error);
-            M.toast({html: 'Paylaşım linki oluşturulamadı: ' + error.message, classes: 'blue darken-1 rounded'});
+            M.toast({html: t('Paylaşım linki oluşturulamadı: {0}', error.message), classes: 'blue darken-1 rounded'});
         })
         .finally(() => {
             btn.innerHTML = originalHtml;
@@ -3248,7 +3236,7 @@ function copyGeneratedLink() {
     linkInput.select();
     linkInput.setSelectionRange(0, 99999); // Mobil cihazlar için stabilite
     navigator.clipboard.writeText(linkInput.value).then(() => {
-        M.toast({html: '✅ Link başarıyla kopyalandı! WhatsApp\'a yapıştırabilirsiniz.', classes: 'blue darken-1 rounded', displayLength: 4000});
+        M.toast({html: t('✅ Link başarıyla kopyalandı! WhatsApp\'a yapıştırabilirsiniz.'), classes: 'blue darken-1 rounded', displayLength: 4000});
     }).catch(err => {
         M.toast({html: 'Kopyalama başarısız, lütfen manuel kopyalayın.', classes: 'blue darken-1 rounded'});
     });
@@ -3324,15 +3312,15 @@ function renderMagicList(data) {
         selectBox.innerHTML += `<option value="${index}">${escapeHtml(p.name)}</option>`;
     });
 
-    const monthName = startDateObj.toLocaleString('tr-TR', { month: 'long' });
+    const monthName = startDateObj.toLocaleString(I18N.locale, { month: 'long' });
     const yearNum = startDateObj.getFullYear();
     const firstDayOfMonth = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), 1);
     const lastDayOfMonth = new Date(startDateObj.getFullYear(), startDateObj.getMonth() + 1, 0);
     const daysInMonth = lastDayOfMonth.getDate();
     const firstDayOfWeek = firstDayOfMonth.getDay(); // 0: Pazar, 1: Pzt, ...
 
-    const dayNames = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
-    let calendarHtml = `<h6 class="teal-text center-align" style="font-weight:bold; margin-top:20px; font-size:1.3rem;">${monthName} ${yearNum} Nöbetleri</h6>
+    const dayNames = [1, 2, 3, 4, 5, 6, 0].map(i => I18N.weekdaysShort()[i]);
+    let calendarHtml = `<h6 class="teal-text center-align" style="font-weight:bold; margin-top:20px; font-size:1.3rem;">${t('{0} {1} Nöbetleri', monthName, yearNum)}</h6>
                     <div style="overflow-x:auto;">
                     <table class="centered magic-calendar-table" style="border:1px solid #eee; border-collapse: collapse; width: 100%;">
                     <thead><tr style="border-bottom: 2px solid #26a69a;">`;
@@ -3463,7 +3451,7 @@ async function addToGoogleCalendar() {
             } catch(e) {}
         }
 
-        M.toast({html: `${dutyDates.length} nöbet işleniyor...`, classes: 'orange'});
+        M.toast({html: t('{0} nöbet işleniyor...', dutyDates.length), classes: 'orange'});
 
         for (const date of dutyDates) {
             const startStr = formatDateLocal(date);
@@ -3472,8 +3460,8 @@ async function addToGoogleCalendar() {
             const endStr = formatDateLocal(nextDay);
 
             const event = {
-                'summary': 'Nöbet',
-                'description': 'nobetplani.com üzerinden otomatik eklendi.',
+                'summary': t('Nöbet'),
+                'description': t('nobetplani.com üzerinden otomatik eklendi.'),
                 'start': { 'date': startStr },
                 'end': { 'date': endStr },
                 'reminders': {
@@ -3495,7 +3483,7 @@ async function addToGoogleCalendar() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error.message || 'API Hatası');
+                throw new Error(errorData.error.message || t('API Hatası'));
             }
         }
 
@@ -3503,7 +3491,7 @@ async function addToGoogleCalendar() {
 
     } catch (error) {
         console.error("Takvim Hatası:", error);
-        M.toast({html: 'Hata: ' + error.message, classes: 'red', displayLength: 8000});
+        M.toast({html: t('Hata: {0}', error.message), classes: 'red', displayLength: 8000});
     }
 }
 
@@ -3533,7 +3521,7 @@ function downloadHistoryAsImage(docId) {
         targetElement.style.borderBottom = originalBorder;
 
         const link = document.createElement('a');
-        link.download = `Gecmis_Nobet_Listesi_${docId}.png`;
+        link.download = `${t('Gecmis_Nobet_Listesi_')}${docId}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
         M.toast({html: '✅ Resim indirildi!', classes: 'green'});
@@ -3585,7 +3573,7 @@ function shareHistoryAsLink() {
         M.Modal.getInstance(modalElem).open();
     })
     .catch(err => {
-        M.toast({html: 'Hata: ' + err.message, classes: 'blue darken-1'});
+        M.toast({html: t('Hata: {0}', err.message), classes: 'blue darken-1'});
     });
 }
 
@@ -3705,7 +3693,7 @@ function openRenameModal() {
             const sub = document.createElement('div');
             sub.className = 'grey-text';
             sub.style.fontSize = '0.75rem';
-            sub.textContent = count + ' kayıtta';
+            sub.textContent = t('{0} kayıtta', count);
             left.appendChild(title);
             left.appendChild(sub);
 
@@ -3766,8 +3754,7 @@ function applyBulkRename() {
         const msg = document.createElement('div');
         const months = Array.from(new Set(plan.conflicts.map(c => c.id))).join(', ');
         const names = Array.from(new Set(plan.conflicts.map(c => c.name))).join(', ');
-        msg.textContent = 'Aynı kayıtta iki personel aynı isme dönüşüyor (' + names + '; kayıtlar: ' + months +
-            '). Lütfen farklı isimler verin.';
+        msg.textContent = t('Aynı kayıtta iki personel aynı isme dönüşüyor ({0}; kayıtlar: {1}). Lütfen farklı isimler verin.', names, months);
         summary.appendChild(msg);
         summary.style.display = 'block';
         return;
@@ -3776,7 +3763,7 @@ function applyBulkRename() {
     summary.className = 'card-panel orange lighten-5';
     const head = document.createElement('div');
     head.style.fontWeight = '600';
-    head.textContent = plan.renamedNames + ' isim, ' + plan.changes.length + ' kayıtta güncellenecek:';
+    head.textContent = t('{0} isim, {1} kayıtta güncellenecek:', plan.renamedNames, plan.changes.length);
     summary.appendChild(head);
     Object.keys(mapping).forEach(oldName => {
         const line = document.createElement('div');
@@ -3845,7 +3832,7 @@ async function commitRenamePlan(state) {
             const before = duplicateNames(persons);
             const clash = Array.from(duplicateNames(renamed)).some(n => !before.has(n));
             if (clash) {
-                mainNote = ' (Ana listede isim çakışması olacağı için ana liste değiştirilmedi.)';
+                mainNote = t(' (Ana listede isim çakışması olacağı için ana liste değiştirilmedi.)');
             } else {
                 persons = renamed;
                 renderTable();
@@ -3856,12 +3843,12 @@ async function commitRenamePlan(state) {
         refreshHistoryViewAfterRename();
         M.Modal.getInstance(document.getElementById('renameModal')).close();
         M.toast({
-            html: '✅ ' + state.plan.renamedNames + ' isim ' + state.plan.changes.length + ' kayıtta güncellendi.' + mainNote,
+            html: t('✅ {0} isim {1} kayıtta güncellendi.{2}', state.plan.renamedNames, state.plan.changes.length, mainNote),
             classes: 'teal', displayLength: 6000
         });
     } catch (error) {
         console.error('Toplu isim güncelleme hatası:', error);
-        M.toast({ html: 'Hata: ' + error.message, classes: 'red', displayLength: 8000 });
+        M.toast({ html: t('Hata: {0}', error.message), classes: 'red', displayLength: 8000 });
     } finally {
         btn.classList.remove('disabled');
         resetRenameConfirmStep();
@@ -3881,9 +3868,6 @@ function refreshHistoryViewAfterRename() {
             generateStatsTableHTML(calculateStatsForDoc(cur)) + generateMiniCalendarHTML(cur);
     }
 }
-
-var TR_MONTHS_ASCII = ['OCAK', 'SUBAT', 'MART', 'NISAN', 'MAYIS', 'HAZIRAN', 'TEMMUZ', 'AGUSTOS', 'EYLUL', 'EKIM', 'KASIM', 'ARALIK'];
-var TR_WEEKDAYS_ASCII = ['PAZAR', 'PAZARTESI', 'SALI', 'CARSAMBA', 'PERSEMBE', 'CUMA', 'CUMARTESI'];
 
 function parseScheduleSnapshot(data) {
     let assignments = {};
@@ -3986,8 +3970,8 @@ function buildIcsContent(data, personIndex, now) {
     const single = personIndex !== null && personIndex !== undefined;
     const stamp = icsTimestamp(now || new Date());
     const calName = single && schedule.personnel[personIndex]
-        ? 'Nöbet - ' + schedule.personnel[personIndex].name
-        : 'Nöbet Listesi';
+        ? t('Nöbet - {0}', schedule.personnel[personIndex].name)
+        : t('Nöbet Listesi');
     const lines = [
         'BEGIN:VCALENDAR',
         'VERSION:2.0',
@@ -4010,11 +3994,11 @@ function buildIcsContent(data, personIndex, now) {
                 'DTSTAMP:' + stamp,
                 'DTSTART;VALUE=DATE:' + icsDateString(day.date),
                 'DTEND;VALUE=DATE:' + icsDateString(next),
-                'SUMMARY:' + icsEscape(single ? 'Nöbet' : 'Nöbet: ' + p.name),
-                'DESCRIPTION:' + icsEscape('nobetplani.com üzerinden oluşturuldu.')
+                'SUMMARY:' + icsEscape(single ? t('Nöbet') : t('Nöbet: {0}', p.name)),
+                'DESCRIPTION:' + icsEscape(t('nobetplani.com üzerinden oluşturuldu.'))
             );
             if (single) {
-                lines.push('BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsEscape('Nöbet'), 'TRIGGER:-PT10H', 'END:VALARM');
+                lines.push('BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsEscape(t('Nöbet')), 'TRIGGER:-PT10H', 'END:VALARM');
             }
             lines.push('END:VEVENT');
         });
@@ -4030,10 +4014,10 @@ function exportIcs(data, personIndex) {
         M.toast({ html: 'Seçilen kişi için bu listede nöbet bulunamadı.', classes: 'orange darken-2' });
         return false;
     }
-    const who = personIndex === null ? 'Tum_Personel' : slugName(schedule.personnel[personIndex].name);
+    const who = personIndex === null ? t('Tum_Personel') : slugName(schedule.personnel[personIndex].name);
     downloadBlobFile(
         new Blob([result.text], { type: 'text/calendar;charset=utf-8' }),
-        'Nobet_' + who + '_' + scheduleFileMonth(schedule) + '.ics'
+        t('Nobet_') + who + '_' + scheduleFileMonth(schedule) + '.ics'
     );
     M.toast({ html: '✅ Takvim dosyası indirildi. Dosyayı açarak takviminize ekleyebilirsiniz.', classes: 'teal', displayLength: 6000 });
     return true;
@@ -4098,7 +4082,7 @@ function pdfPeriodLabel(schedule) {
     const first = schedule.days[0].date;
     const last = schedule.days[schedule.days.length - 1].date;
     if (first.getFullYear() === last.getFullYear() && first.getMonth() === last.getMonth()) {
-        return TR_MONTHS_ASCII[first.getMonth()] + ' ' + first.getFullYear();
+        return I18N.monthsAscii()[first.getMonth()] + ' ' + first.getFullYear();
     }
     return pdfDateLabel(first) + ' - ' + pdfDateLabel(last);
 }
@@ -4161,8 +4145,8 @@ function buildSchedulePdf(data) {
     };
 
     const drawHeader = () => {
-        const cells = ['TARIH', 'GUN'];
-        for (let i = 1; i <= columns; i++) cells.push('NOBETCI ' + i);
+        const cells = [t('TARIH'), t('GUN')];
+        for (let i = 1; i <= columns; i++) cells.push(t('NOBETCI {0}', i));
         drawRow(cells, [0, 121, 107], [255, 255, 255], true);
     };
 
@@ -4173,7 +4157,7 @@ function buildSchedulePdf(data) {
             doc.setTextColor(33, 33, 33);
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(18);
-            doc.text('NOBET LISTESI', margin, 18);
+            doc.text(t('NOBET LISTESI'), margin, 18);
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(12);
             doc.text(pdfPeriodLabel(schedule), margin, 26);
@@ -4197,7 +4181,7 @@ function buildSchedulePdf(data) {
         } else if (weekend) {
             fill = [232, 232, 232];
         }
-        const cells = [pdfDateLabel(day.date), TR_WEEKDAYS_ASCII[weekday]];
+        const cells = [pdfDateLabel(day.date), I18N.weekdaysAscii()[weekday]];
         for (let i = 0; i < columns; i++) cells.push(day.names[i] ? pdfSafeText(day.names[i]) : '');
         drawRow(cells, fill, { lead: color, rest: [33, 33, 33] }, day.holiday);
     });
@@ -4220,7 +4204,7 @@ function downloadSchedulePdf(data) {
         M.toast({ html: 'PDF oluşturulamadı. Sayfayı yenileyip tekrar deneyin.', classes: 'red' });
         return;
     }
-    downloadBlobFile(built.doc.output('blob'), 'Nobet_Listesi_' + scheduleFileMonth(built.schedule) + '.pdf');
+    downloadBlobFile(built.doc.output('blob'), t('Nobet_Listesi_') + scheduleFileMonth(built.schedule) + '.pdf');
     M.toast({ html: '✅ PDF cihazınıza indirildi.', classes: 'teal', displayLength: 5000 });
 }
 

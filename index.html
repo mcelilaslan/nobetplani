@@ -41,11 +41,16 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/site.webmanifest">
     <link rel="canonical" href="https://nobetplani.com/">
+    <link rel="alternate" hreflang="tr" href="https://nobetplani.com/">
+    <link rel="alternate" hreflang="en" href="https://nobetplani.com/?lang=en">
+    <link rel="alternate" hreflang="x-default" href="https://nobetplani.com/">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="i18n-en.js?v=20261020"></script>
+    <script src="i18n.js?v=20261020"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function() {
@@ -63,13 +68,7 @@
                 format: 'dd-mm-yyyy',
                 autoClose: true,
                 firstDay: 1,
-                i18n: {
-                    months: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'],
-                    monthsShort: ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'],
-                    weekdays: ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'],
-                    weekdaysShort: ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'],
-                    weekdaysAbbrev: ['P', 'P', 'S', 'Ç', 'P', 'C', 'C']
-                }
+                i18n: I18N.picker()
             });
         });
     </script>
@@ -105,6 +104,12 @@
                             </a>
                         </li>
 
+                        <li>
+                            <a href="#!" class="lang-toggle js-lang-toggle" onclick="return I18N.toggle();">
+                                <i class="material-icons">language</i><span class="js-lang-label">EN</span>
+                            </a>
+                        </li>
+
                         <li id="login-li-desktop" style="margin-left: 10px;">
                             <a href="#" onclick="googleLogin()" class="btn waves-effect waves-light white black-text" style="height: 36px; line-height: 36px; padding: 0 15px; display: inline-flex; align-items: center;">
                                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="vertical-align: middle; width: 18px; margin-right: 8px;">
@@ -121,6 +126,11 @@
                 <li><a href="hakkimizda.html">Hakkımızda</a></li>
                 <li><a href="iletisim.html">İletişim</a></li>
                 <li><a href="#historyModal" class="modal-trigger"><i class="material-icons left">history</i>Geçmiş Kayıtlar</a></li>
+                <li>
+                    <a href="#!" class="js-lang-toggle" onclick="return I18N.toggle();">
+                        <i class="material-icons left">language</i><span class="js-lang-label">EN</span>
+                    </a>
+                </li>
                 <li id="login-li-mobile">
                     <a href="#" onclick="googleLogin()" style="display: flex; align-items: center; padding-left: 32px;">
                         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="vertical-align: middle; width: 24px; margin-right: 15px;">
@@ -888,6 +898,6 @@
     const db = firebase.firestore();
 
 </script>
-<script src="script.js?v=20261004c"></script>
+<script src="script.js?v=20261020a"></script>
 </body>
 </html>
